@@ -8,6 +8,6 @@ namespace XamlNexus.Models {
     }
 
     public enum FrameworkType {
-        WPF, WinUI3, WinUI3_WPF
+        Wpf, Winui3, Winui3_Wpf
     }
 }

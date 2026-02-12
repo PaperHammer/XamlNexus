@@ -12,11 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Spectre.Console" Version="0.54.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Commands\" />
+    <ProjectReference Include="..\XamlNexus.Template.WinUI3App\XamlNexus.Template.Winui3App.csproj" />
+    <ProjectReference Include="..\XamlNexus.Template.WPFApp\XamlNexus.Template.WpfApp.csproj" />
+    <ProjectReference Include="..\XamlNexus.Template.Wpf_Winui3_CompositeApp\XamlNexus.Template.Wpf_Winui3_CompositeApp.csproj" />
   </ItemGroup>
 
 </Project>

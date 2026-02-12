@@ -26,7 +26,7 @@ namespace XamlNexus.Interactors {
                     .Title(LanguageRegistry.GetI18n(LangKeys.SelectFramework))
                     .AddChoices(Enum.GetValues<FrameworkType>()) // 自动获取所有枚举
                     .UseConverter(type => type switch {         // 优化显示美观度
-                        FrameworkType.WinUI3_WPF => "WinUI3(Foreground) + WPF(Background)",
+                        FrameworkType.Winui3_Wpf => "Winui3(Foreground) + Wpf(Background)",
                         _ => type.ToString()
                     }));
 

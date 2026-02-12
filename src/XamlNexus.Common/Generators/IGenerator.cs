@@ -1,6 +1,6 @@
 using XamlNexus.Models;
 
-namespace XamlNexus.Generators.Interfaces {
+namespace XamlNexus.Common.Generators {
     public interface IGenerator {
         void Generate(ProjectConfig config);
     }
