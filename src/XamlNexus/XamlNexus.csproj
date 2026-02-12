@@ -8,6 +8,7 @@
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>xamlnexus</ToolCommandName>
 	<PackageId>XamlNexus.CLI</PackageId>
+	<AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
