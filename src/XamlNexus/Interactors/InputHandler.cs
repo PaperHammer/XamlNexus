@@ -25,9 +25,20 @@ namespace XamlNexus.Interactors {
                 new SelectionPrompt<FrameworkType>()
                     .Title(LanguageRegistry.GetI18n(LangKeys.SelectFramework))
                     .AddChoices(Enum.GetValues<FrameworkType>()) // 自动获取所有枚举
-                    .UseConverter(type => type switch {         // 优化显示美观度
+                    .UseConverter(type => type switch {
                         FrameworkType.Winui3_Wpf => "Winui3(Foreground) + Wpf(Background)",
                         _ => type.ToString()
+                    }));
+
+            // 结局方案类型
+            config.SlnType = AnsiConsole.Prompt(
+                new SelectionPrompt<SolutionType>()
+                    .Title(LanguageRegistry.GetI18n(LangKeys.SelectSolutionFormat))
+                    .AddChoices(Enum.GetValues<SolutionType>())
+                    .UseConverter(format => format switch {
+                        SolutionType.Sln => "Standard Solution (.sln)",
+                        SolutionType.Slnx => "Modern XML Solution (.slnx) [VS 2026]",
+                        _ => format.ToString()
                     }));
 
             // 托盘选项

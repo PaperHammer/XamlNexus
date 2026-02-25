@@ -17,9 +17,25 @@ namespace XamlNexus.Common.Generators {
             File.WriteAllText(path, content);
         }
 
-        protected void GenerateSolution(string path, string name) {
-            // 这里可以放一个简化的 .sln 模板字符串
-            // ... (逻辑同之前)
+        // todo：适配 slnx
+        protected void GenerateSolution(string rootPath, string projectName) {
+            string guid = Guid.NewGuid().ToString("B").ToUpper();
+            string slnContent = $$"""
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "{{projectName}}", "{{projectName}}\{{projectName}}.csproj", "{{guid}}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+EndGlobal
+""";
+
+            if (!Directory.Exists(rootPath)) Directory.CreateDirectory(rootPath);
+
+            File.WriteAllText(Path.Combine(rootPath, $"{projectName}.sln"), slnContent);
         }
 
         protected void CreateDirectory(string path) {

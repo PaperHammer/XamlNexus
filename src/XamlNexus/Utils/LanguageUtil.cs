@@ -2,6 +2,7 @@ namespace XamlNexus.Utils {
     public static class LangKeys {
         public const string Welcome = "Welcome";
         public const string SelectFramework = "SelectFramework";
+        public const string SelectSolutionFormat = "SelectSolutionFormat";
         public const string NeedTray = "NeedTray";
         public const string ProjectName = "ProjectName";
         public const string Generating = "Generating";
@@ -21,6 +22,7 @@ namespace XamlNexus.Utils {
             [LanguageType.Chinese] = new() {
                 [LangKeys.Welcome] = "欢迎使用 XamlNexus —— 您的 XAML 项目脚手架",
                 [LangKeys.SelectFramework] = "您想使用哪种 XAML 框架?",
+                [LangKeys.SelectSolutionFormat] = "请选择项目解决方案格式:",
                 [LangKeys.NeedTray] = "是否需要托盘?",
                 [LangKeys.ProjectName] = "请输入项目名称:",
                 [LangKeys.Generating] = "正在构建您的项目...",
@@ -31,6 +33,7 @@ namespace XamlNexus.Utils {
             [LanguageType.English] = new() {
                 [LangKeys.Welcome] = "Welcome to XamlNexus — Your XAML Project Scaffolder",
                 [LangKeys.SelectFramework] = "Which XAML framework do you want to use?",
+                [LangKeys.SelectSolutionFormat] = "Select project solution format:",
                 [LangKeys.NeedTray] = "Do you need a tray?",
                 [LangKeys.ProjectName] = "Enter project name:",
                 [LangKeys.Generating] = "Building your project...",
