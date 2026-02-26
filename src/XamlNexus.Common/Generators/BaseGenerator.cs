@@ -11,24 +11,36 @@ namespace XamlNexus.Common.Generators {
                 content = content.Replace($"{{{{{token.Key}}}}}", token.Value);
             }
 
-            string dir = Path.GetDirectoryName(path)!;
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            string? dir = Path.GetDirectoryName(path)!;
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) {
+                Directory.CreateDirectory(dir);
+            }
 
             File.WriteAllText(path, content);
         }
 
         // todo：适配 slnx
         protected void GenerateSolution(string rootPath, string projectName) {
-            string guid = Guid.NewGuid().ToString("B").ToUpper();
+            string projectGuid = Guid.NewGuid().ToString("B").ToUpper();
             string slnContent = $$"""
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "{{projectName}}", "{{projectName}}\{{projectName}}.csproj", "{{guid}}"
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "{{projectName}}", "{{projectName}}\{{projectName}}.csproj", "{{projectGuid}}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{{projectGuid}}.Debug|x64.ActiveCfg = Debug|x64
+		{{projectGuid}}.Debug|x64.Build.0 = Debug|x64
+		{{projectGuid}}.Debug|x64.Deploy.0 = Debug|x64
+		{{projectGuid}}.Release|x64.ActiveCfg = Release|x64
+		{{projectGuid}}.Release|x64.Build.0 = Release|x64
+		{{projectGuid}}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 EndGlobal
 """;

@@ -10,4 +10,8 @@
     <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Templates\" />
+  </ItemGroup>
+
 </Project>
