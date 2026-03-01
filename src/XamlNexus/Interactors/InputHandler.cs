@@ -1,6 +1,6 @@
 using Spectre.Console;
-using XamlNexus.Models;
-using XamlNexus.Utils;
+using XamlNexus.Common.Utils;
+using XamlNexus.Common.Generators;
 
 namespace XamlNexus.Interactors {
     public static class InputHandler {
@@ -26,7 +26,7 @@ namespace XamlNexus.Interactors {
                     .Title(LanguageRegistry.GetI18n(LangKeys.SelectFramework))
                     .AddChoices(Enum.GetValues<FrameworkType>()) // 自动获取所有枚举
                     .UseConverter(type => type switch {
-                        FrameworkType.Winui3_Wpf => "Winui3(Foreground) + Wpf(Background)",
+                        FrameworkType.Winui3_Wpf => "Winui3(Foreground) + Wpf(Background)".EscapeMarkup(),
                         _ => type.ToString()
                     }));
 
@@ -36,8 +36,8 @@ namespace XamlNexus.Interactors {
                     .Title(LanguageRegistry.GetI18n(LangKeys.SelectSolutionFormat))
                     .AddChoices(Enum.GetValues<SolutionType>())
                     .UseConverter(format => format switch {
-                        SolutionType.Sln => "Standard Solution (.sln)",
-                        SolutionType.Slnx => "Modern XML Solution (.slnx) [VS 2026]",
+                        SolutionType.Sln => "Standard Solution (.sln)".EscapeMarkup(),
+                        SolutionType.Slnx => "Modern XML Solution (.slnx) [VS 2026+]".EscapeMarkup(),
                         _ => format.ToString()
                     }));
 

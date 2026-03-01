@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Winui3_XamlNenus.UI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Winui3_XamlNenus.UI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 using Spectre.Console;
-using XamlNexus.Models;
+using XamlNexus.Common.Utils;
 
 namespace XamlNexus.Common.Generators {
     public abstract class BaseGenerator : IGenerator {
@@ -56,5 +56,31 @@ EndGlobal
                 AnsiConsole.MarkupLine($"  [grey]创建目录:[/] {path}");
             }
         }
+    }
+
+    public class ProjectConfig {
+        public string ProjectName { get; set; } = "MyXamlNexusApp";
+        public string Language { get; set; } = "C#";
+        public FrameworkType Framework { get; set; }
+        public SolutionType SlnType { get; set; }
+        public bool NeedTray { get; set; }
+        public string OutputPath {
+            get {
+#if DEBUG
+                DebugUtil.RestoreOutputDir();
+                return DebugUtil.OutputPath;
+#else
+        return Path.Combine(Environment.CurrentDirectory, ProjectName);
+#endif
+            }
+        }
+    }
+
+    public enum FrameworkType {
+        Wpf, Winui3, Winui3_Wpf
+    }
+
+    public enum SolutionType {
+        Sln, Slnx
     }
 }

@@ -12,9 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XamlNexus.Template.WinUI3App\XamlNexus.Template.Winui3App.csproj" />
-    <ProjectReference Include="..\XamlNexus.Template.WPFApp\XamlNexus.Template.WpfApp.csproj" />
-    <ProjectReference Include="..\XamlNexus.Template.Wpf_Winui3_CompositeApp\XamlNexus.Template.Wpf_Winui3_CompositeApp.csproj" />
+    <ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
+    <ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
+    <ProjectReference Include="..\XamlNexus.Generator.WpfApp\XamlNexus.Generator.WpfApp.csproj" />
   </ItemGroup>
 
 </Project>

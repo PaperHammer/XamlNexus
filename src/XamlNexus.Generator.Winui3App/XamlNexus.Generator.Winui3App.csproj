@@ -7,11 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Templates\" />
+    <ProjectReference Include="..\XamlNexus.Models\XamlNexus.Models.csproj" />
   </ItemGroup>
 
 </Project>

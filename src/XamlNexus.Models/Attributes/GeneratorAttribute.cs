@@ -1,3 +1,5 @@
+using XamlNexus.Common.Generators;
+
 namespace XamlNexus.Models.Attributes {
     [AttributeUsage(AttributeTargets.Class)]
     public class GeneratorAttribute : Attribute {
