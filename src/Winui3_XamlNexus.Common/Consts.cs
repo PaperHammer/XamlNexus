@@ -8,7 +8,7 @@ namespace Winui3_XamlNexus.Common {
             /// <summary>
             /// 数据存储根目录
             /// </summary>
-            public static string AppDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VirtualPaper");
+            public static string AppDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Winui3_XamlNexus");
             public static string CommonDataDir => Path.Combine(AppDataDir, "data");
 
             /// <summary>
@@ -83,14 +83,14 @@ namespace Winui3_XamlNexus.Common {
         }
 
         public static class ModuleName {
-            public static string UIComponent => "VirtualPaper.UIComponent";
-            public static string UI => "VirtualPaper.UI.exe";
-            public static string ScrSaver => "VirtualPaper.ScreenSaver.exe";
-            public static string PlayerWeb => "VirtualPaper.PlayerWeb.exe";
+            public static string UIComponent => "Winui3_XamlNexus.UIComponent";
+            public static string UI => "Winui3_XamlNexus.UI.exe";
+            public static string ScrSaver => "Winui3_XamlNexus.ScreenSaver.exe";
+            public static string PlayerWeb => "Winui3_XamlNexus.PlayerWeb.exe";
         }
 
         public static class CoreField {
-            public static string AppName => "VirtualPaper";
+            public static string AppName => "Winui3_XamlNexus";
             public static string FileVersion => "18";
             public static string DraftFileVersion => "D18";
             public static string GrpcPipeServerName => "Grpc_" + PipeServerName;
