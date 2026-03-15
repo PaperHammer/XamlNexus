@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Microsoft.VisualBasic;
 using Winui3_XamlNexus.Common;
 using WInui3_XamlNexus.Models.Core.Interfaces;
 
@@ -24,12 +25,12 @@ namespace WInui3_XamlNexus.Models.Core {
         public bool IsUpdated { get; set; }
         public bool IsAutoStart { get; set; }
         public bool IsFirstRun { get; set; }
+        public string SaveDir { get; set; } = string.Empty;
         #endregion
 
         public Settings() {
             AppName = Consts.CoreField.AppName;
             AppVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version?.ToString() ?? "";
-            FileVersion = Consts.CoreField.FileVersion;
             IsFirstRun = true;
             AppFocus = AppWpRunRulesEnum.KeepRun;
             AppFullscreen = AppWpRunRulesEnum.Pause;
@@ -40,6 +41,8 @@ namespace WInui3_XamlNexus.Models.Core {
             PowerSaving = AppWpRunRulesEnum.KeepRun;
             IsUpdated = false;
             SystemBackdrop = AppSystemBackdrop.Default;
+
+            SaveDir = Consts.CommonPaths.CommonDataDir;
 
             try {
                 Language = CultureInfo.CurrentUICulture.Name;

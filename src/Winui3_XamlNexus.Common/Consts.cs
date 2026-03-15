@@ -22,14 +22,7 @@ namespace Winui3_XamlNexus.Common {
             /// 临时缓存（预览、临时更换）
             /// </summary>
             public static string TempDir => Path.Combine(AppDataDir, "temp");
-
             public static string ExeIconDir => Path.Combine(CommonDataDir, "exeIcon");
-
-            /// <summary>
-            /// 壁纸存储目录
-            /// </summary>
-            public static string LibraryDir => Path.Combine(AppDataDir, "Library");
-
             public static string AppRulesPath => Path.Combine(AppDataDir, "app_rules.json");
             public static string WallpaperLayoutPath => Path.Combine(AppDataDir, "wallpaper_layout.json");
             public static string UserSettingsPath => Path.Combine(AppDataDir, "user_settings.json");
@@ -65,42 +58,14 @@ namespace Winui3_XamlNexus.Common {
             }
         }
 
-        public static class FolderName {
-            /// <summary>
-            /// 壁纸文件存储目录（本地导入 + 云端下载） + 壁纸自定义配置文件存储目录
-            /// </summary>
-            public static string WpStoreFolderName => "wallpapers";
-        }
-
-        public static class WorkingDir {
-            public static string Shader => Path.Combine(UI, "Shaders");
-            public static string ML => Path.Combine("Models");
-            public static string PlayerWeb => Path.Combine("Plugins", "PlayerWeb");
-            //public static string PlayerWeb => Path.Combine("Plugins", "PlayerWeb", "win-x64");
-            public static string ScrSaver => Path.Combine("Plugins", "ScrSaver");
-            public static string UI => Path.Combine("Plugins", "UI");
-            //public static string UI => Path.Combine("Plugins", "UI", "win-x64");
-        }
-
         public static class ModuleName {
             public static string UIComponent => "Winui3_XamlNexus.UIComponent";
-            public static string UI => "Winui3_XamlNexus.UI.exe";
-            public static string ScrSaver => "Winui3_XamlNexus.ScreenSaver.exe";
-            public static string PlayerWeb => "Winui3_XamlNexus.PlayerWeb.exe";
         }
 
         public static class CoreField {
-            public static string AppName => "Winui3_XamlNexus";
-            public static string FileVersion => "18";
-            public static string DraftFileVersion => "D18";
-            public static string GrpcPipeServerName => "Grpc_" + PipeServerName;
-            public static string PipeServerName => UniqueAppUid + Environment.UserName;
+            public static string AppName => "Winui3_XamlNexus";            
             public static string UniqueAppUid => "Virtual:WALLPAPERSYSTEM";
             public static string UniqueAppUIUid => "Virtual:UI:WALLPAPERSYSTEM";
-        }
-
-        public static class EnviromentVarKey {
-            public static string BaseDir => "VIRTUALPAPER_BASE_DIR";
         }
 
         public static class ApplicationType {

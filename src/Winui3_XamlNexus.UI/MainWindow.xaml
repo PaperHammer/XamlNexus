@@ -18,21 +18,20 @@
     <arc:ArcWindowHost x:Name="MainHost">
         <Grid x:Name="MainGrid">
             <navi:ArcNavigationView x:Name="NavigationViewControl"
-            CompactPaneLength="64"
-            IsBackButtonVisible="Visible"
-            IsBackEnabled="False"
-            IsPaneToggleButtonVisible="False"
-            IsSettingsVisible="False"
-            IsTabStop="False"
-            SelectionChanged="OnNavigationViewSelectionChanged">
+                CompactPaneLength="64"
+                IsBackButtonVisible="Visible"
+                IsBackEnabled="False"
+                IsPaneToggleButtonVisible="False"
+                IsSettingsVisible="False"
+                IsTabStop="False"
+                SelectionChanged="OnNavigationViewSelectionChanged">
                 <navi:ArcNavigationView.MenuItems>
                     <NavigationViewItem x:Name="Nav_MainPage" IsSelected="True">
-                        <!--TODO：IsSelected = true 时，若直接设置 Content 为 非IconElement or 非String 时会报错 -->
                         <NavigationViewItem.ContentTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Vertical" Margin="-10,4,0,4">
-                                    <FontIcon Glyph="&#xF156;" FontSize="22" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{markup:I18n Key=SidebarProject}" FontSize="12" HorizontalAlignment="Center" Margin="0 4 0 0"/>
+                                    <FontIcon Glyph="&#xE80F;" FontSize="22" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{markup:I18n Key=SidebarHomePage}" FontSize="12" HorizontalAlignment="Center" Margin="0 4 0 0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </NavigationViewItem.ContentTemplate>
@@ -45,15 +44,13 @@
                         HorizontalAlignment="Stretch"
                         Margin="-2 0 0 0">
                         <Button x:Name="LightAndDarkButton" 
-                        Style="{StaticResource ArcNavigationButtonNormalStyle}"
-                        VerticalAlignment="Center" 
-                        HorizontalContentAlignment="Center"
-                        Width="Auto"
-                        HorizontalAlignment="Stretch"
-                        Click="LightAndDarkButton_Click">
-                            <styles:ArcImageIcon
-                                Width="28"
-                                ResourceKey="{x:Bind PropertyHost.ThemeIconKey, Mode=OneWay}"/>
+                            Style="{StaticResource ArcNavigationButtonNormalStyle}"
+                            VerticalAlignment="Center" 
+                            HorizontalContentAlignment="Center"
+                            Width="Auto"
+                            HorizontalAlignment="Stretch"
+                            Click="LightAndDarkButton_Click">
+                            <styles:ArcImageIcon Width="28" ResourceKey="{x:Bind PropertyHost.ThemeIconKey, Mode=OneWay}"/>
                         </Button>
                     </StackPanel>
                 </navi:ArcNavigationView.PaneFooter>

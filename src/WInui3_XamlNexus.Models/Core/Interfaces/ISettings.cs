@@ -17,6 +17,7 @@ namespace WInui3_XamlNexus.Models.Core.Interfaces {
         bool IsUpdated { get; set; }
         bool IsAutoStart { get; set; }
         bool IsFirstRun { get; set; }
+        string SaveDir { get; set; }
         #endregion
     }
 }

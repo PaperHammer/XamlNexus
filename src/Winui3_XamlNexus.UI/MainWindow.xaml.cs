@@ -48,7 +48,7 @@ namespace Winui3_XamlNexus.UI {
         private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
             try {
                 Type pageType = args.SelectedItemContainer.Name switch {
-                    "Nav_Main" => typeof(MainPage),
+                    "Nav_MainPage" => typeof(MainPage),
                     "Nav_AppSettings" => typeof(AppSettings),
                     _ => throw new NotImplementedException(),
                 };

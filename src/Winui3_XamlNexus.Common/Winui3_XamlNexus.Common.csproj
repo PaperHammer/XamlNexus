@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
 		<SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
@@ -13,6 +13,9 @@
 		<PackageReference Include="NLog" Version="6.0.5" />
 		<PackageReference Include="DesktopBridge.Helpers" Version="1.2.2" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="SharpZipLib" Version="1.4.2" />
+		<PackageReference Include="System.Management" Version="8.0.0" />
+		<PackageReference Include="MessagePack" Version="3.1.3" />
 	</ItemGroup>
 
 </Project>

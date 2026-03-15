@@ -7,6 +7,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<UseWinUI>true</UseWinUI>
+		<UseWPF>true</UseWPF>
 	</PropertyGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Winui3_XamlNexus.Common\Winui3_XamlNexus.Common.csproj" />

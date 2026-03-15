@@ -288,8 +288,8 @@
 
                                 <Button x:Name="FileStorageButton"
                                     ToolTipService.ToolTip="{markup:I18n Key=Settings_General_AppearanceAndAction_AppFileStorage_ModifyTooltip}"
-                                    Content="{x:Bind _viewModel.WallpaperDir, Mode=OneWay}"
-                                    IsEnabled="{x:Bind _viewModel.IsWallpaperDirectoryChangeEnable, Mode=OneWay}"
+                                    Content="{x:Bind _viewModel.SaveDir, Mode=OneWay}"
+                                    IsEnabled="{x:Bind _viewModel.IsDirectoryChangeEnable, Mode=OneWay}"
                                     MaxWidth="700"
                                     HorizontalContentAlignment="Left"
                                     Command="{x:Bind _viewModel.ChangeFileStorageCommand}"/>
@@ -308,7 +308,7 @@
                                     Width="20"
                                     Height="20"
                                     Grid.Column="2"
-                                    IsActive="{x:Bind _viewModel.WallpaperDirectoryChangeOngoing, Mode=OneWay}"/>
+                                    IsActive="{x:Bind _viewModel.DirectoryChangeOngoing, Mode=OneWay}"/>
                             </Grid>
                         </StackPanel>
                     </Expander.Content>

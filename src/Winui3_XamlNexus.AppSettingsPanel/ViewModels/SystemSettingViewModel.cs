@@ -3,6 +3,9 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Winui3_XamlNexus.Common.Logging;
+using Winui3_XamlNexus.Common.Utils;
+using Winui3_XamlNexus.Common.Utils.Storage;
+using Winui3_XamlNexus.Grpc.Client.Interfaces;
 using Winui3_XamlNexus.Models.Mvvm;
 using Winui3_XamlNexus.UIComponent;
 using Winui3_XamlNexus.UIComponent.Utils;
@@ -32,7 +35,7 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
         private async Task ExportLogsAsync() {
             var saveFile = await WindowsStoragePickers.PickSaveFileAsync(
                 WindowConsts.WindowHandle,
-                "virtualpaper_log_" + DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture),
+                "Winui3XamlNexus_log_" + DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture),
                 new System.Collections.Generic.Dictionary<string, string[]>() {
                     ["Compressed archive"] = [".zip"]
                 }

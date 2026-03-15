@@ -1,23 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Windows.Storage;
+using Windows.System;
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Events;
-using Winui3_XamlNexus.Common.Logging;
-using Winui3_XamlNexus.Common.Utils.Files;
 using Winui3_XamlNexus.Common.Utils.Localization;
 using Winui3_XamlNexus.Common.Utils.Storage;
 using Winui3_XamlNexus.Common.Utils.ThreadContext;
-using Winui3_XamlNexus.Models.Cores;
-using Winui3_XamlNexus.Models.Cores.Interfaces;
 using Winui3_XamlNexus.Models.Mvvm;
 using Winui3_XamlNexus.UIComponent;
 using Winui3_XamlNexus.UIComponent.Utils;
-using Windows.Storage;
-using Windows.System;
+using WInui3_XamlNexus.Models.Core.Interfaces;
 using WInui3_XamlNexus.Models.Datas.Interfaces;
 
 namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
@@ -28,7 +24,7 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
 
         public string AppVersionText {
             get {
-                var ver = "v" + _wpControlClient.AssemblyVersion;
+                var ver = "v" + _appUpdater.AssemblyVersion;
                 if (Consts.ApplicationType.IsTestBuild)
                     ver += "b";
                 else if (Consts.ApplicationType.IsMSIX)
@@ -131,6 +127,28 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
             }
         }
 
+        private string _saveDir = string.Empty;
+        public string SaveDir {
+            get { return _saveDir; }
+            set { _saveDir = value; OnPropertyChanged(); }
+        }
+        
+        private bool _directoryChangeOngoing;
+        public bool DirectoryChangeOngoing {
+            get { return _directoryChangeOngoing; }
+            set {
+                _directoryChangeOngoing = value;
+                OnPropertyChanged();
+                IsDirectoryChangeEnable = !value;
+            }
+        }
+
+        private bool _isDirectoryChangeEnable = true;
+        public bool IsDirectoryChangeEnable {
+            get { return _isDirectoryChangeEnable; }
+            set { _isDirectoryChangeEnable = value; OnPropertyChanged(); }
+        }
+
         public ICommand? ChangeFileStorageCommand { get; private set; }
         public ICommand? OpenFileStorageCommand { get; private set; }
         public ICommand? CheckUpdateCommand { get; private set; }
@@ -150,7 +168,7 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
 
         private void InitCommand() {
             ChangeFileStorageCommand = new RelayCommand(() => {
-                WallpaperDirectoryChange();
+                SaveDirectoryChange();
             });
             OpenFileStorageCommand = new RelayCommand(() => {
                 OpenFolder();
@@ -216,9 +234,6 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
 
         private void MenuUpdate(AppUpdateStatus status, DateTime date, Version version) {
             Version = $"v{version}";
-#if DEBUG
-            CurrentVersionState = VersionState.FindNew;
-#else
             switch (status) {
                 case AppUpdateStatus.Uptodate:
                     CurrentVersionState = VersionState.UptoNewest;
@@ -233,7 +248,6 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
                 default:
                     break;
             }
-#endif
             Version_LastCheckDate = LanguageUtil.GetI18n(Consts.I18n.Settings_General_Version_LastCheckDate);
             Version_LastCheckDate += status == AppUpdateStatus.Notchecked ? "" : $" {date}";
         }
@@ -246,10 +260,34 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
             IsUpdateBtnEnable = true;
         }
 
+        private async void SaveDirectoryChange() {
+            DirectoryChangeOngoing = true;
+            try {
+                var storagePath = (await WindowsStoragePickers.PickFolderAsync(WindowConsts.WindowHandle))?.Path;
+                if (storagePath == null) return;
+
+                if (storagePath == Consts.CommonPaths.AppDataDir) {
+                    GlobalMessageUtil.ShowError(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)), Consts.I18n.Dialog_Content_WallpaperDirectoryChangePathInvalid, isNeedLocalizer: true);
+                    return;
+                }
+
+                if (!string.Equals(storagePath, _userSettingsClient.Settings.SaveDir, StringComparison.OrdinalIgnoreCase)) {
+                    // todo
+                }
+            }
+            catch (Exception) {
+
+                throw;
+            }
+            finally {
+                DirectoryChangeOngoing = false;
+            }
+        }
+
         private async void OpenFolder() {
-            var folder = await StorageFolder.GetFolderFromPathAsync(WallpaperDir);
+            var folder = await StorageFolder.GetFolderFromPathAsync(SaveDir);
             await Launcher.LaunchFolderAsync(folder);
-        }        
+        }
 
         private async void UpdateSettingsConfigFile() {
             await _userSettingsClient.SaveAsync<ISettings>();

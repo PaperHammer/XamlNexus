@@ -18,5 +18,11 @@ namespace Winui3_XamlNexus.Common {
         Pause,
         KeepRun,
     }
+
+    public enum DialogResult {
+        None,
+        Primary,
+        Secondary
+    }
     #endregion
 }

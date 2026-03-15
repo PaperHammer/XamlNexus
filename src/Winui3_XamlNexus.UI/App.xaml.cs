@@ -1,17 +1,25 @@
 using System;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.VisualBasic;
+using Windows.ApplicationModel.Core;
+using Winui3_XamlNexus.AppSettingsPanel.ViewModels;
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Logging;
-using Winui3_XamlNexus.Common.Utils.ThreadContext;
-using Winui3_XamlNexus.UIComponent.Utils;
-using WinUIEx;
-using System.Threading.Tasks;
-using WInui3_XamlNexus.Models.Datas.Interfaces;
-using WInui3_XamlNexus.Models.Datas;
-using Winui3_XamlNexus.Common.Utils.DI;
 using Winui3_XamlNexus.Common.Utils;
+using Winui3_XamlNexus.Common.Utils.DI;
+using Winui3_XamlNexus.Common.Utils.Files;
+using Winui3_XamlNexus.Common.Utils.ThreadContext;
+using Winui3_XamlNexus.Grpc.Client;
+using Winui3_XamlNexus.Grpc.Client.Interfaces;
+using Winui3_XamlNexus.UIComponent.Utils;
+using WInui3_XamlNexus.Models.Core.Interfaces;
+using WInui3_XamlNexus.Models.Datas;
+using WInui3_XamlNexus.Models.Datas.Interfaces;
+using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -42,10 +50,37 @@ namespace Winui3_XamlNexus.UI {
             }
             #endregion
 
+            SetupUnhandledExceptionLogging(); // 初始化异常处理机制
+            ArcLog.GetLogger<App>().Info(LogUtil.GetHardwareInfo()); // 记录硬件信息
+
+            #region 必要路径处理
+            try {
+                // 清空缓存
+                FileUtil.EmptyDirectory(Consts.CommonPaths.TempDir);
+            }
+            catch { }
+
+            try {
+                // 创建必要目录, eg: C:\Users\<User>\AppData\Local
+                Directory.CreateDirectory(Consts.CommonPaths.AppDataDir);
+                Directory.CreateDirectory(Consts.CommonPaths.LogDir);
+                Directory.CreateDirectory(Consts.CommonPaths.TempDir);
+                //Directory.CreateDirectory(Path.Combine(Consts.CommonPaths.TempDir, Consts.FolderName.WpStoreFolderName));
+            }
+            catch (Exception ex) {
+                System.Windows.MessageBox.Show(ex.Message, "AppData directory creation failed, exiting..", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ShutDown();
+                return;
+            }
+            #endregion
+
             #region 初始化核心组件
             // 依赖注入
             AppServiceLocator.Services = ConfigureServices();
             #endregion
+
+            ArcLog.GetLogger<App>().Info("Starting UI...");
+            _userSettings = AppServiceLocator.Services.GetRequiredService<IUserSettingsClient>();
 
             this.InitializeComponent();
         }
@@ -78,10 +113,35 @@ namespace Winui3_XamlNexus.UI {
                 .AddSingleton<MainWindow>()
 
                 .AddSingleton<IUserSettingsClient, UserSettingsClient>()
+                .AddSingleton<IAppUpdaterClient, AppUpdaterClient>()
+                .AddSingleton<ICommandsClient, CommandsClient>()
+
+                .AddSingleton<GeneralSettingViewModel>()
+                .AddSingleton<SystemSettingViewModel>()
 
                 .BuildServiceProvider();
 
             return provider;
+        }
+
+        private static void LogUnhandledException(Exception exception) => ArcLog.GetLogger<App>().Error(exception);
+
+        private static void LogUnhandledException(UnhandledError exception) => ArcLog.GetLogger<App>().Error(exception);
+
+        //Not working ugh..
+        //Issue: https://github.com/microsoft/microsoft-ui-xaml/issues/5221
+        private void SetupUnhandledExceptionLogging() {
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+                LogUnhandledException((Exception)e.ExceptionObject);
+
+            TaskScheduler.UnobservedTaskException += (s, e) =>
+                LogUnhandledException(e.Exception);
+
+            this.UnhandledException += (s, e) =>
+                LogUnhandledException(e.Exception);
+
+            CoreApplication.UnhandledErrorDetected += (s, e) =>
+                LogUnhandledException(e.UnhandledError);
         }
 
         public static void ShutDown() {
