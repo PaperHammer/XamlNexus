@@ -13,8 +13,6 @@ using Winui3_XamlNexus.Common.Utils;
 using Winui3_XamlNexus.Common.Utils.DI;
 using Winui3_XamlNexus.Common.Utils.Files;
 using Winui3_XamlNexus.Common.Utils.ThreadContext;
-using Winui3_XamlNexus.Grpc.Client;
-using Winui3_XamlNexus.Grpc.Client.Interfaces;
 using Winui3_XamlNexus.UIComponent.Utils;
 using WInui3_XamlNexus.Models.Core.Interfaces;
 using WInui3_XamlNexus.Models.Datas;

@@ -29,5 +29,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\WInui3_XamlNexus.Models\WInui3_XamlNexus.Models.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Views\" />
+	</ItemGroup>
 
 </Project>

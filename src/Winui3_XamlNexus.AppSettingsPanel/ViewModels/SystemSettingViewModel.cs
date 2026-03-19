@@ -5,31 +5,22 @@ using System.Windows.Input;
 using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils;
 using Winui3_XamlNexus.Common.Utils.Storage;
-using Winui3_XamlNexus.Grpc.Client.Interfaces;
 using Winui3_XamlNexus.Models.Mvvm;
 using Winui3_XamlNexus.UIComponent;
 using Winui3_XamlNexus.UIComponent.Utils;
 
 namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
     public partial class SystemSettingViewModel {
-        public ICommand? DebugCommand { get; set; }
         public ICommand? LogCommand { get; set; }
 
-        public SystemSettingViewModel(ICommandsClient commandsClient) {
-            _commandClient = commandsClient;
-
+        public SystemSettingViewModel() {
             InitCommand();
         }
 
         private void InitCommand() {
-            DebugCommand = new RelayCommand(OpenDebugView);
             LogCommand = new RelayCommand(async () => {
                 await ExportLogsAsync();
             });
-        }
-
-        private void OpenDebugView() {
-            _commandClient.ShowDebugView();
         }
 
         private async Task ExportLogsAsync() {
@@ -51,7 +42,5 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
                 }
             }
         }
-
-        private readonly ICommandsClient _commandClient;
     }
 }

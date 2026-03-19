@@ -43,12 +43,6 @@
                             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                             Text="{markup:I18n Key=Settings_System_Developer_DebugExplain}"/>
                     </Grid>
-
-                    <Button
-                        Grid.Column="2"
-                        Width="200"
-                        Content="{markup:I18n Key=Settings_System_Text_Debug}"
-                        Command="{x:Bind _viewModel.DebugCommand}"/>
                 </Grid>
 
                 <Grid x:Name="Log"

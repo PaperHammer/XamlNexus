@@ -1,7 +1,7 @@
 using Winui3_XamlNexus.Common.Logging;
-using Winui3_XamlNexus.Grpc.Client.Interfaces;
+using WInui3_XamlNexus.Models.Datas.Interfaces;
 
-namespace Winui3_XamlNexus.Grpc.Client {
+namespace WInui3_XamlNexus.Models.Datas {
     public class CommandsClient : ICommandsClient {
         public event EventHandler<int>? UIRecieveCmd;
 

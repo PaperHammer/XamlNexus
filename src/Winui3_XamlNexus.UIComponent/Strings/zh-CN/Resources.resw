@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Text_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="AppSettings_SelBarItem1_General" xml:space="preserve">
+    <value>通用</value>
+  </data>
+  <data name="AppSettings_SelBarItem2_System" xml:space="preserve">
+    <value>系统</value>
+  </data>
   <data name="Settings_General_AppearanceAndAction_AppFileStorage" xml:space="preserve">
     <value>存储路径</value>
   </data>

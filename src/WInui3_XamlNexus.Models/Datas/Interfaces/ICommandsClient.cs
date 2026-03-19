@@ -1,4 +1,4 @@
-namespace Winui3_XamlNexus.Grpc.Client.Interfaces {
+namespace WInui3_XamlNexus.Models.Datas.Interfaces {
     public interface ICommandsClient : IDisposable {
         event EventHandler<int>? UIRecieveCmd;
 

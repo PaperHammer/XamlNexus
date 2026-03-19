@@ -21,7 +21,7 @@
             Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}"
             HorizontalAlignment="Stretch">
             <SelectorBarItem Text="{markup:I18n Key=AppSettings_SelBarItem1_General}" Tag="GeneralView" IsSelected="True"/>
-            <SelectorBarItem Text="{markup:I18n Key=AppSettings_SelBarItem3_System}" Tag="SystemView"/>
+            <SelectorBarItem Text="{markup:I18n Key=AppSettings_SelBarItem2_System}" Tag="SystemView"/>
         </SelectorBar>
 
         <Frame x:Name="ContentFrame" Grid.Row="1"/>
