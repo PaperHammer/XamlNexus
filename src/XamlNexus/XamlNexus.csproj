@@ -17,9 +17,20 @@
 		<ProjectReference Include="..\XamlNexus.Generator.WpfApp\XamlNexus.Generator.WpfApp.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Include="Templates\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+	<Target Name="CopyTemplates" AfterTargets="Build">
+		<RemoveDir Directories="$(OutDir)Templates" />
+		
+		<ItemGroup>
+			<TemplateFiles 
+				Include="$(SolutionDir)Templates\**\*"
+				Exclude="
+					$(SolutionDir)Templates\**\bin\**;
+					$(SolutionDir)Templates\**\obj\**;
+				" />
+		</ItemGroup>
+
+		<Copy
+			SourceFiles="@(TemplateFiles)"
+			DestinationFolder="$(OutDir)Templates\%(RecursiveDir)" />
+	</Target>
 </Project>
