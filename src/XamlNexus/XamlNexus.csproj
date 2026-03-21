@@ -1,20 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<PackAsTool>true</PackAsTool>
-	<ToolCommandName>xamlnexus</ToolCommandName>
-	<PackageId>XamlNexus.CLI</PackageId>
-	<AssemblyVersion>1.0.0</AssemblyVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>xamlnexus</ToolCommandName>
+		<PackageId>XamlNexus.CLI</PackageId>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
-    <ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
-    <ProjectReference Include="..\XamlNexus.Generator.WpfApp\XamlNexus.Generator.WpfApp.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
+		<ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
+		<ProjectReference Include="..\XamlNexus.Generator.WpfApp\XamlNexus.Generator.WpfApp.csproj" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="Templates\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

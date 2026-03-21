@@ -1,4 +1,4 @@
-using XamlNexus.Common.Generators;
+using XamlNexus.Common.Utils;
 
 namespace XamlNexus.Models.Attributes {
     [AttributeUsage(AttributeTargets.Class)]

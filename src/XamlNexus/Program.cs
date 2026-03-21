@@ -1,18 +1,17 @@
 using Spectre.Console;
+using XamlNexus.Common.Generators;
 using XamlNexus.Common.Utils;
-using XamlNexus.Interactors;
 using XamlNexus.Utils;
 
 namespace XamlNexus {
     internal class Program {
-        static void Main(string[] args) {
-            InputHandler.ShowLogo();
-
+        static void Main(string[] args) {            
             try {
-                // 获取配置
-                var config = InputHandler.CollectUserInput();
+                BaseConfig.ShowLogo();
+                var config = BaseConfig.BaseComposeConfig();
+                var extraConfig = ConfigFactory.GetGenerator(config!.Framework).ExtraComposeConfig();
+                config.Merge(extraConfig);
 
-                // 获取对应的生成器
                 var generator = GeneratorFactory.GetGenerator(config.Framework);
 
                 // 执行并展示进度
