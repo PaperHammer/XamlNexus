@@ -1,6 +1,5 @@
 using Spectre.Console;
 using XamlNexus.Common.Generators;
-using XamlNexus.Common.Utils;
 using XamlNexus.Utils;
 
 namespace XamlNexus {
@@ -13,16 +12,7 @@ namespace XamlNexus {
                 config.Merge(extraConfig);
 
                 var generator = GeneratorFactory.GetGenerator(config.Framework);
-
-                // 执行并展示进度
-                AnsiConsole.Status()
-                    .Spinner(Spinner.Known.Aesthetic)
-                    .Start(LanguageRegistry.GetI18n(LangKeys.Generating), ctx => {
-                        generator.Generate(config);
-                    });
-
-                AnsiConsole.MarkupLine($"\n[bold green]{LanguageRegistry.GetI18n(LangKeys.Success)}");
-                AnsiConsole.MarkupLine($"[grey]{LanguageRegistry.GetI18n(LangKeys.Route)}: {config.OutputPath}[/]");
+                generator.Generate(config);
             }
             catch (Exception ex) {
                 AnsiConsole.WriteException(ex);

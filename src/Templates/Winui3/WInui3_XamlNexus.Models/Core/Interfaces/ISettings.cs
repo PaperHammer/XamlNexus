@@ -1,6 +1,6 @@
 using Winui3_XamlNexus.Common;
 
-namespace WInui3_XamlNexus.Models.Core.Interfaces {
+namespace Winui3_XamlNexus.Models.Core.Interfaces {
     public interface ISettings {
         #region for app
         AppWpRunRulesEnum AppFullscreen { get; set; }

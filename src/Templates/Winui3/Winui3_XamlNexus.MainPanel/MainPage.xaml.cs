@@ -24,7 +24,6 @@ namespace Winui3_XamlNexus.MainPanel {
         }
 
         private async void MyButton1_Click(object sender, RoutedEventArgs e) {
-            myButton1.Content = "Clicked";
             var ctx = ArcPageContextManager.GetContext<MainPage>();
             var loadingCtx = ctx?.LoadingContext;
             if (loadingCtx == null) return;
@@ -42,7 +41,6 @@ namespace Winui3_XamlNexus.MainPanel {
         }
         
         private async void MyButton2_Click(object sender, RoutedEventArgs e) {
-            myButton2.Content = "Clicked";
             var ctx = ArcPageContextManager.GetContext<MainPage>();
             var loadingCtx = ctx?.LoadingContext;
             if (loadingCtx == null) return;
@@ -66,7 +64,6 @@ namespace Winui3_XamlNexus.MainPanel {
         }
         
         private async void MyButton3_Click(object sender, RoutedEventArgs e) {
-            myButton3.Content = "Clicked";
             var ctx = ArcPageContextManager.GetContext<MainPage>();
             var loadingCtx = ctx?.LoadingContext;
             if (loadingCtx == null) return;
@@ -77,8 +74,10 @@ namespace Winui3_XamlNexus.MainPanel {
             await loadingCtx.RunWithProgressAsync(
                 operation: async (token, reportProgress) => {
                     try {
-                        await Task.Delay(1000, token);
-                        reportProgress(++finishedCnt, total);
+                        for (int i = 0; i < total; i++) {
+                            await Task.Delay(1000, token);
+                            reportProgress(++finishedCnt, total);
+                        }
                     }
                     catch (Exception ex) when (
                             ex is OperationCanceledException) {

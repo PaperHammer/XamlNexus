@@ -1,9 +1,9 @@
 using System.Reflection;
 using Winui3_XamlNexus.Common.Events;
 using Winui3_XamlNexus.Common.Logging;
-using WInui3_XamlNexus.Models.Datas.Interfaces;
+using Winui3_XamlNexus.Models.Datas.Interfaces;
 
-namespace WInui3_XamlNexus.Models.Datas {
+namespace Winui3_XamlNexus.Models.Datas {
     public partial class AppUpdaterClient : IAppUpdaterClient {
         public event EventHandler<AppUpdaterEventArgs>? UpdateChecked;
 

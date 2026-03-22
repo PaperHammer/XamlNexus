@@ -16,7 +16,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(nameof(Title), typeof(string), typeof(ArcWindowHost),
-                new PropertyMetadata("Virtual Paper"));
+                new PropertyMetadata("Winui3_XamlNexus"));
 
         public string TitleBarIconKey {
             get => (string)GetValue(TitleBarIconKeyProperty);

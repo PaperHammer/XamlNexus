@@ -1,11 +1,11 @@
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils.Storage;
-using WInui3_XamlNexus.Models.Core;
-using WInui3_XamlNexus.Models.Core.Interfaces;
-using WInui3_XamlNexus.Models.Datas.Interfaces;
+using Winui3_XamlNexus.Models.Core;
+using Winui3_XamlNexus.Models.Core.Interfaces;
+using Winui3_XamlNexus.Models.Datas.Interfaces;
 
-namespace WInui3_XamlNexus.Models.Datas {
+namespace Winui3_XamlNexus.Models.Datas {
     public class UserSettingsClient : IUserSettingsClient {
         public ISettings Settings { get; private set; } = new Settings();
 

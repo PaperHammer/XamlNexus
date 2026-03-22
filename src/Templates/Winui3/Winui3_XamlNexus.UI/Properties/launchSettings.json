@@ -1,10 +1,10 @@
 {
   "profiles": {
-    "Winui3_XamlNexus.UI (Package)": {
-      "commandName": "MsixPackage"
-    },
     "Winui3_XamlNexus.UI (Unpackaged)": {
       "commandName": "Project"
+    },
+    "Winui3_XamlNexus.UI (Package)": {
+      "commandName": "MsixPackage"
     }
   }
 }

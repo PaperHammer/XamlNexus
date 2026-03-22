@@ -13,8 +13,8 @@ using Winui3_XamlNexus.Common.Utils.DI;
 using Winui3_XamlNexus.Common.Utils.Files;
 using Winui3_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_XamlNexus.UIComponent.Utils;
-using WInui3_XamlNexus.Models.Datas;
-using WInui3_XamlNexus.Models.Datas.Interfaces;
+using Winui3_XamlNexus.Models.Datas;
+using Winui3_XamlNexus.Models.Datas.Interfaces;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,

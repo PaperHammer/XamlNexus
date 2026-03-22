@@ -16,8 +16,8 @@ using Winui3_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_XamlNexus.Models.Mvvm;
 using Winui3_XamlNexus.UIComponent;
 using Winui3_XamlNexus.UIComponent.Utils;
-using WInui3_XamlNexus.Models.Core.Interfaces;
-using WInui3_XamlNexus.Models.Datas.Interfaces;
+using Winui3_XamlNexus.Models.Core.Interfaces;
+using Winui3_XamlNexus.Models.Datas.Interfaces;
 
 namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
     public partial class GeneralSettingViewModel : ObservableObject, IDisposable {

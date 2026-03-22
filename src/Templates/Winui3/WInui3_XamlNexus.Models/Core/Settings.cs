@@ -2,9 +2,9 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.VisualBasic;
 using Winui3_XamlNexus.Common;
-using WInui3_XamlNexus.Models.Core.Interfaces;
+using Winui3_XamlNexus.Models.Core.Interfaces;
 
-namespace WInui3_XamlNexus.Models.Core {
+namespace Winui3_XamlNexus.Models.Core {
     [JsonSerializable(typeof(Settings))]
     [JsonSerializable(typeof(ISettings))]
     public partial class SettingsContext : JsonSerializerContext { }

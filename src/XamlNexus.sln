@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Winui3_Wpf", "Winui3_Wpf", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Winui3_XamlNexus.Common", "Templates\Winui3\Winui3_XamlNexus.Common\Winui3_XamlNexus.Common.csproj", "{FC58EF49-F332-4182-B938-096B493CAA25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WInui3_XamlNexus.Models", "Templates\Winui3\WInui3_XamlNexus.Models\WInui3_XamlNexus.Models.csproj", "{8BD67B3A-5A25-4EEB-92CC-A6521CDBCBB8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Winui3_XamlNexus.Models", "Templates\Winui3\Winui3_XamlNexus.Models\Winui3_XamlNexus.Models.csproj", "{8BD67B3A-5A25-4EEB-92CC-A6521CDBCBB8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Winui3_XamlNexus.MainPanel", "Templates\Winui3\Winui3_XamlNexus.MainPanel\Winui3_XamlNexus.MainPanel.csproj", "{023E16D4-02ED-4160-A437-705510EAEC09}"
 EndProject

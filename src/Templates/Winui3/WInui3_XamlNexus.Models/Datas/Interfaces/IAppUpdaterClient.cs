@@ -1,6 +1,6 @@
 using Winui3_XamlNexus.Common.Events;
 
-namespace WInui3_XamlNexus.Models.Datas.Interfaces {
+namespace Winui3_XamlNexus.Models.Datas.Interfaces {
     public interface IAppUpdaterClient : IDisposable {
         Version AssemblyVersion { get; }
         string LastCheckChangelog { get; }
