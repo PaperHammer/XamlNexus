@@ -34,7 +34,7 @@ namespace Winui3_XamlNexus.MainPanel {
                         await Task.Delay(10000, token);
                     }
                     catch (Exception ex) {
-                        GlobalMessageUtil.ShowException(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)), ex);
+                        GlobalMessageUtil.ShowException(ex);
                         ArcLog.GetLogger<MainPage>().Error(ex);
                     }
                 });
@@ -53,11 +53,11 @@ namespace Winui3_XamlNexus.MainPanel {
                     }
                     catch (Exception ex) when (
                             ex is OperationCanceledException) {
-                        GlobalMessageUtil.ShowCanceled(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)));
+                        GlobalMessageUtil.ShowCanceled();
                         return;
                     }
                     catch (Exception ex) {
-                        GlobalMessageUtil.ShowException(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)), ex);
+                        GlobalMessageUtil.ShowException(ex);
                         ArcLog.GetLogger<MainPage>().Error(ex);
                     }
                 }, cts: cts);
@@ -81,11 +81,11 @@ namespace Winui3_XamlNexus.MainPanel {
                     }
                     catch (Exception ex) when (
                             ex is OperationCanceledException) {
-                        GlobalMessageUtil.ShowCanceled(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)));
+                        GlobalMessageUtil.ShowCanceled();
                         return;
                     }
                     catch (Exception ex) {
-                        GlobalMessageUtil.ShowException(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)), ex);
+                        GlobalMessageUtil.ShowException(ex);
                         ArcLog.GetLogger<MainPage>().Error(ex);
                     }
                 }, total: total, cts: cts);

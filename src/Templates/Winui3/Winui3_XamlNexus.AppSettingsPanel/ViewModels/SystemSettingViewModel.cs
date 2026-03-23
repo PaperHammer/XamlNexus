@@ -38,7 +38,7 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
                 }
                 catch (Exception ex) {
                     ArcLog.GetLogger<SystemSettingViewModel>().Error(ex);
-                    GlobalMessageUtil.ShowException(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)), ex);
+                    GlobalMessageUtil.ShowException(ex);
                 }
             }
         }

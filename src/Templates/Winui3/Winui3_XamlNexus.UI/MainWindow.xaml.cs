@@ -56,7 +56,7 @@ namespace Winui3_XamlNexus.UI {
                 NaviContent.Navigate(pageType);
             }
             catch (Exception ex) {
-                GlobalMessageUtil.ShowException(ArcWindowManager.GetArcWindow(Key), ex);
+                GlobalMessageUtil.ShowException(ex, ArcWindowManager.GetArcWindow(Key));
                 ArcLog.GetLogger<MainWindow>().Error(ex);
             }
         }

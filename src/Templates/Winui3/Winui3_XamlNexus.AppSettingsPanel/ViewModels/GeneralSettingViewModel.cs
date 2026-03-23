@@ -273,7 +273,7 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
                 if (string.IsNullOrEmpty(destDir)) return;
 
                 if (destDir == Consts.CommonPaths.AppDataDir) {
-                    GlobalMessageUtil.ShowError(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)), nameof(Consts.I18n.Dialog_Content_WallpaperDirectoryChangePathInvalid), isNeedLocalizer: true);
+                    GlobalMessageUtil.ShowError(nameof(Consts.I18n.Dialog_Content_WallpaperDirectoryChangePathInvalid), isNeedLocalizer: true);
                     return;
                 }
 
@@ -288,7 +288,7 @@ namespace Winui3_XamlNexus.AppSettingsPanel.ViewModels {
                 }
             }
             catch (Exception ex) {
-                GlobalMessageUtil.ShowException(ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main)), ex);
+                GlobalMessageUtil.ShowException(ex);
                 ArcLog.GetLogger<GeneralSettingViewModel>().Error(ex.Message);
                 if (!string.IsNullOrEmpty(destDir)) {
                     FileUtil.EmptyDirectory(destDir);
