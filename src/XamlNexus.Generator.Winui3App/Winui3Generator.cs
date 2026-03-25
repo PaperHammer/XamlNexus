@@ -59,6 +59,7 @@ namespace XamlNexus.Generator.Winui3App {
                     ProcessDirectory(sourceProjectPath, destProjectPath, tokens);
 
                     string fullCsprojPath = Path.Combine(destProjectPath, destFolderName + ".csproj");
+                    InjectProjectMetadata(fullCsprojPath, FrameworkType.Winui3.ToString());
                     generatedProjects.Add((fullCsprojPath, SlnFolder));
                 }
                 moduleTask.Increment(1);
