@@ -1,0 +1,72 @@
+using System.Threading;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace Winui3_Wpf_XamlNexus.UIComponent.Feedback {
+    public sealed partial class Loading : UserControl {
+        public bool CancelEnable {
+            get { return (bool)GetValue(CancelEnableProperty); }
+            set { SetValue(CancelEnableProperty, value); }
+        }
+        public static readonly DependencyProperty CancelEnableProperty =
+            DependencyProperty.Register(nameof(CancelEnable), typeof(bool), typeof(Loading), new PropertyMetadata(false));
+
+        public bool ProgressbarEnable {
+            get { return (bool)GetValue(ProgressbarEnableProperty); }
+            set { SetValue(ProgressbarEnableProperty, value); }
+        }
+        public static readonly DependencyProperty ProgressbarEnableProperty =
+            DependencyProperty.Register(nameof(ProgressbarEnable), typeof(bool), typeof(Loading), new PropertyMetadata(false));
+
+        public CancellationTokenSource? CtsToken {
+            get { return (CancellationTokenSource?)GetValue(CtsTokensProperty); }
+            set { SetValue(CtsTokensProperty, value); }
+        }
+        public static readonly DependencyProperty CtsTokensProperty =
+            DependencyProperty.Register(nameof(CtsToken), typeof(CancellationTokenSource), typeof(Loading), new PropertyMetadata(null));
+
+        public int TotalValue {
+            get { return (int)GetValue(TotalValueProperty); }
+            set { SetValue(TotalValueProperty, value); }
+        }
+        public static readonly DependencyProperty TotalValueProperty =
+            DependencyProperty.Register(nameof(TotalValue), typeof(int), typeof(Loading), new PropertyMetadata(0, InitValue));
+
+        // DependencyProperty 和 属性名一定要前缀相同，否则会不生效
+        public int CurValue {
+            get { return (int)GetValue(CurValueProperty); }
+            set { SetValue(CurValueProperty, value); }
+        }
+        public static readonly DependencyProperty CurValueProperty =
+            DependencyProperty.Register(nameof(CurValue), typeof(int), typeof(Loading), new PropertyMetadata(0, UpdateValue));
+
+        private string ValueString {
+            get { return (string)GetValue(ValueStringProperty); }
+            set { SetValue(ValueStringProperty, value); }
+        }
+        private static readonly DependencyProperty ValueStringProperty =
+            DependencyProperty.Register(nameof(ValueString), typeof(string), typeof(Loading), new PropertyMetadata(string.Empty));
+
+        public Loading() {
+            this.InitializeComponent();
+        }
+
+        private void BtnCancel_Click(object sender, RoutedEventArgs e) {
+            CtsToken?.Cancel();
+            this.Visibility = Visibility.Collapsed;
+        }
+
+        private static void InitValue(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            Loading instance = (Loading)d;
+            instance.ValueString = $"0 / {e.NewValue}";
+        }
+
+        private static void UpdateValue(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            Loading instance = (Loading)d;
+            instance.ValueString = $"{e.NewValue} / {instance.TotalValue}";
+        }
+    }
+}

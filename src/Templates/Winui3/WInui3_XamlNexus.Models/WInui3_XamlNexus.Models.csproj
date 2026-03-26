@@ -9,8 +9,9 @@
 		<UseWinUI>true</UseWinUI>
 		<UseWPF>true</UseWPF>
 	</PropertyGroup>
+	
 	<ItemGroup>
-	  <ProjectReference Include="..\Winui3_XamlNexus.Common\Winui3_XamlNexus.Common.csproj" />
+		<ProjectReference Include="..\Winui3_XamlNexus.Common\Winui3_XamlNexus.Common.csproj" />
 	</ItemGroup>
 
 </Project>

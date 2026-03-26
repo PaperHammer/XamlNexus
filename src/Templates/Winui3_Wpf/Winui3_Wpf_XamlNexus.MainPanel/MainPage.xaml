@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<arc:ArcPage
+    x:Class="Winui3_Wpf_XamlNexus.MainPanel.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Winui3_Wpf_XamlNexus.MainPanel"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:arc="using:Winui3_Wpf_XamlNexus.UIComponent.Templates"
+    xmlns:input="using:Winui3_Wpf_XamlNexus.UIComponent.Input"
+    mc:Ignorable="d">
+
+    <arc:ArcPageHost x:Name="MainHost">
+        <Grid>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                <input:ArcButton x:Name="myButton1" 
+                    Click="MyButton1_Click"
+                    Foreground="SkyBlue">
+                    Common Loading
+                </input:ArcButton>
+                <input:ArcButton x:Name="myButton2" 
+                    Click="MyButton2_Click"
+                    Background="SkyBlue">
+                    Loading with cancel button
+                </input:ArcButton>
+                <input:ArcButton x:Name="myButton3" 
+                    Click="MyButton3_Click"
+                    Background="Pink">
+                    Loading with proress
+                </input:ArcButton>
+            </StackPanel>
+        </Grid>
+    </arc:ArcPageHost>
+</arc:ArcPage>

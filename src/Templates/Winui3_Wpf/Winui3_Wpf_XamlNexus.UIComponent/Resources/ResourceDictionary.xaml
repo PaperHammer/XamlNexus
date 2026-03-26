@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvs="using:Winui3_Wpf_XamlNexus.UIComponent.Converters">
+
+    <cvs:BoolByValueConverter x:Key="BoolByValueConverter"/>
+    <cvs:IsStringConverter x:Key="IsStringConverter"/>
+    <cvs:StringToImageSourceConverter x:Key="StringToImageSourceConverter"/>
+    <cvs:VisibilityByValueConverter x:Key="VisibilityByValueConverter"/>
+    <cvs:LocalizeConv x:Key="LocalizeConv"/>
+
+    <BitmapImage x:Key="NaviIcon_ThemeLight" UriSource="ms-appx:///Assets/ui_components/Light/theme_light.png"/>
+    <BitmapImage x:Key="NaviIcon_ThemeDark" UriSource="ms-appx:///Assets/ui_components/Dark/theme_dark.png"/>
+
+    <Style x:Key="RightExpanderStyle" TargetType="Expander">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="IsExpanded" Value="True"/>
+    </Style>
+
+    <Style TargetType="ToolTip">
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
+    
+    <Style TargetType="Control" BasedOn="{StaticResource DefaultControlStyle}">
+        <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden"/>
+    </Style>
+
+    <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+        <Setter Property="ContextFlyout" Value="{x:Null}"/>
+        <Setter Property="IsSpellCheckEnabled" Value="False"/>
+    </Style>
+</ResourceDictionary>

@@ -9,8 +9,26 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
+
+                <!--Controls-->                
+                <ResourceDictionary Source="ms-appx:///Winui3_Wpf_XamlNexus.UIComponent/Resources/ResourceDictionary.xaml" />
+                <ResourceDictionary Source="ms-appx:///Winui3_Wpf_XamlNexus.UIComponent/Input/Button/ArcButton.xaml" />
+                <ResourceDictionary Source="ms-appx:///Winui3_Wpf_XamlNexus.UIComponent/Navigation/RootView/ArcNavigationview.xaml" />
+                
+                <!--Styles-->
+                <ResourceDictionary Source="ms-appx:///Winui3_Wpf_XamlNexus.UIComponent/Navigation/RootView/ArcNavigationviewStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <BitmapImage x:Key="NaviIcon_ThemeAuto" UriSource="ms-appx:///Assets/ui_components/Light/theme_auto.png"/>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Dark">
+                    <BitmapImage x:Key="NaviIcon_ThemeAuto" UriSource="ms-appx:///Assets/ui_components/Dark/theme_auto.png"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

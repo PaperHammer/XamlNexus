@@ -10,5 +10,13 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
   </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Winui3_Wpf_XamlNexus.UIComponent\Winui3_Wpf_XamlNexus.UIComponent.csproj" />
+	</ItemGroup>
+  <ItemGroup>
+    <Page Update="MainPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
   
 </Project>

@@ -1,14 +1,60 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>Winui3_Wpf_XamlNexus.UIComponent</RootNamespace>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <UseWinUI>true</UseWinUI>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
-  </ItemGroup>
-  
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<RootNamespace>Winui3_Wpf_XamlNexus.UIComponent</RootNamespace>
+		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<UseWinUI>true</UseWinUI>
+	</PropertyGroup>
+	<ItemGroup>
+		<PRIResource Remove="Strings\en-US\Resources.resw" />
+		<PRIResource Remove="Strings\zh-CN\Resources.resw" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Strings\en-US\Resources.resw">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Strings\zh-CN\Resources.resw">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
+		<PackageReference Include="WinUI3Localizer" Version="2.2.0" />
+		<PackageReference Include="WinUIEx" Version="2.4.2" />
+	</ItemGroup>
+	<ItemGroup>
+		<Page Update="Feedback\Loading.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Input\Button\ArcButton.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Navigation\RootView\ArcNavigationContentView.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Navigation\RootView\ArcNavigationView.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Navigation\RootView\ArcNavigationviewStyle.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Resources\ResourceDictionary.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Templates\ArcPageHost.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Templates\ArcPageSimpleHost.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Templates\ArcWindowHost.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Winui3_Wpf_XamlNexus.Models\Winui3_Wpf_XamlNexus.Models.csproj" />
+	</ItemGroup>
+
 </Project>
