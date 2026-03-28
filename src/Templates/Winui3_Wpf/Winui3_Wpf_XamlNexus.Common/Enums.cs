@@ -13,12 +13,6 @@ namespace Winui3_Wpf_XamlNexus.Common {
         Acrylic
     }
 
-    public enum AppWpRunRulesEnum {
-        Silence,
-        Pause,
-        KeepRun,
-    }
-
     public enum DialogResult {
         None,
         Primary,

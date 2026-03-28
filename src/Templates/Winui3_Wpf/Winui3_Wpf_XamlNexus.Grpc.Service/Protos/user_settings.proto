@@ -1,0 +1,9 @@
+syntax = "proto3";
+package Winui3_Wpf_XamlNexus.Grpc.Service.UserSettings;
+import "google/protobuf/empty.proto";
+import "Protos/common_models.proto";
+
+service Grpc_UserSettingsService {
+	rpc GetSettings (google.protobuf.Empty) returns (Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels.Grpc_SettingsData);
+	rpc SetSettings (Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels.Grpc_SettingsData) returns (google.protobuf.Empty);
+}

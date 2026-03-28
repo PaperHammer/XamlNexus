@@ -14,6 +14,23 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+	<ItemGroup Condition="'$(IsMsixRelease)' == 'true'">
+		<!-- Include self-contained core build here (excluding UI plugin.) -->
+		<Folder Include="Build\" />
+		<Content Include="Build\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<OutputPath>..\Winui3_Wpf_XamlNexus\Plugins\UI\</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<DefaultLanguage>zh-cn</DefaultLanguage>
+		<RootNamespace>Winui3_Wpf_XamlNexus.UI</RootNamespace>
+		<ApplicationIcon>Assets\xamlnexus.ico</ApplicationIcon>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(IsMsixRelease)' != 'true'">
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 	</PropertyGroup>
@@ -61,6 +78,14 @@
   <ItemGroup>
 	<ProjectReference Include="..\Winui3_Wpf_XamlNexus.AppSettingsPanel\Winui3_Wpf_XamlNexus.AppSettingsPanel.csproj" />
 	<ProjectReference Include="..\Winui3_Wpf_XamlNexus.MainPanel\Winui3_Wpf_XamlNexus.MainPanel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\icon-48.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\xamlnexus.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!--

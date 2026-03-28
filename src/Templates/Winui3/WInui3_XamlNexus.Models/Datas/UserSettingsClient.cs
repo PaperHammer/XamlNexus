@@ -1,8 +1,8 @@
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils.Storage;
-using Winui3_XamlNexus.Models.Core;
-using Winui3_XamlNexus.Models.Core.Interfaces;
+using Winui3_XamlNexus.Models.Cores;
+using Winui3_XamlNexus.Models.Cores.Interfaces;
 using Winui3_XamlNexus.Models.Datas.Interfaces;
 
 namespace Winui3_XamlNexus.Models.Datas {

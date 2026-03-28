@@ -1,22 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>Winui3_Wpf_XamlNexus.MainPanel</RootNamespace>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <UseWinUI>true</UseWinUI>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
-  </ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<RootNamespace>Winui3_Wpf_XamlNexus.MainPanel</RootNamespace>
+		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<UseWinUI>true</UseWinUI>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Winui3_Wpf_XamlNexus.Grpc.Client\Winui3_Wpf_XamlNexus.Grpc.Client.csproj" />
 		<ProjectReference Include="..\Winui3_Wpf_XamlNexus.UIComponent\Winui3_Wpf_XamlNexus.UIComponent.csproj" />
 	</ItemGroup>
-  <ItemGroup>
-    <Page Update="MainPage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  
+	<ItemGroup>
+		<Page Update="MainPage.xaml">
+			<SubType>Designer</SubType>
+		</Page>
+	</ItemGroup>
+
 </Project>

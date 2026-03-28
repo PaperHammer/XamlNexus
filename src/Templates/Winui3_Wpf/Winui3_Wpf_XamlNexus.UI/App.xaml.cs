@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,10 +12,11 @@ using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Common.Utils;
 using Winui3_Wpf_XamlNexus.Common.Utils.DI;
 using Winui3_Wpf_XamlNexus.Common.Utils.Files;
+using Winui3_Wpf_XamlNexus.Common.Utils.PInvoke;
 using Winui3_Wpf_XamlNexus.Common.Utils.ThreadContext;
+using Winui3_Wpf_XamlNexus.Grpc.Client;
+using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
 using Winui3_Wpf_XamlNexus.UIComponent.Utils;
-using Winui3_Wpf_XamlNexus.Models.Datas;
-using Winui3_Wpf_XamlNexus.Models.Datas.Interfaces;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -74,6 +76,12 @@ namespace Winui3_Wpf_XamlNexus.UI {
             #region 初始化核心组件
             AppServiceLocator.Services = ConfigureServices();
             #endregion
+
+            if (!SingleInstanceUtil.IsAppMutexRunning(Consts.CoreField.UniqueAppUid)) {
+                _ = Native.MessageBox(IntPtr.Zero, "WInui3_Wpf_XamlNexus core is not running, run Winui3_Wpf_XamlNexus.exe first before opening UI.", "WInui3_Wpf_XamlNexus", 16);
+                //Sad dev noises.. this.Exit() does not work without Window: https://github.com/microsoft/microsoft-ui-xaml/issues/5931
+                Process.GetCurrentProcess().Kill();
+            }
 
             ArcLog.GetLogger<App>().Info("Starting UI...");
             _userSettings = AppServiceLocator.Services.GetRequiredService<IUserSettingsClient>();

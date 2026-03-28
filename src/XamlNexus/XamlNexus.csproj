@@ -9,7 +9,15 @@
 		<ToolCommandName>xamlnexus</ToolCommandName>
 		<PackageId>XamlNexus.CLI</PackageId>
 		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
+		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="xamlnexus.ico">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
@@ -17,20 +25,20 @@
 		<ProjectReference Include="..\XamlNexus.Generator.WpfApp\XamlNexus.Generator.WpfApp.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="XamlNexus_128x128.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
 	<Target Name="CopyTemplates" AfterTargets="Build">
 		<RemoveDir Directories="$(OutDir)Templates" />
 		
 		<ItemGroup>
-			<TemplateFiles 
-				Include="$(SolutionDir)Templates\**\*"
-				Exclude="
-					$(SolutionDir)Templates\**\bin\**;
-					$(SolutionDir)Templates\**\obj\**;
-				" />
+			<TemplateFiles Include="$(SolutionDir)Templates\**\*" Exclude="&#xD;&#xA;					$(SolutionDir)Templates\**\bin\**;&#xD;&#xA;					$(SolutionDir)Templates\**\obj\**;&#xD;&#xA;				" />
 		</ItemGroup>
 
-		<Copy
-			SourceFiles="@(TemplateFiles)"
-			DestinationFolder="$(OutDir)Templates\%(RecursiveDir)" />
+		<Copy SourceFiles="@(TemplateFiles)" DestinationFolder="$(OutDir)Templates\%(RecursiveDir)" />
 	</Target>
 </Project>

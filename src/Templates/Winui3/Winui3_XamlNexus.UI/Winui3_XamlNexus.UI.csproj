@@ -13,6 +13,9 @@
 	<UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\xamlnexus.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -60,6 +63,14 @@
   <ItemGroup>
     <ProjectReference Include="..\Winui3_XamlNexus.AppSettingsPanel\Winui3_XamlNexus.AppSettingsPanel.csproj" />
     <ProjectReference Include="..\Winui3_XamlNexus.MainPanel\Winui3_XamlNexus.MainPanel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\icon-48.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\xamlnexus.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!--

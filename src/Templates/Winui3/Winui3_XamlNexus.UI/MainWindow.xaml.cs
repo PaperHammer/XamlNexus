@@ -9,8 +9,8 @@ using Winui3_XamlNexus.MainPanel;
 using Winui3_XamlNexus.UIComponent;
 using Winui3_XamlNexus.UIComponent.Templates;
 using Winui3_XamlNexus.UIComponent.Utils;
-using Winui3_XamlNexus.Models.Core.Interfaces;
 using Winui3_XamlNexus.Models.Datas.Interfaces;
+using Winui3_XamlNexus.Models.Cores.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.

@@ -19,6 +19,8 @@ namespace Winui3_Wpf_XamlNexus.Common.Events {
         public string ChangeLog { get; }
     }
 
+    public record AppUpdateInfo(Uri DownloadUri, Uri SHAUri, string Version, string ChangeLog);
+
     public enum AppUpdateStatus {
         [Description("Software is up-to-date.")]
         Uptodate,

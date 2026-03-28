@@ -13,11 +13,11 @@ using Winui3_Wpf_XamlNexus.Common.Utils.Files;
 using Winui3_Wpf_XamlNexus.Common.Utils.Localization;
 using Winui3_Wpf_XamlNexus.Common.Utils.Storage;
 using Winui3_Wpf_XamlNexus.Common.Utils.ThreadContext;
+using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
+using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
 using Winui3_Wpf_XamlNexus.Models.Mvvm;
 using Winui3_Wpf_XamlNexus.UIComponent;
 using Winui3_Wpf_XamlNexus.UIComponent.Utils;
-using Winui3_Wpf_XamlNexus.Models.Core.Interfaces;
-using Winui3_Wpf_XamlNexus.Models.Datas.Interfaces;
 
 namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
     public partial class GeneralSettingViewModel : ObservableObject, IDisposable {

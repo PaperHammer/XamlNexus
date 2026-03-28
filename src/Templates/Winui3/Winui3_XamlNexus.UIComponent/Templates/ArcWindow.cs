@@ -138,7 +138,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
             if (AppWindowTitleBar.IsCustomizationSupported()) {
                 this.ExtendsContentIntoTitleBar = true;
                 this.SetTitleBar(this.ContentHost.AppTitleBar);
-                this.AppWindow.SetIcon("Assets/virtualpaper.ico");
+                this.AppWindow.SetIcon("Assets/xamlnexus.ico");
                 this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Standard;
             }
             else {

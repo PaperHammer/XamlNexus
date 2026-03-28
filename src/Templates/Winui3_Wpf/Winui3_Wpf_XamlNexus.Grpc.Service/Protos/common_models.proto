@@ -1,0 +1,48 @@
+syntax = "proto3";
+package Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels;
+import "google/protobuf/timestamp.proto";
+
+message Grpc_UpdateResponse {
+	Grpc_UpdateStatus status = 1;
+	string version = 2;
+	string uri = 3;
+	string sha_uri = 4;
+	string changelog = 5;
+	google.protobuf.Timestamp time = 6;
+}
+
+message Grpc_SettingsData {
+    Grpc_AppTheme application_theme = 3;
+    Grpc_AppSystemBackdrop system_backdrop = 7;
+    string app_name = 8;
+    string app_version = 9;
+    string language = 10;    
+    bool is_updated = 11;
+    bool is_auto_start = 12;
+    bool is_first_run = 13;
+    string data_save_dir = 14;
+}
+
+message Grpc_UIRecievedCmd {
+	int32 ipc_msg = 1;
+}
+
+enum Grpc_UpdateStatus {
+	uptodate = 0;
+	available = 1;
+	invalid = 2;
+	notchecked = 3;
+	error = 4;
+}
+
+enum Grpc_AppTheme {
+    auto = 0;
+    light = 1;
+    dark = 2;
+}
+
+enum Grpc_AppSystemBackdrop {
+    default = 0;
+    mica = 1;
+    acrylic = 2;
+}

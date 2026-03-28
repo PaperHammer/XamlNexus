@@ -25,14 +25,22 @@ namespace Winui3_Wpf_XamlNexus.Common {
             public static string UserSettingsPath => Path.Combine(AppDataDir, "user_settings.json");
         }
 
+        public static class WorkingDir {
+            public static string UI => Path.Combine("Plugins", "UI");
+            //public static string UI => Path.Combine("Plugins", "UI", "win-x64");
+        }
+
         public static class ModuleName {
             public static string UIComponent => "Winui3_Wpf_XamlNexus.UIComponent";
+            public static string UI => "Winui3_Wpf_XamlNexus.UI.exe";
         }
 
         public static class CoreField {
             public static string AppName => "Winui3_Wpf_XamlNexus";            
             public static string UniqueAppUid => "Winui3_Wpf_XamlNexus:SYSTEM";
             public static string UniqueAppUIUid => "Winui3_Wpf_XamlNexus:UI:SYSTEM";
+            public static string GrpcPipeServerName => "Grpc_" + PipeServerName;
+            public static string PipeServerName => UniqueAppUid + Environment.UserName;
         }
 
         public static class ApplicationType {

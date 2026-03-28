@@ -31,8 +31,8 @@
 
             <style:ArcImageIcon x:Name="PART_RootTitleBarIcon"  
                 Grid.Column="1"  
-                Height="22"  
-                Margin="8,0,0,0"
+                Height="18"  
+                Margin="10,0,0,0"
                 ResourceKey="{x:Bind TitleBarIconKey}"/>
 
             <TextBlock x:Name="PART_RootTitleTextBlock"
