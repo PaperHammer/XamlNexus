@@ -9,6 +9,7 @@
 		<UseWPF>true</UseWPF>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
@@ -56,4 +57,19 @@
 	  </EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+		<Folder Include="Plugins\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Plugins\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Nlog.config">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>

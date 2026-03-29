@@ -69,7 +69,7 @@ namespace Winui3_Wpf_XamlNexus.Services {
                     ArcLog.GetLogger<UIRunnerService>().Error(e);
                     _processUI = null;
                     _ = MessageBox.Show(
-                        $"{LanguageManager.Instance["UIRunnerService_VirtualPaperExceptionGeneral"]}\nEXCEPTION:\n{e.Message}",
+                        $"{LanguageManager.Instance["UIRunnerService_ExceptionGeneral"]}\nEXCEPTION:\n{e.Message}",
                         LanguageManager.Instance["Common_TextError"],
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);

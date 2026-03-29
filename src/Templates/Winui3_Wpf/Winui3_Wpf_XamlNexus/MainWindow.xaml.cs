@@ -29,7 +29,6 @@ public partial class MainWindow : Window {
     private void Window_SourceInitialized(object sender, EventArgs e) {
         new ToastContentBuilder()
                 .AddText(LanguageManager.Instance["Winui3_Wpf_XamlNexus_isRunning"])
-                .AddText(LanguageManager.Instance["Winui3_Wpf_XamlNexus_isRunning_Greetings"])
                 .Show();
     }
 

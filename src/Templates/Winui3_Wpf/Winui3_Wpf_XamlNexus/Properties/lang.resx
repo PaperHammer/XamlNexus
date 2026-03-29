@@ -129,13 +129,10 @@
   <data name="Systray_TextOpenApp" xml:space="preserve">
     <value>打开主界面</value>
   </data>
-  <data name="UIRunnerService_VirtualPaperExceptionGeneral" xml:space="preserve">
+  <data name="UIRunnerService_ExceptionGeneral" xml:space="preserve">
     <value>发生错误，尝试重启程序以解决问题。若多次发生，请上报错误或联系开发者，并重新下载</value>
   </data>
   <data name="Winui3_Wpf_XamlNexus_isRunning" xml:space="preserve">
     <value>Winui3_Wpf_XamlNexus 正在后台运行</value>
-  </data>
-  <data name="Winui3_Wpf_XamlNexus_Greetings" xml:space="preserve">
-    <value>愿你有美好的一天！</value>
   </data>
 </root>

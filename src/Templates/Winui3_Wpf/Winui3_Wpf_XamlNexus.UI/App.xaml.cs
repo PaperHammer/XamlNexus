@@ -78,7 +78,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             #endregion
 
             if (!SingleInstanceUtil.IsAppMutexRunning(Consts.CoreField.UniqueAppUid)) {
-                _ = Native.MessageBox(IntPtr.Zero, "WInui3_Wpf_XamlNexus core is not running, run Winui3_Wpf_XamlNexus.exe first before opening UI.", "WInui3_Wpf_XamlNexus", 16);
+                _ = Native.MessageBox(IntPtr.Zero, "WInui3_Wpf_XamlNexus core is not running, run \"Winui3_Wpf_XamlNexus.exe\" first before opening UI.", "WInui3_Wpf_XamlNexus", 16);
                 //Sad dev noises.. this.Exit() does not work without Window: https://github.com/microsoft/microsoft-ui-xaml/issues/5931
                 Process.GetCurrentProcess().Kill();
             }
@@ -117,6 +117,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
                 .AddSingleton<MainWindow>()
 
                 .AddSingleton<IUserSettingsClient, UserSettingsClient>()
+                .AddSingleton<ICommandsClient, CommandsClient>()
                 .AddSingleton<IAppUpdaterClient, AppUpdaterClient>()
 
                 .AddSingleton<GeneralSettingViewModel>()

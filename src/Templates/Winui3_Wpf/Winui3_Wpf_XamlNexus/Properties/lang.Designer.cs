@@ -99,18 +99,9 @@ namespace Winui3_Wpf_XamlNexus.Properties {
         /// <summary>
         ///   查找类似 发生错误，尝试重启程序以解决问题。若多次发生，请上报错误或联系开发者，并重新下载 的本地化字符串。
         /// </summary>
-        internal static string UIRunnerService_VirtualPaperExceptionGeneral {
+        internal static string UIRunnerService_ExceptionGeneral {
             get {
-                return ResourceManager.GetString("UIRunnerService_VirtualPaperExceptionGeneral", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 愿你有美好的一天！ 的本地化字符串。
-        /// </summary>
-        internal static string Winui3_Wpf_XamlNexus_Greetings {
-            get {
-                return ResourceManager.GetString("Winui3_Wpf_XamlNexus_Greetings", resourceCulture);
+                return ResourceManager.GetString("UIRunnerService_ExceptionGeneral", resourceCulture);
             }
         }
         
