@@ -14,7 +14,8 @@ namespace Winui3_Wpf_XamlNexus.Common.Utils {
             var arch = Environment.Is64BitProcess ? "x64" : "x86";
             var osArch = Environment.Is64BitOperatingSystem ? "x64" : "x86";
             var container = Consts.ApplicationType.IsMSIX ? "desktop-bridge" : "desktop-native";
-            return $"\nVirtual Paper v{Assembly.GetEntryAssembly().GetName().Version} {arch} (OS {osArch}) {container} {CultureInfo.CurrentUICulture.Name}" +
+            return $"\n" +
+                $"Winui3_Wpf_XamlNexus v{Assembly.GetEntryAssembly().GetName().Version} {arch} (OS {osArch}) {container} {CultureInfo.CurrentUICulture.Name}" +
                 $"\n{SystemInfo.GetOSInfo()}\n{SystemInfo.GetCpuInfo()}\n{SystemInfo.GetGpuInfo()}\n";
         }
 

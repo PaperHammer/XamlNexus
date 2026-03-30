@@ -15,13 +15,15 @@ namespace Winui3_XamlNexus.Models.Datas {
         public Uri LastCheckUri { get; private set; }
         public Uri LastCheckShaUri { get; private set; }
 
-        public AppUpdaterClient() {
-            Task.Run(() => {
-                UpdateStatusRefresh().ConfigureAwait(false);
+        public AppUpdaterClient() {            
+            _cancellationTokenUpdateChecked = new CancellationTokenSource();
+
+            Task.Run(async () => {
+                var refreshTask = UpdateStatusRefresh();
+                await Task.WhenAll(refreshTask);
+
                 AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
             }).Wait();
-
-            _cancellationTokenUpdateChecked = new CancellationTokenSource();
         }
 
         public async Task CheckUpdateAsync() {

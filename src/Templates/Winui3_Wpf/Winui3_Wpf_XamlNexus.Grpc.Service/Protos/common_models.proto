@@ -27,6 +27,10 @@ message Grpc_UIRecievedCmd {
 	int32 ipc_msg = 1;
 }
 
+message Grpc_GetCoreStatsResponse {
+	string assembly_version = 1;
+}
+
 enum Grpc_UpdateStatus {
 	uptodate = 0;
 	available = 1;

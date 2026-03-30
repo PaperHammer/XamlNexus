@@ -12,12 +12,14 @@ namespace XamlNexus.Common.Generators {
         public static ProjectConfig BaseComposeConfig() {
             var langChoice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("Language / 语言")
-                    .AddChoices("English", "简体中文"));
+                    .Title("语言 / Language")
+                    .AddChoices("简体中文", "English"));
 
             LanguageRegistry.CurrentLanguage = langChoice == "简体中文" ? LanguageType.Chinese : LanguageType.English;
 
             var config = new ProjectConfig {
+                Language = LanguageRegistry.CurrentLanguage == LanguageType.Chinese ? "zh-CN" : "en-US",
+
                 Framework = AnsiConsole.Prompt(
                     new SelectionPrompt<FrameworkType>()
                         .Title(LanguageRegistry.GetI18n(LangKeys.SelectFramework))
@@ -45,9 +47,11 @@ namespace XamlNexus.Common.Generators {
                             if (string.IsNullOrWhiteSpace(name))
                                 return ValidationResult.Error("[red]Project name cannot be empty[/]");
 
-                            // 是否包含非法路径字符或特殊符号
                             if (name.Any(c => Path.GetInvalidFileNameChars().Contains(c) || char.IsWhiteSpace(c)))
                                 return ValidationResult.Error("[red]Project name contains invalid characters or spaces[/]");
+                            
+                            if (!(char.IsLetter(name[0]) || name[0] == '_'))
+                                return ValidationResult.Error("[red]Project name must start with a letter or underscore[/]");
 
                             return ValidationResult.Success();
                         })),
@@ -60,11 +64,9 @@ namespace XamlNexus.Common.Generators {
                             if (string.IsNullOrWhiteSpace(path))
                                 return ValidationResult.Error("[red]Path cannot be empty[/]");
 
-                            // 检查是否包含非法路径字符
                             if (path.Any(c => Path.GetInvalidPathChars().Contains(c)))
                                 return ValidationResult.Error("[red]Path contains invalid characters[/]");
 
-                            // 校验是否是绝对路径
                             if (!Path.IsPathRooted(path))
                                 return ValidationResult.Error("[red]Please enter a full absolute path[/]");
 
@@ -80,7 +82,7 @@ namespace XamlNexus.Common.Generators {
 
     public partial class ProjectConfig {
         public string SlnName { get; set; } = GetDefaultProjectName();
-        //public string Language { get; set; } = "C#";
+        public string Language { get; set; } = "zh-CN";
         public FrameworkType Framework { get; set; }
         public SolutionType SlnType { get; set; }
         public bool NeedTray { get; set; }

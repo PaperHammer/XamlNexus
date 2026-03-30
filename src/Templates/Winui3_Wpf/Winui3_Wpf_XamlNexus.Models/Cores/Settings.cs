@@ -31,13 +31,7 @@ namespace Winui3_Wpf_XamlNexus.Models.Cores {
             SystemBackdrop = AppSystemBackdrop.Default;
 
             DataSaveDir = Consts.CommonPaths.CommonDataDir;
-
-            try {
-                Language = CultureInfo.CurrentUICulture.Name;
-            }
-            catch (ArgumentNullException) {
-                Language = "zh-CN";
-            }
+            Language = "{{DEFAULT_LANGUAGE}}";
         }
     }
 }

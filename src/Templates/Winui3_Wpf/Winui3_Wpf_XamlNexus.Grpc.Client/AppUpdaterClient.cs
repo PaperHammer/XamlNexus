@@ -5,6 +5,7 @@ using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Events;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
+using Winui3WpfXamlNexus.Grpc.Service.CommonModels;
 using Winui3WpfXamlNexus.Grpc.Service.Update;
 
 namespace Winui3_Wpf_XamlNexus.Grpc.Client {
@@ -20,13 +21,17 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
         public Uri LastCheckShaUri { get; private set; }
 
         public AppUpdaterClient() {
-            _client = new Grpc_UpdateService.Grpc_UpdateServiceClient(new NamedPipeChannel(".", Consts.CoreField.GrpcPipeServerName));
-
-            Task.Run(() => {
-                UpdateStatusRefresh().ConfigureAwait(false);
-            }).Wait();
-
+            _client = new Grpc_UpdateService.Grpc_UpdateServiceClient(new NamedPipeChannel(".", Consts.CoreField.GrpcPipeServerName));            
             _cancellationTokenUpdateChecked = new CancellationTokenSource();
+
+            Task.Run(async () => {
+                var coreTask = GetCoreStatsAsync();
+                var refreshTask = UpdateStatusRefresh();
+                await Task.WhenAll(coreTask, refreshTask);
+
+                var status = await coreTask;
+                AssemblyVersion = new Version(status.AssemblyVersion);
+            }).Wait();            
         }
 
         public async Task CheckUpdateAsync() {
@@ -73,6 +78,12 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
             catch (Exception e) {
                 ArcLog.GetLogger<AppUpdaterClient>().Error(e);
             }
+        }
+
+        private async Task<Grpc_GetCoreStatsResponse> GetCoreStatsAsync() {
+            Grpc_GetCoreStatsResponse response = await _client.GetCoreStatsAsync(new Empty());
+
+            return response;
         }
 
         #region Dispose

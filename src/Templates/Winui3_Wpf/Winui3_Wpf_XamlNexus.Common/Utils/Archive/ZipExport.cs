@@ -62,7 +62,7 @@ namespace Winui3_Wpf_XamlNexus.Common.Utils.Archive {
         /// </summary>
         /// <param name="archivePath">Path to .zip file.</param>
         /// <returns></returns>
-        public static bool IsVirtualPaperZip(string archivePath) {
+        public static bool IsXamlNexusZip(string archivePath) {
             bool result = true;
             try {
                 using (Stream fsInput = File.OpenRead(archivePath))

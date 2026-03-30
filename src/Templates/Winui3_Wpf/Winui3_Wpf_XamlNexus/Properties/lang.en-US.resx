@@ -133,6 +133,6 @@
     <value>An error occurred, try restarting the program to fix the problem. If this happens more than once, please report the bug or contact the developer and re-download</value>
   </data>
   <data name="Winui3_Wpf_XamlNexus_isRunning" xml:space="preserve">
-    <value>Virtual Paper is running in the background</value>
+    <value>Winui3_Wpf_XamlNexus is running in the background</value>
   </data>
 </root>

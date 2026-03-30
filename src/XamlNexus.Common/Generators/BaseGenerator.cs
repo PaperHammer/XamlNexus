@@ -1,15 +1,215 @@
+using Spectre.Console;
 using System.Reflection;
 using System.Xml.Linq;
+using XamlNexus.Common.Utils;
+using XamlNexus.Models.Attributes;
 
 namespace XamlNexus.Common.Generators {
     public abstract class BaseGenerator : IGenerator {
-        public abstract void Generate(ProjectConfig config);
+        public void Generate(ProjectConfig config) {
+            try {
+                OnBeforeGenerate(config);
+
+                AnsiConsole.MarkupLine($"\n[bold blue]Start - {config.SlnName}[/]");
+
+                string outputRoot = PrepareOutput(config);
+
+                AnsiConsole.Progress()
+                    .AutoRefresh(true)
+                    .Columns(GetProgressColumns())
+                    .Start(ctx => {
+                        var projects = CopyModulesInternal(config, outputRoot, ctx);
+                        CreateSlnInternal(config, outputRoot, projects, ctx);
+                    });
+
+                ShowSuccessReport(config, outputRoot);
+
+                OnAfterGenerate(config, outputRoot);
+            }
+            catch (Exception ex) {
+                OnError(config, ex);
+            }
+        }
+
+        protected abstract string TemplateRoot { get; }
+
+        protected abstract IEnumerable<(string Name, string? Folder)> GetProjects();
+
+        #region Hooks
+
+        protected virtual void OnBeforeGenerate(ProjectConfig config) { }
+
+        protected virtual void OnAfterGenerate(ProjectConfig config, string outputRoot) { }
+
+        protected virtual void OnError(ProjectConfig config, Exception ex) {
+            if (Directory.Exists(config.OutputPath))
+                Directory.Delete(config.OutputPath, true);
+
+            AnsiConsole.MarkupLine($"\n[bold red]Error[/]");
+            AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+        }
+
+        #endregion
+
+        #region Core Pipeline
+
+        private string PrepareOutput(ProjectConfig config) {
+            string outputRoot = Path.Combine(config.OutputPath, config.SlnName);
+
+            if (!Directory.Exists(outputRoot))
+                Directory.CreateDirectory(outputRoot);
+
+            return outputRoot;
+        }
+
+        private List<(string Path, string? Folder)> CopyModulesInternal(
+            ProjectConfig config,
+            string outputRoot,
+            ProgressContext ctx) {
+            var result = new List<(string Path, string? Folder)>();
+            var tokens = GetTemplateTokens(config);
+            var projects = GetProjects().ToList();
+
+            var task = ctx.AddTask("[yellow]Generating Modules[/]", maxValue: projects.Count);
+
+            foreach (var (Name, Folder) in projects) {
+                string destName = TransformProjectName(Name, config);
+
+                task.Description = $"  [yellow]> Generating:[/] [cyan]{destName}[/]";
+
+                string sourcePath = Path.Combine(TemplateRoot, Name);
+                if (!Directory.Exists(sourcePath))
+                    continue;
+
+                string destPath = Path.Combine(outputRoot, destName);
+
+                ProcessDirectory(sourcePath, destPath, tokens);
+
+                string csprojPath = Path.Combine(destPath, destName + ".csproj");
+
+                InjectProjectMetadata(csprojPath, GetTemplateType());
+
+                result.Add((csprojPath, Folder));
+
+                task.Increment(1);
+            }
+
+            task.Description = "[bold green]Modules Generated[/]";
+
+            return result;
+        }
+
+        private void CreateSlnInternal(
+            ProjectConfig config,
+            string outputRoot,
+            List<(string Path, string? Folder)> projects,
+            ProgressContext ctx) {
+            var slnTask = ctx.AddTask("[yellow]Generating Solution[/]", maxValue: 100);
+
+            string slnName = config.SlnName;
+            string slnType = config.SlnType.ToString().ToLower();
+
+            string cmd = $"new {slnType} -n \"{slnName}\"";
+            var ok = ShellExecutor.Run("dotnet", cmd, outputRoot);
+
+            string slnPath = Path.Combine(outputRoot, $"{slnName}.{slnType}");
+
+            if (!ok || !File.Exists(slnPath))
+                throw new Exception($"Failed to create solution: {slnPath}");
+
+            slnTask.Value = 20;
+
+            double step = 80.0 / projects.Count;
+
+            foreach (var project in projects) {
+                string relativePath = Path.GetRelativePath(outputRoot, project.Path);
+
+                slnTask.Description = $"  [yellow]> Linking:[/] [cyan]{Path.GetFileName(relativePath)}[/]";
+
+                string addCmd = $"sln \"{slnPath}\" add \"{relativePath}\"";
+
+                if (!string.IsNullOrEmpty(project.Folder))
+                    addCmd += $" --solution-folder \"{project.Folder}\"";
+
+                var added = ShellExecutor.Run("dotnet", addCmd, outputRoot);
+
+                if (!added)
+                    throw new Exception($"Failed to add project: {relativePath}");
+
+                slnTask.Increment(step);
+            }
+
+            slnTask.Value = 100;
+            slnTask.Description = "[bold green]Solution Created[/]";
+        }
+
+        #endregion
+
+        #region Template Processing
+
+        protected void ProcessDirectory(string sourcePath, string destPath, Dictionary<string, string> tokens) {
+            if (!Directory.Exists(destPath))
+                Directory.CreateDirectory(destPath);
+
+            string currentDirName = Path.GetFileName(sourcePath);
+            bool skipProcessing = GetSkipCopyDirs()
+                .Any(x => string.Equals(x, currentDirName, StringComparison.OrdinalIgnoreCase));
+
+            foreach (string file in Directory.GetFiles(sourcePath)) {
+                string fileName = Path.GetFileName(file);
+
+                if (skipProcessing || fileName.EndsWith(".user") || fileName == "bin" || fileName == "obj")
+                    continue;
+
+                string newFileName = ReplaceTokens(fileName, tokens);
+                string destFile = Path.Combine(destPath, newFileName);
+
+                if (IsTextFile(file)) {
+                    string content = File.ReadAllText(file);
+                    content = ReplaceTokens(content, tokens);
+                    File.WriteAllText(destFile, content);
+                }
+                else {
+                    File.Copy(file, destFile, true);
+                }
+            }
+
+            foreach (string dir in Directory.GetDirectories(sourcePath)) {
+                string dirName = Path.GetFileName(dir);
+
+                if (dirName == "bin" || dirName == "obj" || dirName == ".vs" || dirName == "Plugins")
+                    continue;
+
+                string newDirName = ReplaceTokens(dirName, tokens);
+
+                ProcessDirectory(dir, Path.Combine(destPath, newDirName), tokens);
+            }
+        }
 
         protected bool IsTextFile(string path) {
             string ext = Path.GetExtension(path).ToLower();
-            string[] textExts = { ".cs", ".xaml", ".csproj", ".sln", ".slnx", ".json", ".xml", ".config", ".txt", ".md" };
+
+            string[] textExts = [
+                ".cs", ".xaml", ".csproj", ".sln", ".slnx",
+                ".json", ".xml", ".config", ".txt", ".md",
+                ".resw", ".resx",
+                ".manifest", ".appxmanifest",
+                ".proto"
+            ];
+
             return textExts.Contains(ext);
         }
+
+        private string ReplaceTokens(string input, Dictionary<string, string> tokens) {
+            foreach (var token in tokens)
+                input = input.Replace(token.Key, token.Value);
+
+            return input;
+        }
+
+        #endregion
+
+        #region Metadata Injection
 
         protected void InjectProjectMetadata(string csprojPath, string templateType) {
             if (!File.Exists(csprojPath)) return;
@@ -18,17 +218,16 @@ namespace XamlNexus.Common.Generators {
             var project = doc.Root;
             if (project == null) return;
 
-            // 找或创建带 Label 的 PropertyGroup
             var propertyGroup = project.Elements("PropertyGroup")
                 .FirstOrDefault(x => x.Attribute("Label")?.Value == "XamlNexus");
 
             if (propertyGroup == null) {
                 propertyGroup = new XElement("PropertyGroup",
                     new XAttribute("Label", "XamlNexus"));
+
                 project.Add(propertyGroup);
             }
 
-            // 获取版本号（x.x.x）
             string version = GetGeneratorVersion();
 
             SetOrUpdate(propertyGroup, "Description", "Generated by XamlNexus Generator");
@@ -41,7 +240,6 @@ namespace XamlNexus.Common.Generators {
         protected virtual string GetGeneratorVersion() {
             var assembly = Assembly.GetExecutingAssembly();
 
-            // 优先取 InformationalVersion（支持语义化版本，比如 1.2.3+commit）
             var infoVersion = assembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 ?.InformationalVersion;
@@ -50,8 +248,8 @@ namespace XamlNexus.Common.Generators {
                 ?? assembly.GetName().Version?.ToString()
                 ?? "1.0.0";
 
-            // 截取前三段 x.x.x
-            var parts = version.Split('.', '-', '+'); // 兼容 1.2.3-beta
+            var parts = version.Split('.', '-', '+');
+
             return parts.Length >= 3
                 ? $"{parts[0]}.{parts[1]}.{parts[2]}"
                 : version;
@@ -59,12 +257,77 @@ namespace XamlNexus.Common.Generators {
 
         private void SetOrUpdate(XElement parent, string name, string value) {
             var element = parent.Element(name);
-            if (element == null) {
+
+            if (element == null)
                 parent.Add(new XElement(name, value));
-            }
-            else {
+            else
                 element.Value = value;
-            }
         }
+
+        #endregion
+
+        #region Strategy / Customization
+
+        protected virtual string TransformProjectName(string name, ProjectConfig config) {
+            return name.Replace(GetTemplatePrefix(), config.SlnName);
+        }
+
+        protected virtual string GetTemplatePrefix() => "XamlNexus";
+
+        protected virtual string GetTemplateType() {
+            var attr = GetType().GetCustomAttribute<GeneratorAttribute>();
+            return attr?.Framework.ToString() ?? "Unknown";
+        }
+
+        protected virtual string[] GetSkipCopyDirs() => [];
+
+        protected virtual Dictionary<string, string> GetTemplateTokens(ProjectConfig config) {
+            var tokens = GetBaseTokens(config);
+            var extra = GetCustomTokens(config);
+
+            foreach (var kv in extra) {
+                tokens[kv.Key] = kv.Value; // 覆盖 or 新增
+            }
+
+            return tokens;
+        }
+
+        protected virtual Dictionary<string, string> GetBaseTokens(ProjectConfig config) {
+            return new Dictionary<string, string> {
+                { "{{DEFAULT_LANGUAGE}}", config.Language ?? "zh-CN" }
+            };
+        }
+
+        protected virtual Dictionary<string, string> GetCustomTokens(ProjectConfig config) {
+            return [];
+        }
+
+        protected virtual ProgressColumn[] GetProgressColumns() {
+            return [
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new PercentageColumn(),
+                new SpinnerColumn(Spinner.Known.Aesthetic)
+            ];
+        }
+
+        protected virtual void ShowSuccessReport(ProjectConfig config, string outputRoot) {
+            var table = new Table().Border(TableBorder.Rounded);
+
+            table.AddColumn("[cyan]Property[/]");
+            table.AddColumn("[green]Value[/]");
+
+            table.AddRow("Project", config.SlnName);
+            table.AddRow("Framework", config.Framework.ToString());
+            table.AddRow("Format", config.SlnType.ToString());
+            table.AddRow("Output", outputRoot);
+
+            AnsiConsole.Write(table);
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine(" [bold green]Success![/]");
+        }
+
+        #endregion
     }
 }

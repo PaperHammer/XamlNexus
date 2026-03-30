@@ -1,6 +1,5 @@
 using Google.Protobuf.WellKnownTypes;
 using GrpcDotNetNamedPipes;
-using Microsoft.VisualBasic;
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.DataAssistor;
@@ -16,9 +15,10 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
         public UserSettingsClient() {
             _client = new Grpc_UserSettingsService.Grpc_UserSettingsServiceClient(new NamedPipeChannel(".", Consts.CoreField.GrpcPipeServerName));
 
-            Task.Run(() => {
-                LoadAsync<ISettings>().ConfigureAwait(false);
-                // add new settings initialization logic here if needed
+            Task.Run(async () => {
+                var loadTask = LoadAsync<ISettings>();
+            
+                await Task.WhenAll(loadTask);
             }).Wait();
         }
 

@@ -278,11 +278,11 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
                 }
 
                 var sourceDir = _userSettingsClient.Settings.DataSaveDir;
-                _userSettingsClient.Settings.DataSaveDir = destDir;
                 if (!string.Equals(destDir, _userSettingsClient.Settings.DataSaveDir, StringComparison.OrdinalIgnoreCase)) {
                     if (Directory.Exists(sourceDir)) {
                         FileUtil.CopyDirectory(sourceDir, destDir, true);
                         Directory.Delete(sourceDir, true);
+                        _userSettingsClient.Settings.DataSaveDir = destDir;
                         await _userSettingsClient.SaveAsync<ISettings>();
                     }
                 }

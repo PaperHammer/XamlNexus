@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
+  </ItemGroup>
+
 </Project>

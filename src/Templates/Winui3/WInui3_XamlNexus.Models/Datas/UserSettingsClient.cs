@@ -10,16 +10,17 @@ namespace Winui3_XamlNexus.Models.Datas {
         public ISettings Settings { get; private set; } = new Settings();
 
         public UserSettingsClient() {
-            Task.Run(() => {
-                LoadAsync<ISettings>().ConfigureAwait(false);
-                // add new settings initialization logic here if needed
+            Task.Run(async () => {
+                var loadTask = LoadAsync<ISettings>();
+
+                await Task.WhenAll(loadTask);
             }).Wait();
         }
 
         public async Task LoadAsync<T>() {
-            if (typeof(T) == typeof(ISettings)) {                
+            if (typeof(T) == typeof(ISettings)) {
                 try {
-                     Settings = await JsonSaver.LoadAsync<Settings>(_settingsPath, SettingsContext.Default);
+                    Settings = await JsonSaver.LoadAsync<Settings>(_settingsPath, SettingsContext.Default);
                 }
                 catch (Exception e) {
                     ArcLog.GetLogger<UserSettingsClient>().Error(e);

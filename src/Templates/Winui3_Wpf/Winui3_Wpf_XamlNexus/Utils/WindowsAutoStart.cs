@@ -17,7 +17,7 @@ namespace Winui3_Wpf_XamlNexus.Utils {
         }
 
         /// <summary>
-        /// Adds startup entry in registry under application name "virtualpaperwpf", current user ONLY. (Does not require admin rights).
+        /// Adds startup entry in registry, current user ONLY. (Does not require admin rights).
         /// </summary>
         /// <param name="setAutoStart">Add or delete entry.</param>
         private static void SetAutoStartRegistry(bool setAutoStart = false) {
@@ -56,7 +56,7 @@ namespace Winui3_Wpf_XamlNexus.Utils {
                         await Task.Run(() => MessageBox.Show("You have disabled this app's ability to run " +
                             "as soon as you sign in, but if you change your mind, " +
                             "you can enable this in the GetStart tab in Task Manager.",
-                            "Virtual Paper",
+                            "Winui3_Wpf_XamlNexus",
                             MessageBoxButton.OK));
                     }
                     break;

@@ -37,7 +37,6 @@ namespace Winui3_Wpf_XamlNexus.Services {
                 try {
                     ArcLog.GetLogger<UIRunnerService>().Warn("UI is already running");
                     UISendCmd?.Invoke(this, MessageType.cmd_active);
-                    //_processUI.StandardInput.WriteLine(JsonSerializer.Serialize(new VirtualPaperActiveCmd(), IpcMessageContext.Default.IpcMessage));
                 }
                 catch (Exception e) {
                     ArcLog.GetLogger<UIRunnerService>().Error(e);

@@ -12,7 +12,6 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
 
         public CommandsClient() {
             _client = new Grpc_CommandsService.Grpc_CommandsServiceClient(new NamedPipeChannel(".", Consts.CoreField.GrpcPipeServerName));
-
             _ctsUIRecievedCmd = new CancellationTokenSource();
             _uiRecievedCmdTask = Task.Run(() => SubscribeUIRecievedCmdTaskStream(_ctsUIRecievedCmd.Token));
         }

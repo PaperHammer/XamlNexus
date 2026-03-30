@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Windows.Threading;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -60,6 +61,12 @@ namespace Winui3_Wpf_XamlNexus.GrpcServers {
             catch (Exception e) {
                 ArcLog.GetLogger<AppUpdateServer>().Error(e);
             }
+        }
+
+        public override Task<Grpc_GetCoreStatsResponse> GetCoreStats(Empty _, ServerCallContext context) {
+            return Task.FromResult(new Grpc_GetCoreStatsResponse() {
+                AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+            });
         }
 
         private readonly IAppUpdaterService _updater = updater;

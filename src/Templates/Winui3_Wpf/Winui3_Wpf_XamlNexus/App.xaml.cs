@@ -48,7 +48,7 @@ public partial class App : Application {
         try {
             // 保证全局只有一个实例
             if (!_mutex.WaitOne(TimeSpan.FromSeconds(1), false)) {
-                MessageBox.Show("已存在正在运行的程序，请检查托盘或任务管理器\nThere are already running programs, check the tray or Task Manager", "Virtual Paper", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("已存在正在运行的程序，请检查托盘或任务管理器\nThere are already running programs, check the tray or Task Manager", "Winui3_Wpf_XamlNexus", MessageBoxButton.OK, MessageBoxImage.Information);
                 ShutDown();
                 return;
             }
