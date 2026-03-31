@@ -25,6 +25,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Content Include="..\Templates\**\*"
+				 Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**;..\Templates\**\.vs\**;..\Templates\**\Plugins\**">
+			<Pack>true</Pack>
+			<PackagePath>tools/$(TargetFramework)/any/Templates/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Content Include="xamlnexus.ico">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
