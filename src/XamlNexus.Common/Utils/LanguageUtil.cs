@@ -16,6 +16,8 @@ namespace XamlNexus.Common.Utils {
         public static string ErrorCreateSolution { get; set; } = "ErrorCreateSolution";
         public static string ErrorAddProject { get; set; } = "ErrorAddProject";
         public static string Start { get; set; } = "Start";
+        public static string Text_Frontend { get; internal set; } = "Text_Frontend";
+        public static string Text_Backend { get; internal set; } = "Text_Backend";
     }
 
     public enum LanguageType {
@@ -44,6 +46,8 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.ErrorCreateSolution] = "创建解决方案失败。路径: {0}",
                 [LangKeys.ErrorAddProject] = "无法将项目添加到解决方案: {0}",
                 [LangKeys.TemplateWinui3NotFound] = "未找到 WinUI 3 模板。请确保已安装: dotnet workload install windowsappsdk",
+                [LangKeys.Text_Frontend] = "前台",
+                [LangKeys.Text_Backend] = "后台",
             },
 
             [LanguageType.English] = new() {
@@ -60,6 +64,8 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.ErrorCreateSolution] = "Failed to create solution at: {0}",
                 [LangKeys.ErrorAddProject] = "Failed to add project to solution: {0}",
                 [LangKeys.TemplateWinui3NotFound] = "WinUI 3 template not found. Run: dotnet workload install windowsappsdk",
+                [LangKeys.Text_Frontend] = "Frontend",
+                [LangKeys.Text_Backend] = "Backend",
             }
         };
 

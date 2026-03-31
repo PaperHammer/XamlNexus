@@ -25,7 +25,7 @@ namespace XamlNexus.Common.Generators {
                         .Title(LanguageRegistry.GetI18n(LangKeys.SelectFramework))
                         .AddChoices(Enum.GetValues<FrameworkType>())
                         .UseConverter(type => type switch {
-                            FrameworkType.Winui3_Wpf => "Winui3(Foreground) + Wpf(Background)".EscapeMarkup(),
+                            FrameworkType.Winui3_Wpf => $"Winui3({LanguageRegistry.GetI18n(LangKeys.Text_Frontend)}) + Wpf({LanguageRegistry.GetI18n(LangKeys.Text_Backend)})".EscapeMarkup(),
                             _ => type.ToString()
                         })),
 
@@ -109,6 +109,12 @@ namespace XamlNexus.Common.Generators {
         }
 
         public static string GetDefaultProjectName() => "MyXamlNexusApp";
-        public static string GetDefaultOutputPath() => DebugUtil.OutputPath;
+        public static string GetDefaultOutputPath() {
+#if DEBUG
+            return Path.Combine(Environment.CurrentDirectory, "debug");
+#else
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+#endif
+        }
     }
 }

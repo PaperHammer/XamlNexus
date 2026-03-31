@@ -21,6 +21,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
 
                 ArcPage? oldPage = GetActivePage(navView.PageMap);
                 ArcPage newPage = GetBackgroundPage(navView.PageMap, targetPageType) ?? ResolvePageInstance(targetPageType);
+                payload = payload.Merge(newPage.Payload);
 
                 bool useAnimation = options != null;
                 if (!useAnimation) NavigateRootWithoutAnimation(navView, oldPage, newPage, payload);

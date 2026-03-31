@@ -4,14 +4,25 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
+		<Nullable>enable</Nullable>		
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>xamlnexus</ToolCommandName>
-		<PackageId>XamlNexus.CLI</PackageId>
+		<PackageId>XamlNexus</PackageId>
 		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<PackageVersion>1.0.0</PackageVersion>
+		<Authors>PaperHammer</Authors>
+		<PackageProjectUrl>https://github.com/PaperHammer/XamlNexus</PackageProjectUrl>
 		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
 		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/PaperHammer/XamlNexus</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Description>Quickly generate Windows desktop application prototypes using the .NET CLI scaffolding tool, based on common XAML frameworks such as WPF and WinUI 3.</Description>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../../README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 
 	<ItemGroup>
 	  <Content Include="xamlnexus.ico">
