@@ -18,6 +18,24 @@ namespace XamlNexus.Common.Utils {
         public static string Start { get; set; } = "Start";
         public static string Text_Frontend { get; internal set; } = "Text_Frontend";
         public static string Text_Backend { get; internal set; } = "Text_Backend";
+        public static string Text_Start { get; internal set; } = "Text_Start";
+        public static string Text_Generating_Module { get; internal set; } = "Text_Generating_Module";
+        public static string Text_Generating { get; internal set; } = "Text_Generating";
+        public static string Text_Internal_Error { get; internal set; } = "Text_Internal_Error";
+        public static string Text_Modules_Generated { get; internal set; } = "Text_Modules_Generated";
+        public static string Text_Generating_Solution { get; internal set; } = "Text_Generating_Solution";
+        public static string Text_Fail_To_Create_Sln { get; internal set; } = "Text_Fail_To_Create_Sln";
+        public static string Text_Linking { get; internal set; } = "Text_Linking";
+        public static string Text_Fail_To_Link_Project { get; internal set; } = "Text_Fail_To_Link_Project";
+        public static string Text_Soluton_Created { get; internal set; } = "Text_Soluton_Created";
+        public static string Text_Property { get; internal set; } = "Text_Property";
+        public static string Text_Value { get; internal set; } = "Text_Value";
+        public static string Text_Project { get; internal set; } = "Text_Project";
+        public static string Text_Framework { get; internal set; } = "Text_Framework";
+        public static string Text_Format { get; internal set; } = "Text_Format";
+        public static string Text_OutputPath { get; internal set; } = "Text_OutputPath";
+        public static string Text_Success { get; internal set; } = "Text_Success";
+        public static string Text_Error { get; internal set; } = "Text_Error";
     }
 
     public enum LanguageType {
@@ -48,6 +66,25 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.TemplateWinui3NotFound] = "未找到 WinUI 3 模板。请确保已安装: dotnet workload install windowsappsdk",
                 [LangKeys.Text_Frontend] = "前台",
                 [LangKeys.Text_Backend] = "后台",
+
+                [LangKeys.Text_Start] = "开始",
+                [LangKeys.Text_Generating_Module] = "生成模块",
+                [LangKeys.Text_Generating] = "正在生成...",
+                [LangKeys.Text_Internal_Error] = "内部异常，尝试更新或重新安装",
+                [LangKeys.Text_Modules_Generated] = "模块生成完成",
+                [LangKeys.Text_Generating_Solution] = "生成解决方案",
+                [LangKeys.Text_Fail_To_Create_Sln] = "解决方案生成失败",
+                [LangKeys.Text_Linking] = "链接模块到解决方案...",
+                [LangKeys.Text_Fail_To_Link_Project] = "模块链接到解决方案失败",
+                [LangKeys.Text_Soluton_Created] = "解决方案生成完成",
+                [LangKeys.Text_Property] = "属性",
+                [LangKeys.Text_Value] = "值",
+                [LangKeys.Text_Project] = "项目名称",
+                [LangKeys.Text_Framework] = "基础框架",
+                [LangKeys.Text_Format] = "解决方案类型",
+                [LangKeys.Text_OutputPath] = "输出位置",
+                [LangKeys.Text_Success] = "成功!",
+                [LangKeys.Text_Error] = "发生错误: ",
             },
 
             [LanguageType.English] = new() {
@@ -66,6 +103,25 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.TemplateWinui3NotFound] = "WinUI 3 template not found. Run: dotnet workload install windowsappsdk",
                 [LangKeys.Text_Frontend] = "Frontend",
                 [LangKeys.Text_Backend] = "Backend",
+
+                [LangKeys.Text_Start] = "Start",
+                [LangKeys.Text_Generating_Module] = "Generat Modules",
+                [LangKeys.Text_Generating] = "Generating...",
+                [LangKeys.Text_Internal_Error] = "Internal error, try updating or reinstalling",
+                [LangKeys.Text_Modules_Generated] = "All modules generated",
+                [LangKeys.Text_Generating_Solution] = "Generat Solution",
+                [LangKeys.Text_Fail_To_Create_Sln] = "Solution generation failed",
+                [LangKeys.Text_Linking] = "Link module to solution...",
+                [LangKeys.Text_Fail_To_Link_Project] = "Module failed to link to the solution",
+                [LangKeys.Text_Soluton_Created] = "Solution generation completed",
+                [LangKeys.Text_Property] = "Property",
+                [LangKeys.Text_Value] = "Value",
+                [LangKeys.Text_Project] = "Project Name",
+                [LangKeys.Text_Framework] = "Basic framework",
+                [LangKeys.Text_Format] = "Sln Type",
+                [LangKeys.Text_OutputPath] = "Output path",
+                [LangKeys.Text_Success] = "Success!",
+                [LangKeys.Text_Error] = "An error occurred: ",
             }
         };
 

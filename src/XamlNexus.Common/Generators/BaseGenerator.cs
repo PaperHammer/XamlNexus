@@ -10,7 +10,7 @@ namespace XamlNexus.Common.Generators {
             try {
                 OnBeforeGenerate(config);
 
-                AnsiConsole.MarkupLine($"\n[bold blue]Start - {config.SlnName}[/]");
+                AnsiConsole.MarkupLine($"\n[bold blue]{LanguageRegistry.GetI18n(LangKeys.Text_Start)} - {config.SlnName}[/]");
 
                 string outputRoot = PrepareOutput(config);
 
@@ -45,7 +45,7 @@ namespace XamlNexus.Common.Generators {
             if (Directory.Exists(config.OutputPath))
                 Directory.Delete(config.OutputPath, true);
 
-            AnsiConsole.MarkupLine($"\n[bold red]Error[/]");
+            AnsiConsole.MarkupLine($"\n[bold red]{LanguageRegistry.GetI18n(LangKeys.Text_Error)}[/]");
             AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
         }
 
@@ -70,16 +70,16 @@ namespace XamlNexus.Common.Generators {
             var tokens = GetTemplateTokens(config);
             var projects = GetProjects().ToList();
 
-            var task = ctx.AddTask("[yellow]Generating Modules[/]", maxValue: projects.Count);
+            var task = ctx.AddTask($"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Generating_Module)}[/]", maxValue: projects.Count);
 
             foreach (var (Name, Folder) in projects) {
                 string destName = TransformProjectName(Name, config);
 
-                task.Description = $"  [yellow]> Generating:[/] [cyan]{destName}[/]";
+                task.Description = $"  [yellow]> {LanguageRegistry.GetI18n(LangKeys.Text_Generating)}:[/] [cyan]{destName}[/]";
 
                 string sourcePath = Path.Combine(TemplateRoot, Name);
                 if (!Directory.Exists(sourcePath))
-                    continue;
+                    throw new Exception($"{LanguageRegistry.GetI18n(LangKeys.Text_Internal_Error)}");
 
                 string destPath = Path.Combine(outputRoot, destName);
 
@@ -94,7 +94,7 @@ namespace XamlNexus.Common.Generators {
                 task.Increment(1);
             }
 
-            task.Description = "[bold green]Modules Generated[/]";
+            task.Description = $"[bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Modules_Generated)}[/]";
 
             return result;
         }
@@ -104,7 +104,7 @@ namespace XamlNexus.Common.Generators {
             string outputRoot,
             List<(string Path, string? Folder)> projects,
             ProgressContext ctx) {
-            var slnTask = ctx.AddTask("[yellow]Generating Solution[/]", maxValue: 100);
+            var slnTask = ctx.AddTask($"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Generating_Solution)}[/]", maxValue: 100);
 
             string slnName = config.SlnName;
             string slnType = config.SlnType.ToString().ToLower();
@@ -115,7 +115,7 @@ namespace XamlNexus.Common.Generators {
             string slnPath = Path.Combine(outputRoot, $"{slnName}.{slnType}");
 
             if (!ok || !File.Exists(slnPath))
-                throw new Exception($"Failed to create solution: {slnPath}");
+                throw new Exception($"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Create_Sln)}: {slnPath}");
 
             slnTask.Value = 20;
 
@@ -124,7 +124,7 @@ namespace XamlNexus.Common.Generators {
             foreach (var project in projects) {
                 string relativePath = Path.GetRelativePath(outputRoot, project.Path);
 
-                slnTask.Description = $"  [yellow]> Linking:[/] [cyan]{Path.GetFileName(relativePath)}[/]";
+                slnTask.Description = $"  [yellow]> {LanguageRegistry.GetI18n(LangKeys.Text_Linking)}:[/] [cyan]{Path.GetFileName(relativePath)}[/]";
 
                 string addCmd = $"sln \"{slnPath}\" add \"{relativePath}\"";
 
@@ -134,13 +134,13 @@ namespace XamlNexus.Common.Generators {
                 var added = ShellExecutor.Run("dotnet", addCmd, outputRoot);
 
                 if (!added)
-                    throw new Exception($"Failed to add project: {relativePath}");
+                    throw new Exception($"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Link_Project)}: {relativePath}");
 
                 slnTask.Increment(step);
             }
 
             slnTask.Value = 100;
-            slnTask.Description = "[bold green]Solution Created[/]";
+            slnTask.Description = $"[bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Soluton_Created)}[/]";
         }
 
         #endregion
@@ -314,18 +314,18 @@ namespace XamlNexus.Common.Generators {
         protected virtual void ShowSuccessReport(ProjectConfig config, string outputRoot) {
             var table = new Table().Border(TableBorder.Rounded);
 
-            table.AddColumn("[cyan]Property[/]");
-            table.AddColumn("[green]Value[/]");
+            table.AddColumn($"[cyan]{LanguageRegistry.GetI18n(LangKeys.Text_Property)}[/]");
+            table.AddColumn($"[green]{LanguageRegistry.GetI18n(LangKeys.Text_Value)}[/]");
 
-            table.AddRow("Project", config.SlnName);
-            table.AddRow("Framework", config.Framework.ToString());
-            table.AddRow("Format", config.SlnType.ToString());
-            table.AddRow("Output", outputRoot);
+            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_Project), config.SlnName);
+            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_Framework), config.Framework.ToString());
+            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_Format), config.SlnType.ToString());
+            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_OutputPath), outputRoot);
 
             AnsiConsole.Write(table);
 
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine(" [bold green]Success![/]");
+            AnsiConsole.MarkupLine($" [bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Success)}[/]");
         }
 
         #endregion
