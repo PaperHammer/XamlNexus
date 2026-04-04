@@ -58,6 +58,22 @@ namespace XamlNexus.Common.Generators {
 
             if (!Directory.Exists(outputRoot))
                 Directory.CreateDirectory(outputRoot);
+            else {
+                string newName = $"{config.SlnName}_{DateTime.Now:yyyyMMddHHmmss}";
+                outputRoot = Path.Combine(config.OutputPath, $"{newName}");
+                int index = 1;
+                while (Directory.Exists(outputRoot)) {
+                    outputRoot = Path.Combine(config.OutputPath, $"{newName}_{index}");
+                    index++;
+                }
+                AnsiConsole.MarkupLine(
+                    $"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Warning)}:[/] " +
+                    $"{string.Format(
+                        LanguageRegistry.GetI18n(LangKeys.Text_OutputFolder_Exists_Using),
+                        $"[cyan]{newName}[/]"
+                    )}"
+                );
+            }
 
             return outputRoot;
         }

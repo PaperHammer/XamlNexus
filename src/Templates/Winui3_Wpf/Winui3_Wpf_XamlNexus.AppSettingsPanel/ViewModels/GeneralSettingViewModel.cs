@@ -21,8 +21,6 @@ using Winui3_Wpf_XamlNexus.UIComponent.Utils;
 
 namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
     public partial class GeneralSettingViewModel : ObservableObject, IDisposable {
-        public event EventHandler? WallpaperInstallDirChanged;
-
         public bool IsWinStore => Consts.ApplicationType.IsMSIX;
 
         public string AppVersionText {

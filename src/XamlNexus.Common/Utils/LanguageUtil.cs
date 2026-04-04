@@ -11,31 +11,33 @@ namespace XamlNexus.Common.Utils {
         public static string GeneratingModules { get; } = "GeneratingModules";
         public static string GeneratingSolution { get; } = "GeneratingSolution";
         public static string TemplateWinui3NotFound { get; } = "TemplateWinui3NotFound";
-        public static string SuccessMessage { get; set; } = "SuccessMessage";
-        public static string Error { get; set; } = "Error";
-        public static string ErrorCreateSolution { get; set; } = "ErrorCreateSolution";
-        public static string ErrorAddProject { get; set; } = "ErrorAddProject";
-        public static string Start { get; set; } = "Start";
-        public static string Text_Frontend { get; internal set; } = "Text_Frontend";
-        public static string Text_Backend { get; internal set; } = "Text_Backend";
-        public static string Text_Start { get; internal set; } = "Text_Start";
-        public static string Text_Generating_Module { get; internal set; } = "Text_Generating_Module";
-        public static string Text_Generating { get; internal set; } = "Text_Generating";
-        public static string Text_Internal_Error { get; internal set; } = "Text_Internal_Error";
-        public static string Text_Modules_Generated { get; internal set; } = "Text_Modules_Generated";
-        public static string Text_Generating_Solution { get; internal set; } = "Text_Generating_Solution";
-        public static string Text_Fail_To_Create_Sln { get; internal set; } = "Text_Fail_To_Create_Sln";
-        public static string Text_Linking { get; internal set; } = "Text_Linking";
-        public static string Text_Fail_To_Link_Project { get; internal set; } = "Text_Fail_To_Link_Project";
-        public static string Text_Soluton_Created { get; internal set; } = "Text_Soluton_Created";
-        public static string Text_Property { get; internal set; } = "Text_Property";
-        public static string Text_Value { get; internal set; } = "Text_Value";
-        public static string Text_Project { get; internal set; } = "Text_Project";
-        public static string Text_Framework { get; internal set; } = "Text_Framework";
-        public static string Text_Format { get; internal set; } = "Text_Format";
-        public static string Text_OutputPath { get; internal set; } = "Text_OutputPath";
-        public static string Text_Success { get; internal set; } = "Text_Success";
-        public static string Text_Error { get; internal set; } = "Text_Error";
+        public static string SuccessMessage { get; } = "SuccessMessage";
+        public static string Error { get; } = "Error";
+        public static string ErrorCreateSolution { get; } = "ErrorCreateSolution";
+        public static string ErrorAddProject { get; } = "ErrorAddProject";
+        public static string Start { get; } = "Start";
+        public static string Text_Frontend { get; } = "Text_Frontend";
+        public static string Text_Backend { get; } = "Text_Backend";
+        public static string Text_Start { get; } = "Text_Start";
+        public static string Text_Generating_Module { get; } = "Text_Generating_Module";
+        public static string Text_Generating { get; } = "Text_Generating";
+        public static string Text_Internal_Error { get; } = "Text_Internal_Error";
+        public static string Text_Modules_Generated { get; } = "Text_Modules_Generated";
+        public static string Text_Generating_Solution { get; } = "Text_Generating_Solution";
+        public static string Text_Fail_To_Create_Sln { get; } = "Text_Fail_To_Create_Sln";
+        public static string Text_Linking { get; } = "Text_Linking";
+        public static string Text_Fail_To_Link_Project { get; } = "Text_Fail_To_Link_Project";
+        public static string Text_Soluton_Created { get; } = "Text_Soluton_Created";
+        public static string Text_Property { get; } = "Text_Property";
+        public static string Text_Value { get; } = "Text_Value";
+        public static string Text_Project { get; } = "Text_Project";
+        public static string Text_Framework { get; } = "Text_Framework";
+        public static string Text_Format { get; } = "Text_Format";
+        public static string Text_OutputPath { get; } = "Text_OutputPath";
+        public static string Text_Success { get; } = "Text_Success";
+        public static string Text_Error { get; } = "Text_Error";
+        public static string Text_Warning { get; } = "Text_Warning";
+        public static string Text_OutputFolder_Exists_Using { get; } = "Text_OutputFolder_Exists_Using";
     }
 
     public enum LanguageType {
@@ -52,7 +54,7 @@ namespace XamlNexus.Common.Utils {
         private static readonly Dictionary<LanguageType, Dictionary<string, string>> _locales = new() {
             [LanguageType.Chinese] = new() {
                 [LangKeys.Start] = "开始生成",
-                [LangKeys.SelectFramework] = "您想使用哪种 XAML 框架?",
+                [LangKeys.SelectFramework] = "您想使用哪种基础框架?",
                 [LangKeys.SelectSolutionFormat] = "请选择解决方案格式:",
                 [LangKeys.NeedTray] = "是否需要托盘图标?",
                 [LangKeys.ProjectName] = "解决方案名称",
@@ -85,11 +87,13 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.Text_OutputPath] = "输出位置",
                 [LangKeys.Text_Success] = "成功!",
                 [LangKeys.Text_Error] = "发生错误: ",
+                [LangKeys.Text_Warning] = "警告: ",
+                [LangKeys.Text_OutputFolder_Exists_Using] = "输出目录已存在，目录文件夹将使用 {0}",
             },
 
             [LanguageType.English] = new() {
                 [LangKeys.Start] = "Start generating",
-                [LangKeys.SelectFramework] = "Which XAML framework do you want to use?",
+                [LangKeys.SelectFramework] = "Which basic framework do you want to use?",
                 [LangKeys.SelectSolutionFormat] = "Select solution format:",
                 [LangKeys.NeedTray] = "Do you need a system tray?",
                 [LangKeys.ProjectName] = "Solution Name",
@@ -122,6 +126,8 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.Text_OutputPath] = "Output path",
                 [LangKeys.Text_Success] = "Success!",
                 [LangKeys.Text_Error] = "An error occurred: ",
+                [LangKeys.Text_Warning] = "Warning: ",
+                [LangKeys.Text_OutputFolder_Exists_Using] = "The output directory already exists, the directory folder will use {0}",
             }
         };
 

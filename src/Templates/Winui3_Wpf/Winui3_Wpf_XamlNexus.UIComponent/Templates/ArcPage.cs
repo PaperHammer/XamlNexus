@@ -11,7 +11,7 @@ using Winui3_Wpf_XamlNexus.UIComponent.Utils;
 
 namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
     public abstract class ArcPage : Page {
-        public virtual ArcPageContext ArcContext { get; set; }
+        public virtual ArcPageContext? ArcContext { get; set; } = null!;
         public abstract Type ArcType { get; }
         /// <summary>
         /// 页面是否被导航系统保活

@@ -279,4 +279,7 @@
   <data name="InfobarMsg_Cancel" xml:space="preserve">
     <value>操作已取消</value>
   </data>
+  <data name="Text_Welcome" xml:space="preserve">
+    <value>欢迎</value>
+  </data>
 </root>

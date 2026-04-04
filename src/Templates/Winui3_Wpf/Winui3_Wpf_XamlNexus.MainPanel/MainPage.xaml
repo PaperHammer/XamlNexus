@@ -7,28 +7,40 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:arc="using:Winui3_Wpf_XamlNexus.UIComponent.Templates"
-    xmlns:input="using:Winui3_Wpf_XamlNexus.UIComponent.Input"
+    xmlns:markup="using:Winui3_Wpf_XamlNexus.UIComponent.ArcMarkupExtension"
     mc:Ignorable="d">
 
-    <arc:ArcPageHost x:Name="MainHost">
-        <Grid>
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-                <input:ArcButton x:Name="myButton1" 
-                    Click="MyButton1_Click"
-                    Foreground="SkyBlue">
-                    Common Loading
-                </input:ArcButton>
-                <input:ArcButton x:Name="myButton2" 
-                    Click="MyButton2_Click"
-                    Background="SkyBlue">
-                    Loading with cancel button
-                </input:ArcButton>
-                <input:ArcButton x:Name="myButton3" 
-                    Click="MyButton3_Click"
-                    Background="Pink">
-                    Loading with proress
-                </input:ArcButton>
-            </StackPanel>
-        </Grid>
-    </arc:ArcPageHost>
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{ThemeResource SystemBaseLowColor}" Offset="0"/>
+                <GradientStop Color="{ThemeResource SystemAccentColorLight3}" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <StackPanel 
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"            
+            Spacing="12">
+
+            <TextBlock Text="{markup:I18n Key=Text_Welcome}"
+                FontSize="16"
+                Opacity="0.6"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                HorizontalAlignment="Center"/>
+
+            <TextBlock x:Name="TimeText"
+                FontSize="64"
+                FontWeight="SemiLight"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                HorizontalAlignment="Center"/>
+
+            <TextBlock x:Name="DateText"
+                FontSize="18"
+                Opacity="0.8"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                HorizontalAlignment="Center"/>
+
+        </StackPanel>
+    </Grid>
 </arc:ArcPage>

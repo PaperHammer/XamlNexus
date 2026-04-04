@@ -9,8 +9,8 @@ using WinUI3Localizer;
 
 namespace Winui3_XamlNexus.UIComponent.Utils {
     public class LanguageUtil {
-        public static ILocalizer LocalizerInstance { get; private set; }
-        public static string CurrentLanguage { get; private set; }
+        public static ILocalizer? LocalizerInstance { get; private set; }
+        public static string? CurrentLanguage { get; private set; }
 
         #region load language       
         public static async void LanguageChanged(string lang) {
@@ -72,7 +72,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils {
         }
 
         private static string LoadFromSource(string key) {
-            return LocalizerInstance.GetLocalizedString(key); // 实际加载逻辑
+            return LocalizerInstance?.GetLocalizedString(key) ?? string.Empty; // 实际加载逻辑
         }
 
         // ref: https://github.com/AndrewKeepCoding/WinUI3Localizer

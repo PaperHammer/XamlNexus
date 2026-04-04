@@ -279,4 +279,7 @@
   <data name="InfobarMsg_Cancel" xml:space="preserve">
     <value>The operation has been canceled</value>
   </data>
+  <data name="Text_Welcome" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
 </root>

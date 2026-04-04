@@ -10,7 +10,6 @@ This tool is suitable for prototype validation, internal tool development, and t
 
 ---
 
-
 ## 🛠 Installation & Commands
 
 **Installation：**
@@ -20,7 +19,7 @@ This tool is suitable for prototype validation, internal tool development, and t
 dotnet pack
 
 # Install globally from local source
-dotnet tool install --global --add-source ./bin/Release XamlNexus.CLI
+dotnet tool install --global --add-source ./XamlNexus/bin/Release XamlNexus
 ```
 
 **Usage：**
@@ -35,12 +34,12 @@ xamlnexus
 ```
 # Update to the latest local build
 dotnet pack
-dotnet tool update --global --add-source ./bin/Release XamlNexus.CLI
+dotnet tool update --global --add-source ./bin/Release XamlNexus
 ```
 
 **Uninstallation：**
 
 ```
 # Remove the tool from your system
-dotnet tool uninstall --global XamlNexus.CLI
+dotnet tool uninstall --global XamlNexus
 ```
