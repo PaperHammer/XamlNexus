@@ -47,6 +47,7 @@ namespace XamlNexus.Common.Utils {
         public static string Text_ProjectNameCapitalized { get; } = "Text_ProjectNameCapitalized";
         public static string Text_Standard_Solution { get; } = "Text_Standard_Solution";
         public static string Text_Modren_XML_Solution { get; } = "Text_Modren_XML_Solution";
+        public static string Text_Notice { get; } = "Text_Notice";
     }
 
     public enum LanguageType {
@@ -106,6 +107,7 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.Text_ProjectNameCapitalized] = "项目名首字母已自动大写",
                 [LangKeys.Text_Standard_Solution] = "标准解决方案",
                 [LangKeys.Text_Modren_XML_Solution] = "现代 xml 解决方案",
+                [LangKeys.Text_Notice] = "提示",
             },
 
             [LanguageType.English] = new() {
@@ -153,6 +155,7 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.Text_ProjectNameCapitalized] = "Project name's first letter was automatically capitalized",
                 [LangKeys.Text_Standard_Solution] = "Standard Solution",
                 [LangKeys.Text_Modren_XML_Solution] = "Modren XML Solution",
+                [LangKeys.Text_Notice] = "Notice",
             }
         };
 

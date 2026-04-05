@@ -76,7 +76,7 @@ namespace XamlNexus.Common.Generators {
 
             if (char.IsLower(config.SlnName[0])) {
                 config.SlnName = char.ToUpper(config.SlnName[0]) + config.SlnName.Substring(1);
-                AnsiConsole.MarkupLine($"[yellow]Notice:[/] {LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameCapitalized)} - [cyan]{config.SlnName}[/]");
+                AnsiConsole.MarkupLine($"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Notice)}:[/] {LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameCapitalized)} - [cyan]{config.SlnName}[/]");
             }
 
             return config;
