@@ -6,7 +6,7 @@ using Winui3_Wpf_XamlNexus.DataAssistor;
 using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
 using Winui3_Wpf_XamlNexus.Models.Cores;
 using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
-using Winui3WpfXamlNexus.Grpc.Service.UserSettings;
+using Winui3_Wpf_XamlNexus.Grpc.Service.UserSettings;
 
 namespace Winui3_Wpf_XamlNexus.Grpc.Client {
     public class UserSettingsClient : IUserSettingsClient {

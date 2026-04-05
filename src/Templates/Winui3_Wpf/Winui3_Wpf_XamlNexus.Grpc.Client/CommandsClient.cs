@@ -4,7 +4,7 @@ using GrpcDotNetNamedPipes;
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
-using Winui3WpfXamlNexus.Grpc.Service.Commands;
+using Winui3_Wpf_XamlNexus.Grpc.Service.Commands;
 
 namespace Winui3_Wpf_XamlNexus.Grpc.Client {
     public class CommandsClient : ICommandsClient {

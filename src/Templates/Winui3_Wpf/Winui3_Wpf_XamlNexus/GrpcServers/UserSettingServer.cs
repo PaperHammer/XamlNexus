@@ -4,8 +4,8 @@ using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
 using Winui3_Wpf_XamlNexus.Services.Interfaces;
 using Winui3_Wpf_XamlNexus.Utils;
-using Winui3WpfXamlNexus.Grpc.Service.CommonModels;
-using Winui3WpfXamlNexus.Grpc.Service.UserSettings;
+using Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels;
+using Winui3_Wpf_XamlNexus.Grpc.Service.UserSettings;
 
 namespace Winui3_Wpf_XamlNexus.GrpcServers {
     public class UserSettingServer(

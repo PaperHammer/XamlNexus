@@ -34,8 +34,8 @@ namespace XamlNexus.Common.Generators {
                         .Title(LanguageRegistry.GetI18n(LangKeys.SelectSolutionFormat))
                         .AddChoices(Enum.GetValues<SolutionType>())
                         .UseConverter(format => format switch {
-                            SolutionType.Sln => "Standard Solution (.sln) [.NET 8]".EscapeMarkup(),
-                            //SolutionType.Slnx => "Modern XML Solution (.slnx) [.NET 10 with VS 2026+]".EscapeMarkup(),
+                            SolutionType.Sln => $"{LanguageRegistry.GetI18n(LangKeys.Text_Standard_Solution)} (.sln) [.NET 8]".EscapeMarkup(),
+                            //SolutionType.Slnx => $"{LanguageRegistry.GetI18n(LangKeys.Text_Modren_XML_Solution)} (.slnx) [.NET 10 with VS 2026+]".EscapeMarkup(),
                             _ => format.ToString()
                         })),
 
@@ -45,13 +45,13 @@ namespace XamlNexus.Common.Generators {
                         .PromptStyle("gray")
                         .Validate(name => {
                             if (string.IsNullOrWhiteSpace(name))
-                                return ValidationResult.Error("[red]Project name cannot be empty[/]");
+                                return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameEmpty)}[/]");
 
-                            if (name.Any(c => Path.GetInvalidFileNameChars().Contains(c) || char.IsWhiteSpace(c)))
-                                return ValidationResult.Error("[red]Project name contains invalid characters or spaces[/]");
-                            
+                            if (!name.All(c => char.IsLetterOrDigit(c) || c == '_'))
+                                return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameInvalidChars)}[/]");
+
                             if (!(char.IsLetter(name[0]) || name[0] == '_'))
-                                return ValidationResult.Error("[red]Project name must start with a letter or underscore[/]");
+                                return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameStartChar)}[/]");
 
                             return ValidationResult.Success();
                         })),
@@ -62,17 +62,22 @@ namespace XamlNexus.Common.Generators {
                         .PromptStyle("gray")
                         .Validate(path => {
                             if (string.IsNullOrWhiteSpace(path))
-                                return ValidationResult.Error("[red]Path cannot be empty[/]");
+                                return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_PathEmpty)}[/]");
 
                             if (path.Any(c => Path.GetInvalidPathChars().Contains(c)))
-                                return ValidationResult.Error("[red]Path contains invalid characters[/]");
+                                return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_PathInvalidChars)}[/]");
 
                             if (!Path.IsPathRooted(path))
-                                return ValidationResult.Error("[red]Please enter a full absolute path[/]");
+                                return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_PathNotAbsolute)}[/]");
 
                             return ValidationResult.Success();
                         })),
             };
+
+            if (char.IsLower(config.SlnName[0])) {
+                config.SlnName = char.ToUpper(config.SlnName[0]) + config.SlnName.Substring(1);
+                AnsiConsole.MarkupLine($"[yellow]Notice:[/] {LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameCapitalized)} - [cyan]{config.SlnName}[/]");
+            }
 
             return config;
         }

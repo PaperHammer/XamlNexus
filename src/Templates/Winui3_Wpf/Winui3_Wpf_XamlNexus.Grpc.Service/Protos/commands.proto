@@ -1,5 +1,6 @@
 syntax = "proto3";
 package Winui3_Wpf_XamlNexus.Grpc.Service.Commands;
+option csharp_namespace ="Winui3_Wpf_XamlNexus.Grpc.Service.Commands";
 import "google/protobuf/empty.proto";
 import "Protos/common_models.proto";
 

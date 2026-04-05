@@ -38,6 +38,15 @@ namespace XamlNexus.Common.Utils {
         public static string Text_Error { get; } = "Text_Error";
         public static string Text_Warning { get; } = "Text_Warning";
         public static string Text_OutputFolder_Exists_Using { get; } = "Text_OutputFolder_Exists_Using";
+        public static string Text_ProjectNameEmpty { get; } = "Text_ProjectNameEmpty";
+        public static string Text_ProjectNameInvalidChars { get; } = "Text_ProjectNameInvalidChars";
+        public static string Text_ProjectNameStartChar { get; } = "Text_ProjectNameStartChar";
+        public static string Text_PathEmpty { get; } = "Text_PathEmpty";
+        public static string Text_PathInvalidChars { get; } = "Text_PathInvalidChars";
+        public static string Text_PathNotAbsolute { get; } = "Text_PathNotAbsolute";
+        public static string Text_ProjectNameCapitalized { get; } = "Text_ProjectNameCapitalized";
+        public static string Text_Standard_Solution { get; } = "Text_Standard_Solution";
+        public static string Text_Modren_XML_Solution { get; } = "Text_Modren_XML_Solution";
     }
 
     public enum LanguageType {
@@ -68,7 +77,6 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.TemplateWinui3NotFound] = "未找到 WinUI 3 模板。请确保已安装: dotnet workload install windowsappsdk",
                 [LangKeys.Text_Frontend] = "前台",
                 [LangKeys.Text_Backend] = "后台",
-
                 [LangKeys.Text_Start] = "开始",
                 [LangKeys.Text_Generating_Module] = "生成模块",
                 [LangKeys.Text_Generating] = "正在生成...",
@@ -89,6 +97,15 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.Text_Error] = "发生错误: ",
                 [LangKeys.Text_Warning] = "警告: ",
                 [LangKeys.Text_OutputFolder_Exists_Using] = "输出目录已存在，目录文件夹将使用 {0}",
+                [LangKeys.Text_ProjectNameEmpty] = "项目名不能为空",
+                [LangKeys.Text_ProjectNameInvalidChars] = "项目名只能包含字母、数字和下划线",
+                [LangKeys.Text_ProjectNameStartChar] = "项目名必须以字母或下划线开头",
+                [LangKeys.Text_PathEmpty] = "路径不能为空",
+                [LangKeys.Text_PathInvalidChars] = "路径包含非法字符",
+                [LangKeys.Text_PathNotAbsolute] = "请使用绝对路径",
+                [LangKeys.Text_ProjectNameCapitalized] = "项目名首字母已自动大写",
+                [LangKeys.Text_Standard_Solution] = "标准解决方案",
+                [LangKeys.Text_Modren_XML_Solution] = "现代 xml 解决方案",
             },
 
             [LanguageType.English] = new() {
@@ -107,7 +124,6 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.TemplateWinui3NotFound] = "WinUI 3 template not found. Run: dotnet workload install windowsappsdk",
                 [LangKeys.Text_Frontend] = "Frontend",
                 [LangKeys.Text_Backend] = "Backend",
-
                 [LangKeys.Text_Start] = "Start",
                 [LangKeys.Text_Generating_Module] = "Generat Modules",
                 [LangKeys.Text_Generating] = "Generating...",
@@ -128,6 +144,15 @@ namespace XamlNexus.Common.Utils {
                 [LangKeys.Text_Error] = "An error occurred: ",
                 [LangKeys.Text_Warning] = "Warning: ",
                 [LangKeys.Text_OutputFolder_Exists_Using] = "The output directory already exists, the directory folder will use {0}",
+                [LangKeys.Text_ProjectNameEmpty] = "Project name cannot be empty",
+                [LangKeys.Text_ProjectNameInvalidChars] = "Project name can only contain letters, numbers, and underscore",
+                [LangKeys.Text_ProjectNameStartChar] = "Project name must start with a letter or underscore",
+                [LangKeys.Text_PathEmpty] = "Path cannot be empty",
+                [LangKeys.Text_PathInvalidChars] = "Path contains invalid characters",
+                [LangKeys.Text_PathNotAbsolute] = "Please enter a full absolute path",
+                [LangKeys.Text_ProjectNameCapitalized] = "Project name's first letter was automatically capitalized",
+                [LangKeys.Text_Standard_Solution] = "Standard Solution",
+                [LangKeys.Text_Modren_XML_Solution] = "Modren XML Solution",
             }
         };
 

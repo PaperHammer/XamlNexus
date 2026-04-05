@@ -3,8 +3,8 @@ using Grpc.Core;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Common.Utils.IPC;
 using Winui3_Wpf_XamlNexus.Services.Interfaces;
-using Winui3WpfXamlNexus.Grpc.Service.Commands;
-using Winui3WpfXamlNexus.Grpc.Service.CommonModels;
+using Winui3_Wpf_XamlNexus.Grpc.Service.Commands;
+using Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels;
 
 namespace Winui3_Wpf_XamlNexus.GrpcServers {
     public class CommandsServer(

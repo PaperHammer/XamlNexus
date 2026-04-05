@@ -1,7 +1,7 @@
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Models.Cores;
 using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
-using Winui3WpfXamlNexus.Grpc.Service.CommonModels;
+using Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels;
 
 namespace Winui3_Wpf_XamlNexus.DataAssistor {
     public static class DataAssist {

@@ -21,9 +21,9 @@ using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
 using Winui3_Wpf_XamlNexus.Services;
 using Winui3_Wpf_XamlNexus.Services.Interfaces;
 using Winui3_Wpf_XamlNexus.Utils;
-using Winui3WpfXamlNexus.Grpc.Service.Commands;
-using Winui3WpfXamlNexus.Grpc.Service.Update;
-using Winui3WpfXamlNexus.Grpc.Service.UserSettings;
+using Winui3_Wpf_XamlNexus.Grpc.Service.Commands;
+using Winui3_Wpf_XamlNexus.Grpc.Service.Update;
+using Winui3_Wpf_XamlNexus.Grpc.Service.UserSettings;
 using Wpf.Ui;
 using Wpf.Ui.Appearance;
 

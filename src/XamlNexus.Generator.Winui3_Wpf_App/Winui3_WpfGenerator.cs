@@ -13,7 +13,6 @@ namespace XamlNexus.Generator.Winui3_Wpf_App {
         protected override Dictionary<string, string> GetCustomTokens(ProjectConfig config) {
             return new Dictionary<string, string> {
                 { "Winui3_Wpf_XamlNexus", config.SlnName },
-                { "Winui3WpfXamlNexus", config.SlnName }
             };
         }
 

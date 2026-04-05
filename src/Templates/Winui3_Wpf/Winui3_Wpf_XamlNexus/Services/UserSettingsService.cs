@@ -33,6 +33,7 @@ namespace Winui3_Wpf_XamlNexus.Services {
                 ArcLog.GetLogger<UserSettingsService>().Error(e);
             }
         }
+
         public void Load<T>() {
             if (typeof(T) == typeof(ISettings)) {
                 try {

@@ -5,8 +5,8 @@ using Grpc.Core;
 using Winui3_Wpf_XamlNexus.Common.Events;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Core.AppUpdate;
-using Winui3WpfXamlNexus.Grpc.Service.CommonModels;
-using Winui3WpfXamlNexus.Grpc.Service.Update;
+using Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels;
+using Winui3_Wpf_XamlNexus.Grpc.Service.Update;
 
 namespace Winui3_Wpf_XamlNexus.GrpcServers {
     public class AppUpdateServer(
