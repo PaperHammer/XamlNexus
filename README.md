@@ -12,6 +12,8 @@ This tool is suitable for prototype validation, internal tool development, and t
 
 ## 🛠 Installation & Commands
 
+⚠️ All commands should be executed in the project root directory.
+
 **Installation：**
 
 ```
@@ -19,7 +21,7 @@ This tool is suitable for prototype validation, internal tool development, and t
 dotnet pack
 
 # Install globally from local source
-dotnet tool install --global --add-source ./XamlNexus/bin/Release XamlNexus
+dotnet tool install --global --add-source ./XamlNexus/bin/Release XamlNexus（）
 ```
 
 **Usage：**
