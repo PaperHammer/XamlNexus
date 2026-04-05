@@ -12,7 +12,6 @@
 		<PackageVersion>1.0.0</PackageVersion>
 		<Authors>PaperHammer</Authors>
 		<PackageProjectUrl>https://github.com/PaperHammer/XamlNexus</PackageProjectUrl>
-		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
 		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/PaperHammer/XamlNexus</RepositoryUrl>
@@ -21,21 +20,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="../../README.md" Pack="true" PackagePath="\"/>
+		<None Include="../../README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="..\Templates\**\*"
-				 Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**;..\Templates\**\.vs\**;..\Templates\**\Plugins\**">
+		<Content Include="..\Templates\**\*" Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**;..\Templates\**\.vs\**;..\Templates\**\Plugins\**">
 			<Pack>true</Pack>
 			<PackagePath>tools/$(TargetFramework)/any/Templates/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
 		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Include="xamlnexus.ico">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -55,7 +47,7 @@
 		<RemoveDir Directories="$(OutDir)Templates" />
 		
 		<ItemGroup>
-			<TemplateFiles Include="$(SolutionDir)Templates\**\*" Exclude="&#xD;&#xA;					$(SolutionDir)Templates\**\bin\**;&#xD;&#xA;					$(SolutionDir)Templates\**\obj\**;&#xD;&#xA;				" />
+			<TemplateFiles Include="$(SolutionDir)Templates\**\*" Exclude="&#xD;&#xA; $(SolutionDir)Templates\**\bin\**;&#xD;&#xA; $(SolutionDir)Templates\**\obj\**;&#xD;&#xA;" />
 		</ItemGroup>
 
 		<Copy SourceFiles="@(TemplateFiles)" DestinationFolder="$(OutDir)Templates\%(RecursiveDir)" />
