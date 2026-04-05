@@ -33,6 +33,7 @@ namespace Winui3_XamlNexus.UI {
             base.InitializeWindow();
 
             _userSettings = userSettings;
+            this.Closed += MainWindow_Closed;
         }
 
         private void InitWindowConst() {
@@ -40,7 +41,7 @@ namespace Winui3_XamlNexus.UI {
             WindowConsts.WindowHandle = WindowNative.GetWindowHandle(this);
         }
 
-        private void WindowEx_Closed(object sender, WindowEventArgs args) {
+        private void MainWindow_Closed(object sender, WindowEventArgs args) {
             App.ShutDown();
         }
 

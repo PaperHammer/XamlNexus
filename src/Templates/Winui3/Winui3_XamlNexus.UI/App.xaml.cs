@@ -101,7 +101,6 @@ namespace Winui3_XamlNexus.UI {
 
             var m_window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
             m_window.Show();
-            m_window.Activate();
         }
 
         private ServiceProvider ConfigureServices() {

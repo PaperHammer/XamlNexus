@@ -32,7 +32,7 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
             }
 
             this.Activated += ArcWindow_Activated;
-            this.Closed += ArcWindow_Closed;
+            this.AppWindow.Closing += AppWindow_Closing;
         }
 
         private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
@@ -43,12 +43,9 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
             ArcWindowTitleBarUtil.UpdateTitleBar(this, ArcThemeUtil.GetFormatMainWindowTheme(), isActive);
         }
 
-        private void ArcWindow_Closed(object sender, WindowEventArgs args) {
-            // 点击关闭按钮时，主窗口会卡住几秒，才关闭窗口 todo（优化）
-            this.Hide();
-            // Window.Closed 的触发时机并不保证晚于 Activated/VisibilityChanged
+        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
             this.Activated -= ArcWindow_Activated;
-            // 避免子窗口的关闭导致 ArcThemeUtil 清理
+
             if (IsMainWindow) {
                 ArcWindowManager.Cleanup();
                 ArcThemeUtil.Cleanup();
@@ -58,7 +55,7 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
         private async void AppRoot_Loaded(object sender, RoutedEventArgs e) {
             _compositor = ElementCompositionPreview.GetElementVisual(this.ContentHost.AppRoot).Compositor;
             _isLoaded = true;
-            await SetThemeAsync(); // todo 待优化
+            await SetThemeAsync();
         }
 
         protected void InitializeWindow() {
@@ -69,7 +66,7 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
             }
             SetWindowStartupPosition();
             SetWindowStyle();
-            SetWindowTitleBar(); // todo 待优化
+            SetWindowTitleBar();
         }
 
         #region theme

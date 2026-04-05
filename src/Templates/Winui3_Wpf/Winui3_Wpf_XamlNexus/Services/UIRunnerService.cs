@@ -73,16 +73,6 @@ namespace Winui3_Wpf_XamlNexus.Services {
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                 }
-
-                if (!_isFirstRun) {
-                    try {
-                        SetWindowRect(_processUI, prevWindowRect);
-                    }
-                    catch (Exception ie) {
-                        ArcLog.GetLogger<UIRunnerService>().Error(ie);
-                    }
-                }
-                _isFirstRun = false;
             }
         }
 
@@ -91,7 +81,6 @@ namespace Winui3_Wpf_XamlNexus.Services {
                 try {
                     _processUI.Exited -= Proc_UI_Exited;
                     _processUI.OutputDataReceived -= Proc_OutputDataReceived;
-                    _ = Native.GetWindowRect(_processUI.MainWindowHandle, out prevWindowRect);
                     if (!_processUI.Responding || !_processUI.CloseMainWindow() || !_processUI.WaitForExit(500)) {
                         _processUI.Kill();
                     }
@@ -112,7 +101,6 @@ namespace Winui3_Wpf_XamlNexus.Services {
                 return;
 
             try {
-                _ = Native.GetWindowRect(_processUI.MainWindowHandle, out prevWindowRect);
                 if (!_processUI.Responding || !_processUI.CloseMainWindow() || !_processUI.WaitForExit(3500)) {
                     _processUI.Kill();
                 }
@@ -120,13 +108,6 @@ namespace Winui3_Wpf_XamlNexus.Services {
             catch (Exception e) {
                 ArcLog.GetLogger<UIRunnerService>().Error(e);
             }
-        }
-
-        public void SaveRectUI() {
-            if (_processUI == null)
-                return;
-
-            _ = Native.GetWindowRect(_processUI.MainWindowHandle, out prevWindowRect);
         }
 
         public nint GetUIHwnd() {
@@ -222,8 +203,6 @@ namespace Winui3_Wpf_XamlNexus.Services {
 
         private Process? _processUI;
         private readonly IMonitorManager _monitorManager;
-        private bool _isFirstRun = true;
-        private Native.RECT prevWindowRect = new() { Left = 50, Top = 50, Right = 925, Bottom = 925 };
         private readonly string _fileName, _workingDir;
     }
 }
