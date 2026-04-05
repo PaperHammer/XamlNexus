@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<arc:ArcWindow
+    x:Class="Winui3_Wpf_XamlNexus.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Winui3_Wpf_XamlNexus.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:arc="using:Winui3_Wpf_XamlNexus.UIComponent.Templates"
+    xmlns:navi="using:Winui3_Wpf_XamlNexus.UIComponent.Navigation"
+    xmlns:styles="using:Winui3_Wpf_XamlNexus.UIComponent.Styles"
+    xmlns:markup="using:Winui3_Wpf_XamlNexus.UIComponent.ArcMarkupExtension"
+    mc:Ignorable="d"
+    Width="1460" Height="900"
+    MinHeight="648" MinWidth="800"
+    Title="Winui3_Wpf_XamlNexus.UI">
+
+    <arc:ArcWindowHost x:Name="MainHost">
+        <Grid x:Name="MainGrid">
+            <navi:ArcNavigationView x:Name="NavigationViewControl"
+                CompactPaneLength="64"
+                IsBackButtonVisible="Visible"
+                IsBackEnabled="False"
+                IsPaneToggleButtonVisible="False"
+                IsSettingsVisible="False"
+                IsTabStop="False"
+                SelectionChanged="OnNavigationViewSelectionChanged">
+                <navi:ArcNavigationView.MenuItems>
+                    <NavigationViewItem x:Name="Nav_MainPage" IsSelected="True">
+                        <NavigationViewItem.ContentTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="-10,4,0,4">
+                                    <FontIcon Glyph="&#xE80F;" FontSize="22" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{markup:I18n Key=SidebarHomePage}" FontSize="12" HorizontalAlignment="Center" Margin="0 4 0 0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </NavigationViewItem.ContentTemplate>
+                    </NavigationViewItem>
+                </navi:ArcNavigationView.MenuItems>
+
+                <navi:ArcNavigationView.PaneFooter>
+                    <StackPanel x:Name="FooterStackPanel" 
+                        Orientation="Vertical"
+                        HorizontalAlignment="Stretch"
+                        Margin="-2 0 0 0">
+                        <Button x:Name="LightAndDarkButton" 
+                            Style="{StaticResource ArcNavigationButtonNormalStyle}"
+                            VerticalAlignment="Center" 
+                            HorizontalContentAlignment="Center"
+                            Width="Auto"
+                            HorizontalAlignment="Stretch"
+                            Click="LightAndDarkButton_Click">
+                            <styles:ArcImageIcon Width="28" ResourceKey="{x:Bind PropertyHost.ThemeIconKey, Mode=OneWay}"/>
+                        </Button>
+                    </StackPanel>
+                </navi:ArcNavigationView.PaneFooter>
+
+                <navi:ArcNavigationView.FooterMenuItems>
+                    <NavigationViewItem x:Name="Nav_AppSettings">
+                        <NavigationViewItem.ContentTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="-10,4,0,4">
+                                    <FontIcon Glyph="&#xE713;" FontSize="22" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </NavigationViewItem.ContentTemplate>
+                    </NavigationViewItem>
+                </navi:ArcNavigationView.FooterMenuItems>
+
+                <navi:ArcNavigationContentView x:Name="NaviContent" InfobarMessages="{x:Bind InfobarMessages}"/>
+            </navi:ArcNavigationView>
+        </Grid>
+    </arc:ArcWindowHost>
+</arc:ArcWindow>

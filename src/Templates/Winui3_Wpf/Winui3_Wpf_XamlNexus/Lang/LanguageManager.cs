@@ -1,0 +1,26 @@
+using System.Globalization;
+using System.Resources;
+using Winui3_Wpf_XamlNexus.Models.Mvvm;
+
+namespace Winui3_Wpf_XamlNexus.Lang {
+    public partial class LanguageManager : ObservableObject {
+        public static LanguageManager Instance => _lazy.Value;
+
+        public LanguageManager() {
+            _resourceManager = new ResourceManager("Winui3_Wpf_XamlNexus.Properties.lang", typeof(LanguageManager).Assembly);
+        }
+
+        public string this[string name] {
+            get => _resourceManager.GetString(name) ?? "";
+        }
+
+        public void ChangeLanguage(CultureInfo cultureInfo) {
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
+            OnPropertyChanged("Item[]");
+        }
+
+        private readonly ResourceManager _resourceManager;
+        private static readonly Lazy<LanguageManager> _lazy = new(() => new LanguageManager());
+    }
+}

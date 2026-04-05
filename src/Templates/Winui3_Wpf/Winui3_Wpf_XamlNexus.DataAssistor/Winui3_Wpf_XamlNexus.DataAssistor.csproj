@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Winui3_Wpf_XamlNexus.Grpc.Service\Winui3_Wpf_XamlNexus.Grpc.Service.csproj" />
+		<ProjectReference Include="..\Winui3_Wpf_XamlNexus.Models\Winui3_Wpf_XamlNexus.Models.csproj" />
+	</ItemGroup>
+
+</Project>

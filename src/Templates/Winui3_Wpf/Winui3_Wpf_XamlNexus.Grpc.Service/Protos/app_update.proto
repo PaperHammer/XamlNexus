@@ -1,0 +1,13 @@
+syntax = "proto3";
+package Winui3_Wpf_XamlNexus.Grpc.Service.Update;
+option csharp_namespace="Winui3_Wpf_XamlNexus.Grpc.Service.Update";
+import "google/protobuf/empty.proto";
+import "Protos/common_models.proto";
+
+service Grpc_UpdateService {
+	rpc CheckUpdate (google.protobuf.Empty) returns (google.protobuf.Empty);
+	rpc GetUpdateStatus (google.protobuf.Empty) returns (Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels.Grpc_UpdateResponse);
+	rpc StartDownload (google.protobuf.Empty) returns (google.protobuf.Empty);
+	rpc GetCoreStats(google.protobuf.Empty) returns (Winui3_Wpf_XamlNexus.Grpc.Service.CommonModels.Grpc_GetCoreStatsResponse);
+	rpc SubscribeUpdateChecked (google.protobuf.Empty) returns (stream google.protobuf.Empty);
+}

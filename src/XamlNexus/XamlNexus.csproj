@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>		
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>xamlnexus</ToolCommandName>
+		<PackageId>XamlNexus</PackageId>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<PackageVersion>1.0.0</PackageVersion>
+		<Authors>PaperHammer</Authors>
+		<PackageProjectUrl>https://github.com/PaperHammer/XamlNexus</PackageProjectUrl>
+		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
+		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/PaperHammer/XamlNexus</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Description>Quickly generate Windows desktop application prototypes using the .NET CLI scaffolding tool, based on common XAML frameworks such as WPF and WinUI 3.</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../../README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\Templates\**\*"
+				 Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**;..\Templates\**\.vs\**;..\Templates\**\Plugins\**">
+			<Pack>true</Pack>
+			<PackagePath>tools/$(TargetFramework)/any/Templates/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="xamlnexus.ico">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
+		<ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
+		<ProjectReference Include="..\XamlNexus.Generator.WpfApp\XamlNexus.Generator.WpfApp.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="XamlNexus_128x128.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
+	<Target Name="CopyTemplates" AfterTargets="Build">
+		<RemoveDir Directories="$(OutDir)Templates" />
+		
+		<ItemGroup>
+			<TemplateFiles Include="$(SolutionDir)Templates\**\*" Exclude="&#xD;&#xA;					$(SolutionDir)Templates\**\bin\**;&#xD;&#xA;					$(SolutionDir)Templates\**\obj\**;&#xD;&#xA;				" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(TemplateFiles)" DestinationFolder="$(OutDir)Templates\%(RecursiveDir)" />
+	</Target>
+</Project>
