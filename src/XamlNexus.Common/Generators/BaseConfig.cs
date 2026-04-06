@@ -4,9 +4,9 @@ using XamlNexus.Common.Utils;
 
 namespace XamlNexus.Common.Generators {
     public abstract class BaseConfig : IConfig {
-        public static void ShowLogo() {
+        public static void ShowLogo(string version) {
             AnsiConsole.Write(new FigletText("XamlNexus").Color(Color.Cyan1));
-            AnsiConsole.Write(new Rule("[grey]v1.0.0[/]").RightJustified());
+            AnsiConsole.Write(new Rule($"[grey]v{version}[/]").RightJustified());
         }
 
         public static ProjectConfig BaseComposeConfig() {

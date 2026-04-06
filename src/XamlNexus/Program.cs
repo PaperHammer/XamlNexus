@@ -1,3 +1,4 @@
+using System.Reflection;
 using Spectre.Console;
 using XamlNexus.Common.Generators;
 using XamlNexus.Utils;
@@ -6,7 +7,14 @@ namespace XamlNexus {
     internal class Program {
         static void Main(string[] args) {            
             try {
-                BaseConfig.ShowLogo();
+                var rawVersion = Assembly
+                    .GetExecutingAssembly()
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    ?.InformationalVersion;
+
+                var version = rawVersion?.Split('+')[0] ?? "unknown";
+
+                BaseConfig.ShowLogo(version);
                 var config = BaseConfig.BaseComposeConfig();
                 var extraConfig = ConfigFactory.GetGenerator(config!.Framework).ExtraComposeConfig();
                 config.Merge(extraConfig);
