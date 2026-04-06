@@ -8,8 +8,8 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>xamlnexus</ToolCommandName>
 		<PackageId>XamlNexus</PackageId>
-		<AssemblyVersion>1.0.0</AssemblyVersion>
-		<PackageVersion>1.0.0</PackageVersion>
+		<AssemblyVersion>1.0.2</AssemblyVersion>
+		<PackageVersion>1.0.2</PackageVersion>
 		<Authors>PaperHammer</Authors>
 		<PackageProjectUrl>https://github.com/PaperHammer/XamlNexus</PackageProjectUrl>
 		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
@@ -17,10 +17,11 @@
 		<RepositoryUrl>https://github.com/PaperHammer/XamlNexus</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>Quickly generate Windows desktop application prototypes using the .NET CLI scaffolding tool, based on common XAML frameworks such as WPF and WinUI 3.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="../../README.md" Pack="true" PackagePath="\" />
+		<None Include="./README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>
