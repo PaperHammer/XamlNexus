@@ -33,11 +33,6 @@ namespace Winui3_Wpf_XamlNexus.GrpcServers {
             }
         }
 
-        public override Task<Empty> SaveRectUI(Empty _, ServerCallContext context) {
-            _runner.SaveRectUI();
-            return Task.FromResult(new Empty());
-        }
-
         public override async Task SubscribeUIRecievedCmd(Empty request, IServerStreamWriter<Grpc_UIRecievedCmd> responseStream, ServerCallContext context) {
             try {
                 while (!context.CancellationToken.IsCancellationRequested) {

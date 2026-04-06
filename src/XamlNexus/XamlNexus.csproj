@@ -8,34 +8,27 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>xamlnexus</ToolCommandName>
 		<PackageId>XamlNexus</PackageId>
-		<AssemblyVersion>1.0.0</AssemblyVersion>
-		<PackageVersion>1.0.0</PackageVersion>
+		<AssemblyVersion>1.0.2</AssemblyVersion>
+		<PackageVersion>1.0.2</PackageVersion>
 		<Authors>PaperHammer</Authors>
 		<PackageProjectUrl>https://github.com/PaperHammer/XamlNexus</PackageProjectUrl>
-		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
 		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/PaperHammer/XamlNexus</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>Quickly generate Windows desktop application prototypes using the .NET CLI scaffolding tool, based on common XAML frameworks such as WPF and WinUI 3.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="../../README.md" Pack="true" PackagePath="\"/>
+		<None Include="./README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="..\Templates\**\*"
-				 Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**;..\Templates\**\.vs\**;..\Templates\**\Plugins\**">
+		<Content Include="..\Templates\**\*" Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**;..\Templates\**\.vs\**;..\Templates\**\Plugins\**">
 			<Pack>true</Pack>
 			<PackagePath>tools/$(TargetFramework)/any/Templates/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
 		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Include="xamlnexus.ico">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -55,7 +48,7 @@
 		<RemoveDir Directories="$(OutDir)Templates" />
 		
 		<ItemGroup>
-			<TemplateFiles Include="$(SolutionDir)Templates\**\*" Exclude="&#xD;&#xA;					$(SolutionDir)Templates\**\bin\**;&#xD;&#xA;					$(SolutionDir)Templates\**\obj\**;&#xD;&#xA;				" />
+			<TemplateFiles Include="$(SolutionDir)Templates\**\*" Exclude="&#xD;&#xA; $(SolutionDir)Templates\**\bin\**;&#xD;&#xA; $(SolutionDir)Templates\**\obj\**;&#xD;&#xA;" />
 		</ItemGroup>
 
 		<Copy SourceFiles="@(TemplateFiles)" DestinationFolder="$(OutDir)Templates\%(RecursiveDir)" />

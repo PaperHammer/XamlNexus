@@ -6,7 +6,5 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces {
         Task CloseUI();
         Task RestartUI();
         Task ShutDown();
-        void SaveRectUI();
-        Task SaveRectUIAsync();
     }
 }

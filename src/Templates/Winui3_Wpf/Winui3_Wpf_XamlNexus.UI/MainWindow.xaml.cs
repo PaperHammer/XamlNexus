@@ -37,6 +37,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             _userSettings = userSettings;
             _commandsClient = commandsClient;
             _commandsClient.UIRecieveCmd += CommandsClient_UIRecieveCmd;
+            this.Closed += MainWindow_Closed;
         }
 
         private void InitWindowConst() {
@@ -44,7 +45,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             WindowConsts.WindowHandle = WindowNative.GetWindowHandle(this);
         }
 
-        private void WindowEx_Closed(object sender, WindowEventArgs args) {
+        private void MainWindow_Closed(object sender, WindowEventArgs args) {
             App.ShutDown();
         }
 
