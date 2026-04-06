@@ -1,5 +1,10 @@
 # XAML-Nexus
 
+![NuGet Version](https://img.shields.io/nuget/v/XamlNexus)
+[![GitHub stars](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FPaperHammer%2FXamlNexus&query=stargazers_count&label=Stars&color=pink)](https://github.com/PaperHammer/XamlNexus/stargazers)
+[![Documentation](https://img.shields.io/badge/Docs-Wiki-green)](https://github.com/PaperHammer/XamlNexus/wiki)
+[![Issues](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FPaperHammer%2FXamlNexus&query=open_issues&label=Issues&color=orange)](https://github.com/PaperHammer/XamlNexus/issues)
+
 ## ✨ Project Overview
 
 This project is a .NET CLI-based scaffolding tool designed for quickly generating Windows desktop application prototypes, supporting common XAML frameworks such as WPF and WinUI 3.
@@ -21,7 +26,7 @@ This tool is suitable for prototype validation, internal tool development, and t
 dotnet pack
 
 # Install globally from local source
-dotnet tool install --global --add-source ./XamlNexus/bin/Release XamlNexus（）
+dotnet tool install --global --add-source ./XamlNexus/bin/Release XamlNexus
 ```
 
 **Usage：**
@@ -36,7 +41,7 @@ xamlnexus
 ```
 # Update to the latest local build
 dotnet pack
-dotnet tool update --global --add-source ./bin/Release XamlNexus
+dotnet tool update --global --add-source ./XamlNexus/bin/Release XamlNexus
 ```
 
 **Uninstallation：**
