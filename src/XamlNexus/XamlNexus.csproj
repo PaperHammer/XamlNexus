@@ -8,8 +8,9 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>xamlnexus</ToolCommandName>
 		<PackageId>XamlNexus</PackageId>
-		<AssemblyVersion>1.0.2</AssemblyVersion>
-		<PackageVersion>1.0.2</PackageVersion>
+		<Version>1.0.3</Version>
+		<AssemblyVersion>1.0.3</AssemblyVersion>
+		<PackageVersion>1.0.3</PackageVersion>
 		<Authors>PaperHammer</Authors>
 		<PackageProjectUrl>https://github.com/PaperHammer/XamlNexus</PackageProjectUrl>
 		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
