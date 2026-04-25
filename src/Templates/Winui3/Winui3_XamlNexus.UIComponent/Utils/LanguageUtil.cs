@@ -72,7 +72,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils {
         }
 
         private static string LoadFromSource(string key) {
-            return LocalizerInstance?.GetLocalizedString(key) ?? string.Empty; // 实际加载逻辑
+            return LocalizerInstance?.GetLocalizedString(key) ?? key; // 实际加载逻辑
         }
 
         // ref: https://github.com/AndrewKeepCoding/WinUI3Localizer
