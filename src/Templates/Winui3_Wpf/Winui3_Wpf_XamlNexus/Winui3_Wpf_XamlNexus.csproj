@@ -8,9 +8,13 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
 		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- The generated resource class follows the legacy lowercase lang.resx filename. -->
+		<NoWarn>$(NoWarn);CS8981</NoWarn>
+		<!-- Plugins are runtime artifacts, not WPF source files. -->
+		<DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)\Plugins\**</DefaultItemExcludes>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -31,6 +35,13 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Winui3_Wpf_XamlNexus.DataAssistor\Winui3_Wpf_XamlNexus.DataAssistor.csproj" />
+	  <!-- The WinUI project produces the UI plugin consumed by this host. -->
+	  <ProjectReference Include="..\Winui3_Wpf_XamlNexus.UI\Winui3_Wpf_XamlNexus.UI.csproj"
+	                    Condition="'$(PublishDesktopInstaller)' != 'true'"
+	                    AdditionalProperties="Platform=x64"
+	                    ReferenceOutputAssembly="false"
+	                    SkipGetTargetFrameworkProperties="true"
+	                    PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -49,18 +60,33 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Plugins\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="Plugins\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Nlog.config">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+
+	<!--
+		Evaluate the plugin files only after the WinUI dependency has built them.
+		A static Content wildcard is evaluated too early on clean builds and races
+		with the WinUI project's clean/build targets during parallel Rebuilds.
+	-->
+	<Target Name="CopyUiPluginToOutput" AfterTargets="Build">
+		<ItemGroup>
+			<UiPluginFile Include="$(MSBuildProjectDirectory)\Plugins\UI\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(UiPluginFile)"
+		      DestinationFiles="@(UiPluginFile->'$(OutDir)Plugins\UI\%(RecursiveDir)%(Filename)%(Extension)')"
+		      SkipUnchangedFiles="true" />
+	</Target>
+
+	<Target Name="CopyUiPluginToPublishDirectory"
+	        AfterTargets="Publish"
+	        Condition="'$(PublishDesktopInstaller)' == 'true'">
+		<ItemGroup>
+			<UiPluginPublishFile Include="$(MSBuildProjectDirectory)\Plugins\UI\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(UiPluginPublishFile)"
+		      DestinationFiles="@(UiPluginPublishFile->'$(PublishDir)Plugins\UI\%(RecursiveDir)%(Filename)%(Extension)')"
+		      SkipUnchangedFiles="true" />
+	</Target>
 </Project>

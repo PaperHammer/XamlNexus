@@ -21,18 +21,22 @@ namespace Winui3_Wpf_XamlNexus.Utils {
         /// </summary>
         /// <param name="setAutoStart">Add or delete entry.</param>
         private static void SetAutoStartRegistry(bool setAutoStart = false) {
-            Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             Assembly curAssembly = Assembly.GetExecutingAssembly();
-            try {
-                if (setAutoStart) {
-                    key?.SetValue(curAssembly.GetName().Name, "\"" + Path.ChangeExtension(curAssembly.Location, ".exe") + "\"");
-                }
-                else {
-                    key?.DeleteValue(curAssembly.GetName().Name, false);
-                }
+            string appName = curAssembly.GetName().Name ?? Consts.CoreField.AppName;
+            using Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                writable: true);
+
+            if (key is null) {
+                ArcLog.GetLogger<App>().Error("Unable to open the current-user startup registry key.");
+                return;
             }
-            finally {
-                key?.Close();
+
+            if (setAutoStart) {
+                key.SetValue(appName, $"\"{Path.ChangeExtension(curAssembly.Location, ".exe")}\"");
+            }
+            else {
+                key.DeleteValue(appName, throwOnMissingValue: false);
             }
         }
 

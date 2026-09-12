@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -8,9 +8,9 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>xamlnexus</ToolCommandName>
 		<PackageId>XamlNexus</PackageId>
-		<Version>1.0.3</Version>
-		<AssemblyVersion>1.0.3</AssemblyVersion>
-		<PackageVersion>1.0.3</PackageVersion>
+		<Version>1.0.4</Version>
+		<AssemblyVersion>1.0.4</AssemblyVersion>
+		<PackageVersion>1.0.4</PackageVersion>
 		<Authors>PaperHammer</Authors>
 		<PackageProjectUrl>https://github.com/PaperHammer/XamlNexus</PackageProjectUrl>
 		<PackageIcon>XamlNexus_128x128.png</PackageIcon>
@@ -19,6 +19,8 @@
 		<RepositoryType>git</RepositoryType>
 		<Description>Quickly generate Windows desktop application prototypes using the .NET CLI scaffolding tool, based on common XAML frameworks such as WPF and WinUI 3.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<NoDefaultExcludes>true</NoDefaultExcludes>
+		<NoWarn>$(NoWarn);NU5111</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -35,7 +37,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
 		<ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
-		<ProjectReference Include="..\XamlNexus.Generator.WpfApp\XamlNexus.Generator.WpfApp.csproj" />
+		<ProjectReference Include="..\XamlNexus.Recipes.BuiltIn\XamlNexus.Recipes.BuiltIn.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -49,7 +51,11 @@
 		<RemoveDir Directories="$(OutDir)Templates" />
 		
 		<ItemGroup>
-			<TemplateFiles Include="$(SolutionDir)Templates\**\*" Exclude="&#xD;&#xA; $(SolutionDir)Templates\**\bin\**;&#xD;&#xA; $(SolutionDir)Templates\**\obj\**;&#xD;&#xA;" />
+			<TemplateFiles Include="$(MSBuildProjectDirectory)\..\Templates\**\*"
+			               Exclude="$(MSBuildProjectDirectory)\..\Templates\**\bin\**;
+			                        $(MSBuildProjectDirectory)\..\Templates\**\obj\**;
+			                        $(MSBuildProjectDirectory)\..\Templates\**\.vs\**;
+			                        $(MSBuildProjectDirectory)\..\Templates\**\Plugins\**" />
 		</ItemGroup>
 
 		<Copy SourceFiles="@(TemplateFiles)" DestinationFolder="$(OutDir)Templates\%(RecursiveDir)" />

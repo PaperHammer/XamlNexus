@@ -6,16 +6,16 @@
     xmlns:local="using:Winui3_XamlNexus.AppSettingsPanel.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:markup="using:Winui3_XamlNexus.UIComponent.ArcMarkupExtension"
-    mc:Ignorable="d"    
+    xmlns:l="using:WinUI3Localizer"
+    mc:Ignorable="d"
     NavigationCacheMode="Enabled">
 
     <ScrollView>
         <StackPanel Margin="15 0 15 15" Orientation="Vertical">
             <StackPanel x:Name="Developer" Orientation="Vertical">
-                <TextBlock x:Name="DeveloperHeader"
+                <TextBlock l:Uids.Uid="Settings_System_Text_Developer" x:Name="DeveloperHeader"
                     Margin="0 10"
-                    Text="{markup:I18n Key=Settings_System_Text_Developer}"   
+
                     FontWeight="Bold"/>
 
                 <Grid x:Name="Log"
@@ -37,17 +37,17 @@
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="{markup:I18n Key=Settings_System_Developer_Log}"/>
-                        <TextBlock 
-                            Grid.Row="1" 
+                        <TextBlock l:Uids.Uid="Settings_System_Developer_Log" />
+                        <TextBlock l:Uids.Uid="Settings_System_Developer_LogExplain"
+                            Grid.Row="1"
                             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                            Text="{markup:I18n Key=Settings_System_Developer_LogExplain}"/>
+                            />
                     </Grid>
 
-                    <Button
+                    <Button l:Uids.Uid="Text_Save"
                         Grid.Column="2"
                         Width="200"
-                        Content="{markup:I18n Key=Text_Save}"
+
                         Command="{x:Bind _viewModel.LogCommand}"/>
                 </Grid>
             </StackPanel>

@@ -1,18 +1,32 @@
 using Spectre.Console;
 using System.Reflection;
 using System.Xml.Linq;
+using XamlNexus.Common.Projects;
 using XamlNexus.Common.Utils;
 using XamlNexus.Models.Attributes;
 
 namespace XamlNexus.Common.Generators {
     public abstract class BaseGenerator : IGenerator {
-        public void Generate(ProjectConfig config) {
+        public IReadOnlyList<string> GetIncludedModuleIds(string profile) {
+            if (profile is not ("standard" or "basic"))
+                throw new ArgumentException("Profile must be standard or basic.", nameof(profile));
+            return GetManagedModuleIds().Where(id => profile != "basic" || id != "settings")
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+
+        public bool Generate(ProjectConfig config) => Generate(config, reportSuccess: true);
+
+        public bool Generate(ProjectConfig config, bool reportSuccess) {
+            string? outputRoot = null;
+
             try {
+                if (config.Profile is not ("standard" or "basic"))
+                    throw new ArgumentException("Profile must be standard or basic.");
                 OnBeforeGenerate(config);
 
                 AnsiConsole.MarkupLine($"\n[bold blue]{LanguageRegistry.GetI18n(LangKeys.Text_Start)} - {config.SlnName}[/]");
 
-                string outputRoot = PrepareOutput(config);
+                outputRoot = PrepareOutput(config);
 
                 AnsiConsole.Progress()
                     .AutoRefresh(true)
@@ -22,12 +36,16 @@ namespace XamlNexus.Common.Generators {
                         CreateSlnInternal(config, outputRoot, projects, ctx);
                     });
 
-                ShowSuccessReport(config, outputRoot);
+                WriteProjectManifest(config, outputRoot);
+                if (reportSuccess) ShowSuccessReport(config, outputRoot);
 
                 OnAfterGenerate(config, outputRoot);
+                return true;
             }
             catch (Exception ex) {
+                CleanupGeneratedOutput(config.OutputPath, outputRoot, ex);
                 OnError(config, ex);
+                return false;
             }
         }
 
@@ -37,16 +55,41 @@ namespace XamlNexus.Common.Generators {
 
         #region Hooks
 
-        protected virtual void OnBeforeGenerate(ProjectConfig config) { }
+        protected virtual void OnBeforeGenerate(ProjectConfig config, bool reportSuccess = true) { }
 
         protected virtual void OnAfterGenerate(ProjectConfig config, string outputRoot) { }
 
         protected virtual void OnError(ProjectConfig config, Exception ex) {
-            if (Directory.Exists(config.OutputPath))
-                Directory.Delete(config.OutputPath, true);
-
             AnsiConsole.MarkupLine($"\n[bold red]{LanguageRegistry.GetI18n(LangKeys.Text_Error)}[/]");
             AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+        }
+
+        private static void CleanupGeneratedOutput(string outputPath, string? outputRoot, Exception generationException) {
+            if (string.IsNullOrWhiteSpace(outputRoot) || !Directory.Exists(outputRoot))
+                return;
+
+            try {
+                string parentPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(outputPath));
+                string generatedPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(outputRoot));
+                string? generatedParent = Directory.GetParent(generatedPath)?.FullName;
+
+                // The generator only owns the direct child directory created for this run.
+                // Never recursively delete the configured output directory or a path outside it.
+                if (!string.Equals(
+                        Path.TrimEndingDirectorySeparator(generatedParent ?? string.Empty),
+                        parentPath,
+                        StringComparison.OrdinalIgnoreCase)) {
+                    generationException.Data["CleanupError"] =
+                        $"Refused to clean an unsafe generated path: {generatedPath}";
+                    return;
+                }
+
+                Directory.Delete(generatedPath, true);
+            }
+            catch (Exception cleanupException) {
+                // Preserve the original generation error while retaining cleanup diagnostics.
+                generationException.Data["CleanupError"] = cleanupException.Message;
+            }
         }
 
         #endregion
@@ -54,28 +97,7 @@ namespace XamlNexus.Common.Generators {
         #region Core Pipeline
 
         private string PrepareOutput(ProjectConfig config) {
-            string outputRoot = Path.Combine(config.OutputPath, config.SlnName);
-
-            if (!Directory.Exists(outputRoot))
-                Directory.CreateDirectory(outputRoot);
-            else {
-                string newName = $"{config.SlnName}_{DateTime.Now:yyyyMMddHHmmss}";
-                outputRoot = Path.Combine(config.OutputPath, $"{newName}");
-                int index = 1;
-                while (Directory.Exists(outputRoot)) {
-                    outputRoot = Path.Combine(config.OutputPath, $"{newName}_{index}");
-                    index++;
-                }
-                AnsiConsole.MarkupLine(
-                    $"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Warning)}:[/] " +
-                    $"{string.Format(
-                        LanguageRegistry.GetI18n(LangKeys.Text_OutputFolder_Exists_Using),
-                        $"[cyan]{newName}[/]"
-                    )}"
-                );
-            }
-
-            return outputRoot;
+            return ProjectOutputReservation.Create(config.OutputPath, config.SlnName);
         }
 
         private List<(string Path, string? Folder)> CopyModulesInternal(
@@ -84,7 +106,14 @@ namespace XamlNexus.Common.Generators {
             ProgressContext ctx) {
             var result = new List<(string Path, string? Folder)>();
             var tokens = GetTemplateTokens(config);
-            var projects = GetProjects().ToList();
+            var projects = GetProjects().Where(project => config.Profile != "basic"
+                || !project.Name.EndsWith(".AppSettingsPanel", StringComparison.Ordinal)).ToList();
+
+            CopyTemplateRootAssets(
+                Path.Combine(Directory.GetParent(TemplateRoot)?.FullName ?? string.Empty, "Shared"),
+                outputRoot,
+                tokens);
+            CopyTemplateRootAssets(TemplateRoot, outputRoot, tokens);
 
             var task = ctx.AddTask($"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Generating_Module)}[/]", maxValue: projects.Count);
 
@@ -95,11 +124,22 @@ namespace XamlNexus.Common.Generators {
 
                 string sourcePath = Path.Combine(TemplateRoot, Name);
                 if (!Directory.Exists(sourcePath))
-                    throw new Exception($"{LanguageRegistry.GetI18n(LangKeys.Text_Internal_Error)}");
+                    throw new DirectoryNotFoundException(
+                        $"{LanguageRegistry.GetI18n(LangKeys.Text_Internal_Error)}" +
+                        $"{Environment.NewLine}Template directory: {sourcePath}");
 
                 string destPath = Path.Combine(outputRoot, destName);
 
                 ProcessDirectory(sourcePath, destPath, tokens);
+
+                if (config.Profile == "basic" && destName.EndsWith(".UI", StringComparison.Ordinal)) {
+                    File.Delete(Path.Combine(destPath, "Modules", "SettingsModule.cs"));
+                    string uiProject = Path.Combine(destPath, destName + ".csproj");
+                    var document = XDocument.Load(uiProject);
+                    document.Descendants().Where(element => element.Name.LocalName == "ProjectReference"
+                        && ((string?)element.Attribute("Include"))?.Contains(".AppSettingsPanel") == true).Remove();
+                    document.Save(uiProject);
+                }
 
                 string csprojPath = Path.Combine(destPath, destName + ".csproj");
 
@@ -115,6 +155,24 @@ namespace XamlNexus.Common.Generators {
             return result;
         }
 
+        private void CopyTemplateRootAssets(
+            string sourceRoot,
+            string outputRoot,
+            Dictionary<string, string> tokens) {
+            if (!Directory.Exists(sourceRoot)) return;
+
+            foreach (string file in Directory.GetFiles(sourceRoot)) {
+                CopyTemplateFile(file, Path.Combine(outputRoot, ReplaceTokens(Path.GetFileName(file), tokens)), tokens);
+            }
+
+            foreach (string directoryName in new[] { ".github", "eng" }) {
+                string sourceDirectory = Path.Combine(sourceRoot, directoryName);
+                if (Directory.Exists(sourceDirectory)) {
+                    ProcessDirectory(sourceDirectory, Path.Combine(outputRoot, directoryName), tokens);
+                }
+            }
+        }
+
         private void CreateSlnInternal(
             ProjectConfig config,
             string outputRoot,
@@ -125,13 +183,25 @@ namespace XamlNexus.Common.Generators {
             string slnName = config.SlnName;
             string slnType = config.SlnType.ToString().ToLower();
 
-            string cmd = $"new {slnType} -n \"{slnName}\"";
-            var ok = ShellExecutor.Run("dotnet", cmd, outputRoot);
+            var sdk = ShellExecutor.Run("dotnet", "--version", outputRoot);
+            bool supportsFormat = sdk.Success
+                && Version.TryParse(sdk.StandardOutput.Trim().Split('-')[0], out var version)
+                && version >= new Version(9, 0, 200);
+            if (config.SlnType == SolutionType.Slnx && !supportsFormat)
+                throw new InvalidOperationException("SLNX requires the selected .NET SDK to be 9.0.200 or newer. Use --solution-format sln with older SDKs.");
+
+            // Older SDKs create SLN by default and do not recognize --format.
+            string cmd = $"new sln -n \"{slnName}\"" + (supportsFormat ? $" --format {slnType}" : "");
+            var createResult = ShellExecutor.Run("dotnet", cmd, outputRoot);
 
             string slnPath = Path.Combine(outputRoot, $"{slnName}.{slnType}");
 
-            if (!ok || !File.Exists(slnPath))
-                throw new Exception($"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Create_Sln)}: {slnPath}");
+            if (!createResult.Success || !File.Exists(slnPath))
+                throw new Exception(
+                    $"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Create_Sln)}: {slnPath}" +
+                    $"{Environment.NewLine}dotnet {cmd}" +
+                    $"{Environment.NewLine}Exit code: {createResult.ExitCode}" +
+                    $"{Environment.NewLine}{createResult.DiagnosticOutput}");
 
             slnTask.Value = 20;
 
@@ -147,13 +217,22 @@ namespace XamlNexus.Common.Generators {
                 if (!string.IsNullOrEmpty(project.Folder))
                     addCmd += $" --solution-folder \"{project.Folder}\"";
 
-                var added = ShellExecutor.Run("dotnet", addCmd, outputRoot);
+                var addResult = ShellExecutor.Run("dotnet", addCmd, outputRoot);
 
-                if (!added)
-                    throw new Exception($"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Link_Project)}: {relativePath}");
+                if (!addResult.Success)
+                    throw new Exception(
+                        $"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Link_Project)}: {relativePath}" +
+                        $"{Environment.NewLine}dotnet {addCmd}" +
+                        $"{Environment.NewLine}Exit code: {addResult.ExitCode}" +
+                        $"{Environment.NewLine}{addResult.DiagnosticOutput}");
 
                 slnTask.Increment(step);
             }
+
+            string solutionText = File.ReadAllText(slnPath);
+            string normalizedSolution = XamlNexusSolutionGuid.NormalizeProjectGuids(solutionText);
+            if (!normalizedSolution.Equals(solutionText, StringComparison.Ordinal))
+                File.WriteAllText(slnPath, normalizedSolution, new System.Text.UTF8Encoding(false));
 
             slnTask.Value = 100;
             slnTask.Description = $"[bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Soluton_Created)}[/]";
@@ -179,15 +258,7 @@ namespace XamlNexus.Common.Generators {
 
                 string newFileName = ReplaceTokens(fileName, tokens);
                 string destFile = Path.Combine(destPath, newFileName);
-
-                if (IsTextFile(file)) {
-                    string content = File.ReadAllText(file);
-                    content = ReplaceTokens(content, tokens);
-                    File.WriteAllText(destFile, content);
-                }
-                else {
-                    File.Copy(file, destFile, true);
-                }
+                CopyTemplateFile(file, destFile, tokens);
             }
 
             foreach (string dir in Directory.GetDirectories(sourcePath)) {
@@ -202,12 +273,26 @@ namespace XamlNexus.Common.Generators {
             }
         }
 
+        private void CopyTemplateFile(
+            string sourceFile,
+            string destinationFile,
+            Dictionary<string, string> tokens) {
+            if (IsTextFile(sourceFile)) {
+                string content = ReplaceTokens(File.ReadAllText(sourceFile), tokens);
+                File.WriteAllText(destinationFile, content);
+            }
+            else {
+                File.Copy(sourceFile, destinationFile, true);
+            }
+        }
+
         protected bool IsTextFile(string path) {
             string ext = Path.GetExtension(path).ToLower();
 
             string[] textExts = [
                 ".cs", ".xaml", ".csproj", ".sln", ".slnx",
                 ".json", ".xml", ".config", ".txt", ".md",
+                ".yml", ".yaml", ".ps1",
                 ".resw", ".resx",
                 ".manifest", ".appxmanifest",
                 ".proto"
@@ -226,6 +311,75 @@ namespace XamlNexus.Common.Generators {
         #endregion
 
         #region Metadata Injection
+
+        private void WriteProjectManifest(ProjectConfig config, string outputRoot) {
+            string version = GetGeneratorVersion();
+            var manifest = new XamlNexusProjectManifest {
+                GeneratorVersion = version,
+                Project = new XamlNexusProjectIdentity {
+                    Name = config.SlnName,
+                    Profile = config.Profile,
+                    Preset = GetPresetId(),
+                    Language = config.Language,
+                    SolutionFormat = config.SlnType.ToString().ToLowerInvariant(),
+                },
+                Modules = GetIncludedModuleIds(config.Profile)
+                    .Select(id => new XamlNexusManagedModule {
+                        Id = id,
+                        Version = version,
+                        Source = "template",
+                    })
+                    .ToArray(),
+                ScaffoldFiles = CollectScaffoldFiles(outputRoot),
+            };
+
+            XamlNexusProjectManifestStore.Save(
+                Path.Combine(outputRoot, "xamlnexus.json"),
+                manifest);
+        }
+
+        private static IReadOnlyList<XamlNexusManagedFile> CollectScaffoldFiles(string outputRoot) {
+            return Directory.EnumerateFiles(outputRoot, "*", SearchOption.AllDirectories)
+                .Select(path => new {
+                    FullPath = path,
+                    RelativePath = Path.GetRelativePath(outputRoot, path).Replace('\\', '/'),
+                })
+                .Where(file => IsScaffoldFile(file.RelativePath))
+                .OrderBy(file => file.RelativePath, StringComparer.OrdinalIgnoreCase)
+                .Select(file => new XamlNexusManagedFile {
+                    Path = file.RelativePath,
+                    Sha256 = ComputeSha256(file.FullPath),
+                    BaselineContentGzipBase64 = XamlNexusBaselineContent.Encode(File.ReadAllBytes(file.FullPath)),
+                    UserEditable = !IsInfrastructureFile(file.RelativePath),
+                })
+                .ToArray();
+        }
+
+        private static bool IsScaffoldFile(string relativePath) {
+            if (relativePath.Equals("xamlnexus.json", StringComparison.OrdinalIgnoreCase) ||
+                relativePath.EndsWith(".user", StringComparison.OrdinalIgnoreCase)) {
+                return false;
+            }
+            string[] segments = relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            return !segments.Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+                segment.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
+                segment.Equals(".vs", StringComparison.OrdinalIgnoreCase) ||
+                segment.Equals("Plugins", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool IsInfrastructureFile(string relativePath) =>
+            relativePath.Equals("Directory.Build.props", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.Equals("RELEASING.md", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.Equals("update-manifest.example.json", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.StartsWith(".github/", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.StartsWith("eng/", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.Contains(".Common/Updates/", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.EndsWith("/Modules/IXamlNexusModule.cs", StringComparison.OrdinalIgnoreCase);
+
+        private static string ComputeSha256(string path) {
+            using FileStream stream = File.OpenRead(path);
+            return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(stream)).ToLowerInvariant();
+        }
 
         protected void InjectProjectMetadata(string csprojPath, string templateType) {
             if (!File.Exists(csprojPath)) return;
@@ -254,7 +408,9 @@ namespace XamlNexus.Common.Generators {
         }
 
         protected virtual string GetGeneratorVersion() {
-            var assembly = Assembly.GetExecutingAssembly();
+            // The common generator library has its own assembly version. The manifest must
+            // track the installed CLI/tool version that orchestrated this generation run.
+            var assembly = Assembly.GetEntryAssembly() ?? GetType().Assembly;
 
             var infoVersion = assembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
@@ -295,6 +451,21 @@ namespace XamlNexus.Common.Generators {
             return attr?.Framework.ToString() ?? "Unknown";
         }
 
+        protected abstract string GetPresetId();
+
+        protected virtual IEnumerable<string> GetManagedModuleIds() {
+            return [
+                "app-shell",
+                "arcxaml",
+                "localization",
+                "logging",
+                "settings",
+                "single-instance",
+                "updater",
+                "github-release"
+            ];
+        }
+
         protected virtual string[] GetSkipCopyDirs() => [];
 
         protected virtual Dictionary<string, string> GetTemplateTokens(ProjectConfig config) {
@@ -310,7 +481,8 @@ namespace XamlNexus.Common.Generators {
 
         protected virtual Dictionary<string, string> GetBaseTokens(ProjectConfig config) {
             return new Dictionary<string, string> {
-                { "{{DEFAULT_LANGUAGE}}", config.Language ?? "zh-CN" }
+                { "{{DEFAULT_LANGUAGE}}", config.Language ?? "zh-CN" },
+                { "{{SOLUTION_FORMAT}}", config.SlnType.ToString().ToLowerInvariant() }
             };
         }
 
@@ -328,20 +500,7 @@ namespace XamlNexus.Common.Generators {
         }
 
         protected virtual void ShowSuccessReport(ProjectConfig config, string outputRoot) {
-            var table = new Table().Border(TableBorder.Rounded);
-
-            table.AddColumn($"[cyan]{LanguageRegistry.GetI18n(LangKeys.Text_Property)}[/]");
-            table.AddColumn($"[green]{LanguageRegistry.GetI18n(LangKeys.Text_Value)}[/]");
-
-            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_Project), config.SlnName);
-            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_Framework), config.Framework.ToString());
-            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_Format), config.SlnType.ToString());
-            table.AddRow(LanguageRegistry.GetI18n(LangKeys.Text_OutputPath), outputRoot);
-
-            AnsiConsole.Write(table);
-
-            AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine($" [bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Success)}[/]");
+            CommandLine.CreationReport.Write(config, outputRoot);
         }
 
         #endregion

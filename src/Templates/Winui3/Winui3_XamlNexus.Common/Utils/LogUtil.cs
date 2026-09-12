@@ -14,8 +14,9 @@ namespace Winui3_XamlNexus.Common.Utils {
             var arch = Environment.Is64BitProcess ? "x64" : "x86";
             var osArch = Environment.Is64BitOperatingSystem ? "x64" : "x86";
             var container = Consts.ApplicationType.IsMSIX ? "desktop-bridge" : "desktop-native";
+            string version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "unknown";
             return $"\n" +
-                $"Winui3_XamlNexus v{Assembly.GetEntryAssembly().GetName().Version} {arch} (OS {osArch}) {container} {CultureInfo.CurrentUICulture.Name}" +
+                $"Winui3_XamlNexus v{version} {arch} (OS {osArch}) {container} {CultureInfo.CurrentUICulture.Name}" +
                 $"\n{SystemInfo.GetOSInfo()}\n{SystemInfo.GetCpuInfo()}\n{SystemInfo.GetGpuInfo()}\n";
         }
 
@@ -50,7 +51,7 @@ namespace Winui3_XamlNexus.Common.Utils {
             }
 
             var logFolderUI = Consts.CommonPaths.LogDirUI;
-            if (Directory.Exists(logFolder)) {
+            if (Directory.Exists(logFolderUI)) {
                 files.AddRange(Directory.GetFiles(logFolderUI, "*.*", SearchOption.TopDirectoryOnly));
             }
 

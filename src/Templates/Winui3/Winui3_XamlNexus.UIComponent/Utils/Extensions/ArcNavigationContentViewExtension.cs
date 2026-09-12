@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Winui3_XamlNexus.Common.Utils.DI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
 using Winui3_XamlNexus.Common.Utils.ThreadContext;
@@ -110,7 +111,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
                     break;
 
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException(nameof(transition), transition, "Unsupported navigation transition.");
             }
 
             sb.Begin();
@@ -125,7 +126,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
                     return page;
             }
 
-            return Activator.CreateInstance(type) as ArcPage
+            return AppObjectFactory.Create(type) as ArcPage
                    ?? throw new Exception($"Cannot create page {type.Name}");
         }
 

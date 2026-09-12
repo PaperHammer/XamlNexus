@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="SelectFramework" xml:space="preserve">
+    <value>Which basic framework do you want to use?</value>
+  </data>
+  <data name="SlnName" xml:space="preserve">
+    <value>Solution Name</value>
+  </data>
+  <data name="OutputPath" xml:space="preserve">
+    <value>Output Path</value>
+  </data>
+  <data name="Text_Frontend" xml:space="preserve">
+    <value>Frontend</value>
+  </data>
+  <data name="Text_Backend" xml:space="preserve">
+    <value>Backend</value>
+  </data>
+  <data name="Text_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Text_Generating_Module" xml:space="preserve">
+    <value>Generat Modules</value>
+  </data>
+  <data name="Text_Generating" xml:space="preserve">
+    <value>Generating...</value>
+  </data>
+  <data name="Text_Internal_Error" xml:space="preserve">
+    <value>Internal error, try updating or reinstalling</value>
+  </data>
+  <data name="Text_Modules_Generated" xml:space="preserve">
+    <value>All modules generated</value>
+  </data>
+  <data name="Text_Generating_Solution" xml:space="preserve">
+    <value>Generat Solution</value>
+  </data>
+  <data name="Text_Fail_To_Create_Sln" xml:space="preserve">
+    <value>Solution generation failed</value>
+  </data>
+  <data name="Text_Linking" xml:space="preserve">
+    <value>Link module to solution...</value>
+  </data>
+  <data name="Text_Fail_To_Link_Project" xml:space="preserve">
+    <value>Module failed to link to the solution</value>
+  </data>
+  <data name="Text_Soluton_Created" xml:space="preserve">
+    <value>Solution generation completed</value>
+  </data>
+  <data name="Text_Property" xml:space="preserve">
+    <value>Property</value>
+  </data>
+  <data name="Text_Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Text_Project" xml:space="preserve">
+    <value>Project Name</value>
+  </data>
+  <data name="Text_Framework" xml:space="preserve">
+    <value>Basic framework</value>
+  </data>
+  <data name="Text_Format" xml:space="preserve">
+    <value>Sln Type</value>
+  </data>
+  <data name="Text_OutputPath" xml:space="preserve">
+    <value>Output path</value>
+  </data>
+  <data name="Text_Success" xml:space="preserve">
+    <value>Success!</value>
+  </data>
+  <data name="Text_Error" xml:space="preserve">
+    <value>An error occurred: </value>
+  </data>
+  <data name="Text_ProjectNameEmpty" xml:space="preserve">
+    <value>Project name cannot be empty</value>
+  </data>
+  <data name="Text_ProjectNameInvalidChars" xml:space="preserve">
+    <value>Project name can only contain letters, numbers, and underscore</value>
+  </data>
+  <data name="Text_ProjectNameStartChar" xml:space="preserve">
+    <value>Project name must start with a letter or underscore</value>
+  </data>
+  <data name="Text_PathEmpty" xml:space="preserve">
+    <value>Path cannot be empty</value>
+  </data>
+  <data name="Text_PathInvalidChars" xml:space="preserve">
+    <value>Path contains invalid characters</value>
+  </data>
+  <data name="Text_PathNotAbsolute" xml:space="preserve">
+    <value>Please enter a full absolute path</value>
+  </data>
+  <data name="Text_ProjectNameCapitalized" xml:space="preserve">
+    <value>Project name's first letter was automatically capitalized</value>
+  </data>
+  <data name="Text_Notice" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="Wizard_None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Wizard_CapabilitiesWithDependencies" xml:space="preserve">
+    <value>Additional capabilities (including dependencies)</value>
+  </data>
+  <data name="Wizard_Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Wizard_Architecture" xml:space="preserve">
+    <value>Architecture</value>
+  </data>
+  <data name="Wizard_OutputDirectory" xml:space="preserve">
+    <value>Output directory</value>
+  </data>
+  <data name="Wizard_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Wizard_Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Wizard_ProjectConfiguration" xml:space="preserve">
+    <value>Project configuration</value>
+  </data>
+  <data name="Wizard_AdjustSelection" xml:space="preserve">
+    <value>Adjust the capability selection.</value>
+  </data>
+  <data name="Wizard_SelectionInstructions" xml:space="preserve">
+    <value>[grey]Space to select, Enter to continue; dependencies are included automatically[/]</value>
+  </data>
+  <data name="Wizard_ChooseCapabilities" xml:space="preserve">
+    <value>Choose additional capabilities (optional)</value>
+  </data>
+  <data name="Wizard_BasicProfile" xml:space="preserve">
+    <value>Basic: core services; add the settings interface when needed</value>
+  </data>
+  <data name="Wizard_StandardProfile" xml:space="preserve">
+    <value>Standard: includes the settings interface (default)</value>
+  </data>
+  <data name="Wizard_ChooseProfile" xml:space="preserve">
+    <value>Choose a starting profile</value>
+  </data>
+  <data name="SelectSolutionFormat" xml:space="preserve">
+    <value>Choose solution format (slnx requires .NET SDK 9.0.200+)</value>
+  </data>
+  <data name="Creation_Run" xml:space="preserve">
+    <value>Run: xamlnexus run --project "{0}"</value>
+  </data>
+  <data name="Creation_Page" xml:space="preserve">
+    <value>Page: {0}.MainPanel/MainPage.xaml</value>
+  </data>
+  <data name="Creation_ViewModel" xml:space="preserve">
+    <value>ViewModel: {0}.MainPanel/ViewModels/MainViewModel.cs</value>
+  </data>
+  <data name="Creation_ReviewRecipes" xml:space="preserve">
+    <value>Review each installed Recipe's README for required configuration.</value>
+  </data>
+</root>

@@ -10,9 +10,16 @@ namespace XamlNexus.Generator.Winui3App {
 
         protected override string GetTemplatePrefix() => "Winui3_XamlNexus";
 
+        protected override string GetPresetId() => "winui";
+
+        protected override IEnumerable<string> GetManagedModuleIds() =>
+            base.GetManagedModuleIds().Where(id => id != "updater");
+
         protected override Dictionary<string, string> GetCustomTokens(ProjectConfig config) {
             return new Dictionary<string, string> {
-                { "Winui3_XamlNexus", config.SlnName }
+                { "Winui3_XamlNexus", config.SlnName },
+                // Preserve compatibility with the legacy Models template casing.
+                { "WInui3_XamlNexus", config.SlnName }
             };
         }
 

@@ -10,6 +10,17 @@ namespace XamlNexus.Generator.Winui3_Wpf_App {
 
         protected override string GetTemplatePrefix() => "Winui3_Wpf_XamlNexus";
 
+        protected override string GetPresetId() => "hybrid";
+
+        protected override IEnumerable<string> GetManagedModuleIds() {
+            return base.GetManagedModuleIds().Concat([
+                "autostart",
+                "background-host",
+                "named-pipe-grpc",
+                "system-tray"
+            ]);
+        }
+
         protected override Dictionary<string, string> GetCustomTokens(ProjectConfig config) {
             return new Dictionary<string, string> {
                 { "Winui3_Wpf_XamlNexus", config.SlnName },

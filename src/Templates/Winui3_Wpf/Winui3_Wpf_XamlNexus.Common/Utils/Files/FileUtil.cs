@@ -147,7 +147,7 @@ namespace Winui3_Wpf_XamlNexus.Common.Utils.Files {
         public static async Task CopyFileAsync(string src, string dest) {
             if (string.IsNullOrEmpty(src) || string.IsNullOrEmpty(dest) || !File.Exists(src)) return;
             
-            string destDir = Path.GetDirectoryName(dest);
+            string? destDir = Path.GetDirectoryName(dest);
             if (!string.IsNullOrEmpty(destDir)) {
                 Directory.CreateDirectory(destDir);
             }

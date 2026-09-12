@@ -12,6 +12,8 @@
 	<OutputPath>bin\$(Configuration)\</OutputPath>
 	<UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
+	<!-- Windows App SDK generates obsolete formatter-serialization reflection checks in XamlTypeInfo.g.cs. -->
+	<NoWarn>$(NoWarn);SYSLIB0050</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\xamlnexus.ico" />

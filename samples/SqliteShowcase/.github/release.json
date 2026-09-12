@@ -1,0 +1,12 @@
+{
+  "solution": "SqliteShowcase.sln",
+  "versionFile": "Directory.Build.props",
+  "project": "SqliteShowcase.UI/SqliteShowcase.UI.csproj",
+  "executable": "SqliteShowcase.UI.exe",
+  "appName": "SqliteShowcase",
+  "manifestSource": "SqliteShowcase.Common/Consts.cs",
+  "runtimeIdentifier": "win-x64",
+  "tagPrefix": "v",
+  "requireSigning": true,
+  "timestampUrl": "http://timestamp.digicert.com"
+}

@@ -1,0 +1,13 @@
+{
+  "pull_request": {
+    "base": {
+      "sha": "unused-for-release-none"
+    },
+    "body": "## Release notes\n\n<!-- release-notes:start -->\n\n<!-- release-notes:end -->",
+    "labels": [
+      {
+        "name": "release:none"
+      }
+    ]
+  }
+}

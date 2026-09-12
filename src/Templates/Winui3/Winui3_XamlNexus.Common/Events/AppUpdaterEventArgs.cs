@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace Winui3_XamlNexus.Common.Events {
     public class AppUpdaterEventArgs : EventArgs {
-        public AppUpdaterEventArgs(AppUpdateStatus updateStatus, Version updateVersion, DateTime updateDate, Uri updateUri, Uri updateSHAUri, string changeLog) {
+        public AppUpdaterEventArgs(AppUpdateStatus updateStatus, Version updateVersion, DateTime updateDate, Uri? updateUri, Uri? updateSHAUri, string changeLog) {
             UpdateStatus = updateStatus;
             UpdateVersion = updateVersion;
             UpdateUri = updateUri;
@@ -13,8 +13,8 @@ namespace Winui3_XamlNexus.Common.Events {
 
         public AppUpdateStatus UpdateStatus { get; }
         public Version UpdateVersion { get; }
-        public Uri UpdateUri { get; }
-        public Uri UpdateSHAUri { get; }
+        public Uri? UpdateUri { get; }
+        public Uri? UpdateSHAUri { get; }
         public DateTime UpdateDate { get; }
         public string ChangeLog { get; }
     }

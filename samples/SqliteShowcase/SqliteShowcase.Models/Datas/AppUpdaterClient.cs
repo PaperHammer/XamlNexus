@@ -1,0 +1,172 @@
+using System.Reflection;
+using System.Net.Http;
+using System.IO;
+using SqliteShowcase.Common;
+using SqliteShowcase.Common.Events;
+using SqliteShowcase.Common.Logging;
+using SqliteShowcase.Common.Updates;
+using SqliteShowcase.Models.Datas.Interfaces;
+
+namespace SqliteShowcase.Models.Datas {
+    public partial class AppUpdaterClient : IAppUpdaterClient {
+        public event EventHandler<AppUpdaterEventArgs>? UpdateChecked;
+        public event EventHandler<AppUpdateDownloadProgressEventArgs>? DownloadProgressChanged;
+        public event EventHandler? InstallerLaunched;
+
+        public Version AssemblyVersion { get; private set; }
+        public AppUpdateStatus Status { get; private set; } = AppUpdateStatus.Notchecked;
+        public DateTime LastCheckTime { get; private set; } = DateTime.MinValue;
+        public Version LastCheckVersion { get; private set; } = new Version(0, 0, 0, 0);
+        public string LastCheckChangelog { get; private set; } = string.Empty;
+        public Uri? LastCheckUri { get; private set; }
+        public Uri? LastCheckShaUri { get; private set; }
+
+        public AppUpdaterClient()
+            : this(CreateDefaultUpdateSource(), new VerifiedUpdateDownloader(DownloadHttpClient),
+                Assembly.GetEntryAssembly()?.GetName().Version
+                ?? new Version(0, 0, 0, 0)) { }
+
+        public AppUpdaterClient(IAppUpdateSource? updateSource, Version assemblyVersion)
+            : this(updateSource, new VerifiedUpdateDownloader(DownloadHttpClient), assemblyVersion) { }
+
+        public AppUpdaterClient(
+            IAppUpdateSource? updateSource,
+            IAppUpdateDownloader updateDownloader,
+            Version assemblyVersion) {
+            _updateSource = updateSource;
+            _updateDownloader = updateDownloader;
+            AssemblyVersion = assemblyVersion;
+        }
+
+        public async Task CheckUpdateAsync() {
+            if (Consts.ApplicationType.IsMSIX) {
+                Status = AppUpdateStatus.Notchecked;
+                NotifyUpdateChecked();
+                return;
+            }
+
+            try {
+                if (_updateSource is null) {
+                    throw new InvalidOperationException("Configure Consts.Updates.ManifestUrl before checking for updates.");
+                }
+
+                var release = await _updateSource.GetLatestReleaseAsync(Consts.Updates.IncludePreview).ConfigureAwait(false);
+                LastCheckVersion = release.Version;
+                LastCheckUri = release.DownloadUri;
+                LastCheckShaUri = release.Sha256Uri;
+                LastCheckChangelog = release.Changelog;
+                Status = AppUpdateVersionEvaluator.Evaluate(AssemblyVersion, release.Version);
+            }
+            catch (Exception exception) {
+                Status = AppUpdateStatus.Error;
+                ArcLog.GetLogger<AppUpdaterClient>().Error("Update check failed", exception);
+            }
+            finally {
+                NotifyUpdateChecked();
+            }
+        }
+
+        public async Task StartDownloadAsync() {
+            if (Status != AppUpdateStatus.Available
+                || LastCheckUri is null
+                || LastCheckShaUri is null) {
+                return;
+            }
+
+            var cancellationSource = new CancellationTokenSource();
+            if (Interlocked.CompareExchange(ref _downloadCancellationSource, cancellationSource, null) is not null) {
+                cancellationSource.Dispose();
+                return;
+            }
+
+            try {
+                var release = new AppReleaseInfo(
+                    LastCheckVersion,
+                    LastCheckUri,
+                    LastCheckShaUri,
+                    LastCheckChangelog);
+                var installerPath = await _updateDownloader.DownloadAndVerifyAsync(
+                    release,
+                    Path.Combine(Consts.CommonPaths.TempDir, "updates"),
+                    cancellationSource.Token,
+                    new InlineProgress<AppUpdateDownloadProgressEventArgs>(progress =>
+                        DownloadProgressChanged?.Invoke(this, progress))).ConfigureAwait(false);
+                AppUpdateLifecycle.LaunchInstaller(
+                    Path.Combine(Consts.CommonPaths.CommonDataDir, "updates"),
+                    LastCheckVersion,
+                    installerPath);
+                InstallerLaunched?.Invoke(this, EventArgs.Empty);
+            }
+            catch (OperationCanceledException) when (cancellationSource.IsCancellationRequested) {
+                throw;
+            }
+            catch (Exception exception) {
+                Status = AppUpdateStatus.Error;
+                ArcLog.GetLogger<AppUpdaterClient>().Error("Update download or verification failed", exception);
+                NotifyUpdateChecked();
+                throw;
+            }
+            finally {
+                Interlocked.CompareExchange(ref _downloadCancellationSource, null, cancellationSource);
+                cancellationSource.Dispose();
+            }
+        }
+
+        public void CancelDownload() {
+            try {
+                Volatile.Read(ref _downloadCancellationSource)?.Cancel();
+            }
+            catch (ObjectDisposedException) {
+                // The download completed while cancellation was being requested.
+            }
+        }
+
+        private void NotifyUpdateChecked() {
+            LastCheckTime = DateTime.Now;
+            UpdateChecked?.Invoke(this, new AppUpdaterEventArgs(
+                Status, LastCheckVersion, LastCheckTime, LastCheckUri, LastCheckShaUri, LastCheckChangelog));
+        }
+
+        private static IAppUpdateSource? CreateDefaultUpdateSource() {
+            return Uri.TryCreate(Consts.Updates.ManifestUrl, UriKind.Absolute, out var manifestUri)
+                && manifestUri.Scheme == Uri.UriSchemeHttps
+                ? new JsonAppUpdateSource(SharedHttpClient, manifestUri)
+                : null;
+        }
+
+        #region Dispose
+        private bool _isDisposed;
+        protected virtual void Dispose(bool disposing) {
+            if (!_isDisposed) {
+                if (disposing) {
+                    CancelDownload();
+                    UpdateChecked = null;
+                    DownloadProgressChanged = null;
+                    InstallerLaunched = null;
+                }
+                _isDisposed = true;
+            }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        private static readonly HttpClient SharedHttpClient = new() {
+            Timeout = TimeSpan.FromSeconds(30),
+        };
+        private static readonly HttpClient DownloadHttpClient = new() {
+            Timeout = TimeSpan.FromMinutes(30),
+        };
+        private readonly IAppUpdateSource? _updateSource;
+        private readonly IAppUpdateDownloader _updateDownloader;
+        private CancellationTokenSource? _downloadCancellationSource;
+
+        private sealed class InlineProgress<T>(Action<T> callback) : IProgress<T> {
+            public void Report(T value) => callback(value);
+        }
+
+    }
+}

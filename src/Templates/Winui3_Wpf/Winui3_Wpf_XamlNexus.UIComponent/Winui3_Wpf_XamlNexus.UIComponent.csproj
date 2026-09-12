@@ -7,6 +7,8 @@
 		<UseWinUI>true</UseWinUI>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- Windows App SDK generates obsolete formatter-serialization reflection checks in XamlTypeInfo.g.cs. -->
+		<NoWarn>$(NoWarn);SYSLIB0050</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<PRIResource Remove="Strings\en-US\Resources.resw" />

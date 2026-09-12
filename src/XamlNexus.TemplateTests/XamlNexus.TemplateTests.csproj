@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppObjectFactory.cs" Link="TemplateSources\AppObjectFactory.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppServiceLocator.cs" Link="TemplateSources\AppServiceLocator.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.UIComponent\Navigation\INavigationRegistry.cs" Link="TemplateSources\INavigationRegistry.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.UIComponent\Navigation\NavigationRegistry.cs" Link="TemplateSources\NavigationRegistry.cs" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\samples\SqliteShowcase\SqliteShowcase.Data\SqliteShowcase.Data.csproj" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\DataDirectoryCopy.cs" Link="TemplateSources\PureDataDirectoryCopy.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\JsonSaver.cs" Link="TemplateSources\PureJsonSaver.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\IntPtrJsonConverter.cs" Link="TemplateSources\PureIntPtrJsonConverter.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Logging\ArcLog.cs" Link="TemplateSources\PureArcLog.cs" />
+    <ProjectReference Include="..\Templates\Winui3_Wpf\Winui3_Wpf_XamlNexus.Common\Winui3_Wpf_XamlNexus.Common.csproj" />
+    <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
+    <ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
+    <ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
+    <ProjectReference Include="..\XamlNexus.Recipes.BuiltIn\XamlNexus.Recipes.BuiltIn.csproj" />
+  </ItemGroup>
+</Project>

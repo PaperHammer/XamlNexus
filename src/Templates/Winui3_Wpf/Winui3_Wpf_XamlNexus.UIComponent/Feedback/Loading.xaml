@@ -6,8 +6,8 @@
     xmlns:local="using:Winui3_Wpf_XamlNexus.UIComponent.Feedback"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:cvs="using:Winui3_Wpf_XamlNexus.UIComponent.Converters"   
-    xmlns:markup="using:Winui3_Wpf_XamlNexus.UIComponent.ArcMarkupExtension"
+    xmlns:cvs="using:Winui3_Wpf_XamlNexus.UIComponent.Converters"
+    xmlns:l="using:WinUI3Localizer"
     IsHitTestVisible="True"
     mc:Ignorable="d">
 
@@ -19,7 +19,7 @@
         <Rectangle x:Name="OverlayMask"
             Fill="{ThemeResource SolidBackgroundFillColorBase}"
             Opacity="0.7"/>
-        
+
         <StackPanel
             Padding="0 0 18 0"
             Orientation="Vertical"
@@ -37,14 +37,14 @@
 
             <Grid
                 Margin="20"
-                HorizontalAlignment="Center"            
+                HorizontalAlignment="Center"
                 Visibility="{x:Bind ProgressbarEnable, Mode=OneWay, Converter={StaticResource VisibilityByValueConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <ProgressBar 
+                <ProgressBar
                     Margin="0 0 20 0"
                     Width="340"
                     Value="{x:Bind CurValue, Mode=OneWay}"
@@ -56,14 +56,14 @@
                     Text="{x:Bind ValueString, Mode=OneWay}"/>
             </Grid>
 
-            <Button x:Name="BtnCancel"                   
+            <Button l:Uids.Uid="Text_Cancel" x:Name="BtnCancel"
                 Margin="20"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
-                Width="100" 
+                Width="100"
                 Height="40"
                 Visibility="{x:Bind CancelEnable, Mode=OneWay, Converter={StaticResource VisibilityByValueConverter}}"
-                Content="{markup:I18n Key=Text_Cancel}"
+
                 Click="BtnCancel_Click"/>
         </StackPanel>
     </Grid>

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using static Winui3_XamlNexus.Common.Errors;
+using Winui3_XamlNexus.Common.Logging;
 
 namespace Winui3_XamlNexus.Common.Utils.Storage {
     public static class JsonSaver {
@@ -11,11 +11,11 @@ namespace Winui3_XamlNexus.Common.Utils.Storage {
         }
 
         public static T Load<T>(string filePath, JsonSerializerContext context) {
-            return LoadAsync<T>(filePath, context).Result;
+            return LoadAsync<T>(filePath, context).GetAwaiter().GetResult();
         }
 
         public static void Save<T>(string filePath, T data, JsonSerializerContext context) {
-            SaveAsync(filePath, data, context).Wait();
+            SaveAsync(filePath, data, context).GetAwaiter().GetResult();
         }
 
         public static async Task<T> LoadAsync<T>(string filePath, JsonSerializerContext context, params JsonConverter[]? converters) {
@@ -29,11 +29,36 @@ namespace Winui3_XamlNexus.Common.Utils.Storage {
                 }
 
                 using FileStream stream = File.OpenRead(filePath);
-                return await JsonSerializer.DeserializeAsync<T>(stream, combinedLoadOptions);
+                return await JsonSerializer.DeserializeAsync<T>(stream, combinedLoadOptions).ConfigureAwait(false)
+                    ?? throw new JsonException("The JSON file contains null instead of the requested value.");
             }
+            catch (FileNotFoundException) { throw; }
+            catch (DirectoryNotFoundException) { throw; }
             catch (Exception ex) {
-                throw new FileAccessException(filePath, "read json", ex);
+                ArcLog.GetLogger<JsonSerializerContext>().Error(ex);
+                throw;
             }
+        }
+
+        // Recover malformed JSON only; access failures must not reset user settings.
+        public static async Task<T> LoadOrCreateAsync<T>(string filePath, JsonSerializerContext context,
+            Func<T> createDefault) {
+            try {
+                return await LoadAsync<T>(filePath, context).ConfigureAwait(false);
+            }
+            catch (FileNotFoundException) { }
+            catch (DirectoryNotFoundException) { }
+            catch (JsonException) {
+                string backup = filePath + ".corrupt." + DateTime.UtcNow.ToString("yyyyMMddTHHmmssfff")
+                    + "." + Guid.NewGuid().ToString("N") + ".bak";
+                // A failed backup aborts recovery, leaving the original untouched.
+                File.Copy(filePath, backup, overwrite: false);
+                ArcLog.GetLogger<JsonSerializerContext>().Warn($"Invalid JSON preserved at {backup}; restoring defaults.");
+            }
+
+            T defaults = createDefault();
+            await SaveAsync(filePath, defaults, context).ConfigureAwait(false);
+            return defaults;
         }
 
         public static async Task SaveAsync<T>(string filePath, T data, JsonSerializerContext context, params JsonConverter[]? converters) {
@@ -51,11 +76,27 @@ namespace Winui3_XamlNexus.Common.Utils.Storage {
                     }
                 }
 
-                using FileStream stream = File.Create(filePath);
-                await JsonSerializer.SerializeAsync(stream, data, combinedStoreOptions);
+                string destination = Path.GetFullPath(filePath);
+                string temporary = destination + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                try {
+                    // Do not truncate the current settings until a complete replacement is ready.
+                    await using (var stream = new FileStream(temporary, FileMode.CreateNew,
+                        FileAccess.Write, FileShare.None, 81920, useAsync: true)) {
+                        await JsonSerializer.SerializeAsync(stream, data, combinedStoreOptions).ConfigureAwait(false);
+                        await stream.FlushAsync().ConfigureAwait(false);
+                        stream.Flush(flushToDisk: true);
+                    }
+                    File.Move(temporary, destination, overwrite: true);
+                }
+                finally {
+                    try { File.Delete(temporary); }
+                    catch (IOException cleanupError) { ArcLog.GetLogger<JsonSerializerContext>().Warn(cleanupError.Message); }
+                    catch (UnauthorizedAccessException cleanupError) { ArcLog.GetLogger<JsonSerializerContext>().Warn(cleanupError.Message); }
+                }
             }
             catch (Exception ex) {
-                throw new FileAccessException(filePath, "read json", ex);
+                ArcLog.GetLogger<JsonSerializerContext>().Error(ex);
+                throw;
             }
         }
 

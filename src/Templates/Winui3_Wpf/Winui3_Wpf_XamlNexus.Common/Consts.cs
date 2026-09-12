@@ -48,6 +48,12 @@ namespace Winui3_Wpf_XamlNexus.Common {
             public static bool IsMSIX => new DesktopBridge.Helpers().IsRunningAsUwp();
         }
 
+        public static class Updates {
+            // Set this to the HTTPS URL of your published update-manifest.json.
+            public const string ManifestUrl = "";
+            public static bool IncludePreview => false;
+        }
+
         public static class I18n {
             public static string? Dialog_Content_WallpaperDirectoryChangePathInvalid { get; }
             public static string? InfobarMsg_Cancel { get; }

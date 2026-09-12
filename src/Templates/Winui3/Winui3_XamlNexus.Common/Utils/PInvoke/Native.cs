@@ -2017,7 +2017,7 @@ namespace Winui3_XamlNexus.Common.Utils.PInvoke {
             /// Gets the parent process of the current process.
             /// </summary>
             /// <returns>An instance of the Process class.</returns>
-            public static Process GetParentProcess() {
+            public static Process? GetParentProcess() {
                 return GetParentProcess(Process.GetCurrentProcess().Handle);
             }
 
@@ -2026,7 +2026,7 @@ namespace Winui3_XamlNexus.Common.Utils.PInvoke {
             /// </summary>
             /// <param name="id">The process id.</param>
             /// <returns>An instance of the Process class.</returns>
-            public static Process GetParentProcess(int id) {
+            public static Process? GetParentProcess(int id) {
                 Process process = Process.GetProcessById(id);
                 return GetParentProcess(process.Handle);
             }
@@ -2036,7 +2036,7 @@ namespace Winui3_XamlNexus.Common.Utils.PInvoke {
             /// </summary>
             /// <param name="handle">The process handle.</param>
             /// <returns>An instance of the Process class.</returns>
-            public static Process GetParentProcess(nint handle) {
+            public static Process? GetParentProcess(nint handle) {
                 ParentProcessUtilities pbi = new ParentProcessUtilities();
                 int returnLength;
                 int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out returnLength);

@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Core;
-using Winui3_XamlNexus.AppSettingsPanel.ViewModels;
+
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils;
@@ -15,6 +16,7 @@ using Winui3_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_XamlNexus.UIComponent.Utils;
 using Winui3_XamlNexus.Models.Datas;
 using Winui3_XamlNexus.Models.Datas.Interfaces;
+using Winui3_XamlNexus.UI.Modules;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -39,6 +41,7 @@ namespace Winui3_XamlNexus.UI {
                 }
             }
             catch (AbandonedMutexException e) {
+                _ = e;
 #if DEBUG
                 //unexpected app termination.
                 DebugUtil.Output(e.Message);
@@ -66,13 +69,16 @@ namespace Winui3_XamlNexus.UI {
             }
             catch (Exception ex) {
                 System.Windows.MessageBox.Show(ex.Message, "AppData directory creation failed, exiting..", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                ShutDown();
+                Application.Current.Exit();
                 return;
             }
             #endregion
 
+
+
             #region 初始化核心组件
             AppServiceLocator.Services = ConfigureServices();
+
             #endregion
 
             ArcLog.GetLogger<App>().Info("Starting UI...");
@@ -86,36 +92,51 @@ namespace Winui3_XamlNexus.UI {
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args) {
-            CrossThreadInvoker.Initialize(new UiSynchronizationContext());
-
-            // ref: https://github.com/microsoft/WindowsAppSDK/issues/1687
-            //ApplicationLanguages.PrimaryLanguageOverride = _userSettings.Settings.Language;
-
-            // ref: https://github.com/AndrewKeepCoding/WinUI3Localizer
-            if (Consts.ApplicationType.IsMSIX) {
-                await LanguageUtil.InitializeLocalizerForPackaged(_userSettings.Settings.Language);
-            }
-            else {
-                await LanguageUtil.InitializeLocalizerForUnpackaged(_userSettings.Settings.Language);
+            if (_userSettings is null) {
+                Application.Current.Exit();
+                return;
             }
 
-            var m_window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
-            m_window.Show();
+            try {
+                CrossThreadInvoker.Initialize(new UiSynchronizationContext());
+
+                if (Consts.ApplicationType.IsMSIX) {
+                    await LanguageUtil.InitializeLocalizerForPackaged(_userSettings.Settings.Language);
+                }
+                else {
+                    await LanguageUtil.InitializeLocalizerForUnpackaged(_userSettings.Settings.Language);
+                }
+
+                await _moduleCatalog.InitializeAsync(AppServiceLocator.Services);
+
+                var window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
+                window.Show();
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<App>().Error("Application startup failed", exception);
+                try {
+                    // Startup may fail before a XamlRoot exists, so use a native dialog.
+                    bool chinese = _userSettings.Settings.Language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
+                    string message = chinese
+                        ? $"应用启动失败：{exception.Message}\n\n日志目录：{Consts.CommonPaths.LogDirUI}"
+                        : $"The application could not start: {exception.Message}\n\nLogs: {Consts.CommonPaths.LogDirUI}";
+                    System.Windows.MessageBox.Show(message, Consts.CoreField.AppName,
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+                finally {
+                    ShutDown();
+                }
+            }
         }
 
         private ServiceProvider ConfigureServices() {
-            var provider = new ServiceCollection()
+            var services = new ServiceCollection()
                 .AddSingleton<MainWindow>()
 
-                .AddSingleton<IUserSettingsClient, UserSettingsClient>()
-                .AddSingleton<IAppUpdaterClient, AppUpdaterClient>()
+                .AddSingleton<IUserSettingsClient, UserSettingsClient>();
 
-                .AddSingleton<GeneralSettingViewModel>()
-                .AddSingleton<SystemSettingViewModel>()
-
-                .BuildServiceProvider();
-
-            return provider;
+            _moduleCatalog.ConfigureServices(services);
+            return services.BuildServiceProvider();
         }
 
         private static void LogUnhandledException(Exception exception) => ArcLog.GetLogger<App>().Error(exception);
@@ -139,12 +160,23 @@ namespace Winui3_XamlNexus.UI {
         }
 
         public static void ShutDown() {
-            ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
-            ArcLog.GetLogger<App>().Info("UI was closed");
-            Application.Current.Exit();
+            if (_isShuttingDown) return;
+            _isShuttingDown = true;
+            try {
+                ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<App>().Error("Application cleanup failed", exception);
+            }
+            finally {
+                ArcLog.GetLogger<App>().Info("UI was closed");
+                Application.Current.Exit();
+            }
         }
 
-        private readonly IUserSettingsClient _userSettings;
+        private static bool _isShuttingDown;
+        private readonly IUserSettingsClient? _userSettings;
+        private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();
         private readonly Mutex _mutex = new(false, Consts.CoreField.UniqueAppUIUid);
     }
 }

@@ -31,11 +31,7 @@ namespace Winui3_Wpf_XamlNexus.Models.Cores {
             SystemBackdrop = AppSystemBackdrop.Default;
 
             DataSaveDir = Consts.CommonPaths.CommonDataDir;
-#if DEBUG
-            Language = "zh-CN";
-#else
             Language = "{{DEFAULT_LANGUAGE}}";
-#endif
         }
     }
 }

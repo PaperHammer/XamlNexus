@@ -1,0 +1,12 @@
+{
+  "solution": "Winui3_XamlNexus.{{SOLUTION_FORMAT}}",
+  "versionFile": "Directory.Build.props",
+  "project": "Winui3_XamlNexus.UI/Winui3_XamlNexus.UI.csproj",
+  "executable": "Winui3_XamlNexus.UI.exe",
+  "appName": "Winui3_XamlNexus",
+  "manifestSource": "Winui3_XamlNexus.Common/Consts.cs",
+  "runtimeIdentifier": "win-x64",
+  "tagPrefix": "v",
+  "requireSigning": true,
+  "timestampUrl": "http://timestamp.digicert.com"
+}

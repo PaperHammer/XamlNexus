@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="SelectFramework" xml:space="preserve">
+    <value>您想使用哪种基础框架?</value>
+  </data>
+  <data name="SlnName" xml:space="preserve">
+    <value>解决方案名称</value>
+  </data>
+  <data name="OutputPath" xml:space="preserve">
+    <value>输出目录</value>
+  </data>
+  <data name="Text_Frontend" xml:space="preserve">
+    <value>前台</value>
+  </data>
+  <data name="Text_Backend" xml:space="preserve">
+    <value>后台</value>
+  </data>
+  <data name="Text_Start" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="Text_Generating_Module" xml:space="preserve">
+    <value>生成模块</value>
+  </data>
+  <data name="Text_Generating" xml:space="preserve">
+    <value>正在生成...</value>
+  </data>
+  <data name="Text_Internal_Error" xml:space="preserve">
+    <value>内部异常，尝试更新或重新安装</value>
+  </data>
+  <data name="Text_Modules_Generated" xml:space="preserve">
+    <value>模块生成完成</value>
+  </data>
+  <data name="Text_Generating_Solution" xml:space="preserve">
+    <value>生成解决方案</value>
+  </data>
+  <data name="Text_Fail_To_Create_Sln" xml:space="preserve">
+    <value>解决方案生成失败</value>
+  </data>
+  <data name="Text_Linking" xml:space="preserve">
+    <value>链接模块到解决方案...</value>
+  </data>
+  <data name="Text_Fail_To_Link_Project" xml:space="preserve">
+    <value>模块链接到解决方案失败</value>
+  </data>
+  <data name="Text_Soluton_Created" xml:space="preserve">
+    <value>解决方案生成完成</value>
+  </data>
+  <data name="Text_Property" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="Text_Value" xml:space="preserve">
+    <value>值</value>
+  </data>
+  <data name="Text_Project" xml:space="preserve">
+    <value>项目名称</value>
+  </data>
+  <data name="Text_Framework" xml:space="preserve">
+    <value>基础框架</value>
+  </data>
+  <data name="Text_Format" xml:space="preserve">
+    <value>解决方案类型</value>
+  </data>
+  <data name="Text_OutputPath" xml:space="preserve">
+    <value>输出位置</value>
+  </data>
+  <data name="Text_Success" xml:space="preserve">
+    <value>成功!</value>
+  </data>
+  <data name="Text_Error" xml:space="preserve">
+    <value>发生错误: </value>
+  </data>
+  <data name="Text_ProjectNameEmpty" xml:space="preserve">
+    <value>项目名不能为空</value>
+  </data>
+  <data name="Text_ProjectNameInvalidChars" xml:space="preserve">
+    <value>项目名只能包含字母、数字和下划线</value>
+  </data>
+  <data name="Text_ProjectNameStartChar" xml:space="preserve">
+    <value>项目名必须以字母或下划线开头</value>
+  </data>
+  <data name="Text_PathEmpty" xml:space="preserve">
+    <value>路径不能为空</value>
+  </data>
+  <data name="Text_PathInvalidChars" xml:space="preserve">
+    <value>路径包含非法字符</value>
+  </data>
+  <data name="Text_PathNotAbsolute" xml:space="preserve">
+    <value>请使用绝对路径</value>
+  </data>
+  <data name="Text_ProjectNameCapitalized" xml:space="preserve">
+    <value>项目名首字母已自动大写</value>
+  </data>
+  <data name="Text_Notice" xml:space="preserve">
+    <value>提示</value>
+  </data>
+  <data name="Wizard_None" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="Wizard_CapabilitiesWithDependencies" xml:space="preserve">
+    <value>附加能力（含依赖）</value>
+  </data>
+  <data name="Wizard_Profile" xml:space="preserve">
+    <value>预设</value>
+  </data>
+  <data name="Wizard_Architecture" xml:space="preserve">
+    <value>架构</value>
+  </data>
+  <data name="Wizard_OutputDirectory" xml:space="preserve">
+    <value>输出目录</value>
+  </data>
+  <data name="Wizard_Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="Wizard_Value" xml:space="preserve">
+    <value>值</value>
+  </data>
+  <data name="Wizard_ProjectConfiguration" xml:space="preserve">
+    <value>项目配置</value>
+  </data>
+  <data name="Wizard_AdjustSelection" xml:space="preserve">
+    <value>请调整能力选择。</value>
+  </data>
+  <data name="Wizard_SelectionInstructions" xml:space="preserve">
+    <value>[grey]空格选择，回车继续；依赖会自动补齐[/]</value>
+  </data>
+  <data name="Wizard_ChooseCapabilities" xml:space="preserve">
+    <value>选择附加能力（可不选）</value>
+  </data>
+  <data name="Wizard_BasicProfile" xml:space="preserve">
+    <value>基础应用：保留核心机制，按需添加设置界面</value>
+  </data>
+  <data name="Wizard_StandardProfile" xml:space="preserve">
+    <value>标准客户端：包含完整设置界面（默认）</value>
+  </data>
+  <data name="Wizard_ChooseProfile" xml:space="preserve">
+    <value>选择起始预设</value>
+  </data>
+  <data name="SelectSolutionFormat" xml:space="preserve">
+    <value>选择解决方案格式（slnx 需要 .NET SDK 9.0.200+）</value>
+  </data>
+  <data name="Creation_Run" xml:space="preserve">
+    <value>运行：xamlnexus run --project "{0}"</value>
+  </data>
+  <data name="Creation_Page" xml:space="preserve">
+    <value>页面：{0}.MainPanel/MainPage.xaml</value>
+  </data>
+  <data name="Creation_ViewModel" xml:space="preserve">
+    <value>视图模型：{0}.MainPanel/ViewModels/MainViewModel.cs</value>
+  </data>
+  <data name="Creation_ReviewRecipes" xml:space="preserve">
+    <value>请阅读已安装组件的 README，完成所需配置。</value>
+  </data>
+</root>

@@ -2,13 +2,12 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
-using Winui3_Wpf_XamlNexus.AppSettingsPanel;
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Common.Utils.IPC;
 using Winui3_Wpf_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
-using Winui3_Wpf_XamlNexus.MainPanel;
+using Winui3_Wpf_XamlNexus.UIComponent.Navigation;
 using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
 using Winui3_Wpf_XamlNexus.UIComponent;
 using Winui3_Wpf_XamlNexus.UIComponent.Templates;
@@ -33,6 +32,8 @@ namespace Winui3_Wpf_XamlNexus.UI {
             this.InitializeComponent();
             this.InitWindowConst();
             base.InitializeWindow();
+            _navigationMenu = new NavigationMenu(NavigationViewControl, NavigationRegistry.Default);
+            _navigationMenu.Select("home");
 
             _userSettings = userSettings;
             _commandsClient = commandsClient;
@@ -46,17 +47,17 @@ namespace Winui3_Wpf_XamlNexus.UI {
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args) {
+            _navigationMenu.Dispose();
             App.ShutDown();
         }
 
         #region navigation control
         private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
             try {
-                Type pageType = args.SelectedItemContainer.Name switch {
-                    "Nav_MainPage" => typeof(MainPage),
-                    "Nav_AppSettings" => typeof(AppSettings),
-                    _ => throw new NotImplementedException(),
-                };
+                Type? pageType = args.SelectedItemContainer?.Tag is string route
+                    ? NavigationRegistry.Default.Resolve(route) : null;
+                if (pageType is null)
+                    return;
 
                 NaviContent.Navigate(pageType);
             }
@@ -91,13 +92,20 @@ namespace Winui3_Wpf_XamlNexus.UI {
         }
         #endregion
 
-        private void LightAndDarkButton_Click(object sender, RoutedEventArgs e) {
+        private async void LightAndDarkButton_Click(object sender, RoutedEventArgs e) {
             LightAndDarkButton.IsEnabled = false;
+            AppTheme previousTheme = _userSettings.Settings.ApplicationTheme;
             try {
                 var nxTheme = GetNextTheme(ArcThemeUtil.MainWindowAppTheme);
                 UpdateThemeFromThemeBtnClick(nxTheme);
                 _userSettings.Settings.ApplicationTheme = nxTheme;
-                _userSettings.SaveAsync<ISettings>();
+                await _userSettings.SaveAsync<ISettings>();
+            }
+            catch (Exception exception) {
+                _userSettings.Settings.ApplicationTheme = previousTheme;
+                UpdateThemeFromThemeBtnClick(previousTheme);
+                ArcLog.GetLogger<MainWindow>().Error(exception);
+                GlobalMessageUtil.ShowException(exception);
             }
             finally {
                 LightAndDarkButton.IsEnabled = true;
@@ -113,6 +121,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             };
         }
 
+        private readonly NavigationMenu _navigationMenu;
         private readonly IUserSettingsClient _userSettings;
         private readonly ArcWindowManagerKey _windowKey;
         private readonly ICommandsClient _commandsClient;

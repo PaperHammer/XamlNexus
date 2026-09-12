@@ -6,6 +6,13 @@ using Winui3_Wpf_XamlNexus.Common;
 
 namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
     public static class GlobalDialogUtils {
+        private static XamlRoot DialogXamlRoot =>
+            ArcWindowManager.MainWindow?.Content?.XamlRoot
+            ?? throw new InvalidOperationException("The main window must be initialized before showing a dialog.");
+
+        private static ElementTheme DialogTheme =>
+            ArcWindowManager.MainWindow?.ContentHost.AppRoot.RequestedTheme ?? ElementTheme.Default;
+
         public static async Task ShowDialogAsync(
             string message,
             string title,
@@ -15,8 +22,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 Content = new TextBlock() { Text = message, TextWrapping = TextWrapping.Wrap },
                 PrimaryButtonText = primaryBtnText,
                 DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             await dialog.ShowAsync();
@@ -34,8 +41,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 PrimaryButtonText = primaryBtnText,
                 SecondaryButtonText = secondaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             var result = await dialog.ShowAsync();
@@ -60,8 +67,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 PrimaryButtonText = primaryBtnText,
                 SecondaryButtonText = secondaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             return dialog;
@@ -77,8 +84,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 Content = content is string message ? new TextBlock() { Text = message, TextWrapping = TextWrapping.Wrap } : content,
                 PrimaryButtonText = primaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             var result = await dialog.ShowAsync();
@@ -101,8 +108,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 Content = content is string message ? new TextBlock() { Text = message, TextWrapping = TextWrapping.Wrap } : content,
                 PrimaryButtonText = primaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             return dialog;
@@ -118,8 +125,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 PrimaryButtonText = primaryBtnText,
                 SecondaryButtonText = secondaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             var result = await dialog.ShowAsync();
@@ -142,8 +149,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 PrimaryButtonText = primaryBtnText,
                 SecondaryButtonText = secondaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             return dialog;
@@ -157,8 +164,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 Content = content is string message ? new TextBlock() { Text = message, TextWrapping = TextWrapping.Wrap } : content,
                 PrimaryButtonText = primaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             var result = await dialog.ShowAsync();
@@ -179,8 +186,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
                 Content = content is string message ? new TextBlock() { Text = message, TextWrapping = TextWrapping.Wrap } : content,
                 PrimaryButtonText = primaryBtnText,
                 DefaultButton = isDefaultPrimary ? ContentDialogButton.Primary : ContentDialogButton.Secondary,
-                XamlRoot = ArcWindowManager.MainWindow.Content.XamlRoot,
-                RequestedTheme = ArcWindowManager.MainWindow.ContentHost.AppRoot.RequestedTheme,
+                XamlRoot = DialogXamlRoot,
+                RequestedTheme = DialogTheme,
             };
 
             return dialog;
