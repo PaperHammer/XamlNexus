@@ -28,7 +28,9 @@ public sealed record XamlNexusUpgradeConflict(
     string Code,
     string RelativePath,
     string Message,
-    [property: JsonIgnore] string? MergeDocument = null);
+    [property: JsonIgnore] string? MergeDocument = null,
+    string? ExpectedSha256 = null,
+    string? InputFingerprint = null);
 
 public sealed record XamlNexusProjectUpgradePlan(
     string FromVersion,
@@ -70,13 +72,25 @@ public static class XamlNexusProjectUpgrade {
         var createdFiles = new List<string>();
         var createdDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         try {
+            if (artifacts.Length > 0) {
+                ProjectPathSafety.EnsureNoLinks(root);
+                EnsureParentDirectory(Path.Combine(root, ".xamlnexus-upgrade"),
+                    Path.GetPathRoot(root)!, createdDirectories);
+            }
             foreach (var artifact in artifacts) {
                 string path = ResolvePath(root, artifact.RelativePath);
                 EnsureParentDirectory(path, root, createdDirectories);
                 using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                createdFiles.Add(path);
                 using var writer = new StreamWriter(stream, new System.Text.UTF8Encoding(false));
                 writer.Write(artifact.Conflict.MergeDocument);
-                createdFiles.Add(path);
+            }
+            if (artifacts.Length > 0) {
+                string stamp = ResolvePath(root, ".xamlnexus-upgrade");
+                using var stream = new FileStream(stamp, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                createdFiles.Add(stamp);
+                using var writer = new StreamWriter(stream);
+                writer.Write(ResolutionFingerprint(plan));
             }
             return artifacts.Select(artifact => artifact.RelativePath).ToArray();
         }
@@ -98,6 +112,50 @@ public static class XamlNexusProjectUpgrade {
             }
             throw;
         }
+    }
+
+    private static string ResolutionFingerprint(XamlNexusProjectUpgradePlan plan) =>
+        Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new {
+            Plan = plan,
+            Documents = plan.Conflicts.Select(conflict => conflict.MergeDocument).ToArray(),
+        })));
+
+    public static XamlNexusProjectUpgradePlan ResolveConflicts(
+        XamlNexusProjectUpgradePlan plan, string resolutionDirectory) {
+        ArgumentNullException.ThrowIfNull(plan);
+        string root = Path.GetFullPath(resolutionDirectory);
+        string stamp = ResolvePath(root, ".xamlnexus-upgrade");
+        if (!File.Exists(stamp) || File.ReadAllText(stamp) != ResolutionFingerprint(plan))
+            throw new XamlNexusProjectUpgradeException("XU2020",
+                "The conflict export is missing or stale. Export conflicts again from the current project and target version.");
+        var changes = plan.Changes.ToList();
+        foreach (var conflict in plan.Conflicts) {
+            if (conflict.Code != "XU2011" || conflict.ExpectedSha256 is null)
+                throw new XamlNexusProjectUpgradeException("XU2021",
+                    $"This conflict requires manual project changes before retrying upgrade: {conflict.RelativePath} ({conflict.Code}).");
+            string path = ResolvePath(root, NormalizePath(conflict.RelativePath) + ".merge");
+            if (!File.Exists(path))
+                throw new XamlNexusProjectUpgradeException("XU2021", $"Missing resolved file: {conflict.RelativePath}.merge");
+            byte[] content = File.ReadAllBytes(path);
+            string text = new System.Text.UTF8Encoding(false, true).GetString(content);
+            if (text.Contains('\0') || text.Split('\n').Any(line => {
+                string value = line.TrimStart('\uFEFF', ' ', '\t', '\r');
+                return value.StartsWith("<<<<<<<", StringComparison.Ordinal) ||
+                    value.StartsWith("|||||||", StringComparison.Ordinal) ||
+                    value.StartsWith("=======", StringComparison.Ordinal) ||
+                    value.StartsWith(">>>>>>>", StringComparison.Ordinal);
+            }))
+                throw new XamlNexusProjectUpgradeException("XU2021", $"Unresolved conflict markers or invalid text: {conflict.RelativePath}");
+            if (IsSemanticXmlPath(conflict.RelativePath)) {
+                try { System.Xml.Linq.XDocument.Parse(text.TrimStart('\uFEFF')); }
+                catch (System.Xml.XmlException exception) {
+                    throw new XamlNexusProjectUpgradeException("XU2021", $"Resolved XML is invalid: {conflict.RelativePath}", exception);
+                }
+            }
+            changes.Add(new XamlNexusUpgradeChange(XamlNexusUpgradeChangeKind.Replace,
+                conflict.RelativePath, conflict.ExpectedSha256, content));
+        }
+        return plan with { Changes = changes, Conflicts = [] };
     }
 
     public static XamlNexusProjectUpgradePlan CreateBaselineAdoptionPlan(
@@ -373,7 +431,12 @@ public static class XamlNexusProjectUpgrade {
                 toVersion,
                 baselineContent,
                 localContent,
-                targetContent)));
+                targetContent,
+                wholeFile: semanticConflict || IsSemanticXmlPath(installed.Path)),
+            actualHash,
+            Convert.ToHexString(SHA256.HashData(baselineContent)) + ":" +
+                Convert.ToHexString(SHA256.HashData(localContent)) + ":" +
+                Convert.ToHexString(SHA256.HashData(targetContent))));
     }
 
     private static bool IsSemanticXmlPath(string path) {

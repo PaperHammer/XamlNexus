@@ -4,9 +4,39 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:arc="using:Winui3_Wpf_XamlNexus.UIComponent.Templates"
+    xmlns:animations="using:Winui3_Wpf_XamlNexus.MainPanel.Animations"
     xmlns:l="using:WinUI3Localizer">
-    <StackPanel Padding="24" Spacing="12">
-        <TextBlock l:Uids.Uid="Text_Welcome" FontSize="28" />
-        <!-- Add page content here. -->
-    </StackPanel>
+    <Grid Padding="32">
+        <Border x:Name="ClockCard" MaxWidth="620" Padding="40" CornerRadius="24"
+                HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Grid>
+                <AnimatedVisualPlayer x:Name="LogoPlayer" Width="128" Height="128"
+                                      HorizontalAlignment="Right" VerticalAlignment="Center"
+                                      IsHitTestVisible="False" AutoPlay="False"
+                                      AutomationProperties.AccessibilityView="Raw">
+                    <AnimatedVisualPlayer.Source>
+                        <animations:XamlNexusLogoSource/>
+                    </AnimatedVisualPlayer.Source>
+                </AnimatedVisualPlayer>
+                <StackPanel Spacing="24">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE787;" FontSize="18" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock l:Uids.Uid="Text_Welcome" FontSize="16"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" MaxHeight="120">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock x:Name="TimeText" FontSize="88" FontWeight="SemiLight"/>
+                            <TextBlock x:Name="SecondsText" FontSize="32" VerticalAlignment="Bottom" Margin="0,0,0,18"
+                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                    </Viewbox>
+                    <TextBlock x:Name="DateText" FontSize="20" TextWrapping="Wrap"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </arc:ArcPage>

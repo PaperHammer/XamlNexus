@@ -27,9 +27,12 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils {
         }
 
         internal static void UpdateWindowVisualState(ArcWindow window) {
-            ArcWindowTitleBarUtil.UpdateTitleBar(window, ArcThemeUtil.GetFormatMainWindowTheme(), window.IsActive);
-            if (window.AppNavView != null) ArcWindowTitleBarUtil.UpdateNaviVisualStates(window.AppNavView, ArcThemeUtil.GetFormatMainWindowTheme(), ArcThemeUtil.MainWindowBackdrop);
-            ArcWindowTitleBarUtil.UpdateTitleBarVisualStates(window.ContentHost.AppTitleBar, ArcThemeUtil.GetFormatMainWindowTheme(), ArcThemeUtil.MainWindowBackdrop);
+            var theme = window.ContentHost.AppRoot.ActualTheme == ElementTheme.Dark
+                ? Winui3_Wpf_XamlNexus.Common.AppTheme.Dark : Winui3_Wpf_XamlNexus.Common.AppTheme.Light;
+            ArcWindowTitleBarUtil.UpdateTitleBar(window, theme, window.IsActive);
+            if (window.AppNavView != null)
+                ArcWindowTitleBarUtil.UpdateNaviVisualStates(window.AppNavView, theme, ArcThemeUtil.MainWindowBackdrop);
+            ArcWindowTitleBarUtil.UpdateTitleBarVisualStates(window.ContentHost.AppTitleBar, theme, ArcThemeUtil.MainWindowBackdrop);
         }
 
         static public ArcWindow? GetWindowForElement(UIElement element) {

@@ -36,7 +36,7 @@ namespace XamlNexus.Common.Generators {
                         CreateSlnInternal(config, outputRoot, projects, ctx);
                     });
 
-                WriteProjectManifest(config, outputRoot);
+                CommandLine.CreationReport.RunFinishing(() => WriteProjectManifest(config, outputRoot));
                 if (reportSuccess) ShowSuccessReport(config, outputRoot);
 
                 OnAfterGenerate(config, outputRoot);
@@ -205,6 +205,12 @@ namespace XamlNexus.Common.Generators {
 
             slnTask.Value = 20;
 
+            // Newer SDKs recursively add referenced projects by default, placing
+            // panels at the root before their explicit folder assignment runs.
+            // Detect the option rather than passing it to SDKs that lack it.
+            var addHelp = ShellExecutor.Run("dotnet", "sln add --help", outputRoot);
+            bool supportsReferenceOption = addHelp.Success &&
+                addHelp.StandardOutput.Contains("--include-references", StringComparison.Ordinal);
             double step = 80.0 / projects.Count;
 
             foreach (var project in projects) {
@@ -216,6 +222,9 @@ namespace XamlNexus.Common.Generators {
 
                 if (!string.IsNullOrEmpty(project.Folder))
                     addCmd += $" --solution-folder \"{project.Folder}\"";
+
+                if (supportsReferenceOption)
+                    addCmd += " --include-references false";
 
                 var addResult = ShellExecutor.Run("dotnet", addCmd, outputRoot);
 

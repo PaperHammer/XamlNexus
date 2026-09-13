@@ -79,32 +79,34 @@ public static class ProjectComposer {
             };
             if (!generator.Generate(stagedConfig, reportSuccess: false))
                 throw new InvalidOperationException("Application scaffold generation failed.");
-            string projectRoot = Path.Combine(stagedConfig.OutputPath, config.SlnName);
-            foreach (var recipe in recipes) {
-                // Reload after each installation so dependencies and expected hashes reflect prior changes.
-                var project = XamlNexusProjectLocator.Locate(projectRoot);
-                XamlNexusRecipeTransaction.Apply(project, recipe);
-            }
-            var report = XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(projectRoot));
-            if (!report.IsValid) throw new InvalidOperationException("The composed project failed validation.");
-            // Reserve a new destination atomically; never copy into a directory
-            // another process created after the initial existence check.
-            destination = ProjectOutputReservation.Create(parent, config.SlnName);
-            ownsDestination = true;
-            // Staging may live on another volume. Copy source files first and solution
-            // discovery files last so IDEs only load the completed composition.
-            var files = Directory.EnumerateFiles(projectRoot, "*", SearchOption.AllDirectories)
-                .Select(path => (Source: path, Relative: Path.GetRelativePath(projectRoot, path)))
-                .Where(file => !file.Relative.Split(Path.DirectorySeparatorChar).Any(part => part is "bin" or "obj" or ".vs"))
-                .OrderBy(file => Path.GetExtension(file.Source) is ".sln" or ".slnx" ? 2 : Path.GetExtension(file.Source) == ".csproj" ? 1 : 0)
-                .ThenBy(file => file.Relative, StringComparer.Ordinal).ToArray();
-            foreach (var file in files) {
-                string target = Path.Combine(destination, file.Relative);
-                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                File.Copy(file.Source, target, overwrite: false);
-            }
-            if (!XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(destination)).IsValid)
-                throw new InvalidOperationException("The published project failed validation.");
+            CommandLine.CreationReport.RunFinishing(() => {
+                string projectRoot = Path.Combine(stagedConfig.OutputPath, config.SlnName);
+                foreach (var recipe in recipes) {
+                    // Reload after each installation so dependencies and expected hashes reflect prior changes.
+                    var project = XamlNexusProjectLocator.Locate(projectRoot);
+                    XamlNexusRecipeTransaction.Apply(project, recipe);
+                }
+                var report = XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(projectRoot));
+                if (!report.IsValid) throw new InvalidOperationException("The composed project failed validation.");
+                // Reserve a new destination atomically; never copy into a directory
+                // another process created after the initial existence check.
+                destination = ProjectOutputReservation.Create(parent, config.SlnName);
+                ownsDestination = true;
+                // Staging may live on another volume. Copy source files first and solution
+                // discovery files last so IDEs only load the completed composition.
+                var files = Directory.EnumerateFiles(projectRoot, "*", SearchOption.AllDirectories)
+                    .Select(path => (Source: path, Relative: Path.GetRelativePath(projectRoot, path)))
+                    .Where(file => !file.Relative.Split(Path.DirectorySeparatorChar).Any(part => part is "bin" or "obj" or ".vs"))
+                    .OrderBy(file => Path.GetExtension(file.Source) is ".sln" or ".slnx" ? 2 : Path.GetExtension(file.Source) == ".csproj" ? 1 : 0)
+                    .ThenBy(file => file.Relative, StringComparer.Ordinal).ToArray();
+                foreach (var file in files) {
+                    string target = Path.Combine(destination, file.Relative);
+                    Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                    File.Copy(file.Source, target, overwrite: false);
+                }
+                if (!XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(destination)).IsValid)
+                    throw new InvalidOperationException("The published project failed validation.");
+            });
             return destination;
         }
         catch (Exception exception) {

@@ -32,7 +32,8 @@ public sealed record CliOptions(
     bool SkipNavigation = false,
     string Profile = "standard",
     IReadOnlyList<string>? Features = null,
-    bool NoBuild = false);
+    bool NoBuild = false,
+    string? ResolveFromPath = null);
 
 public sealed record CliParseResult(CliOptions? Options, string? Error) {
     public bool Success => Options is not null;
@@ -371,6 +372,7 @@ public static class CliParser {
         bool jsonOutput = false;
         bool dryRun = false;
         string? conflictOutputPath = null;
+        string? resolveFromPath = null;
         for (int index = 1; index < args.Length; index++) {
             string argument = args[index];
             if (argument is "--project" or "-p") {
@@ -393,6 +395,12 @@ public static class CliParser {
                 if (!TryReadValue(args, ref index, argument, out conflictOutputPath, out string? error))
                     return CliParseResult.Failed(error!);
             }
+            else if (argument.Equals("--resolve-from", StringComparison.OrdinalIgnoreCase)) {
+                if (resolveFromPath is not null)
+                    return CliParseResult.Failed("The --resolve-from option can only be specified once.");
+                if (!TryReadValue(args, ref index, argument, out resolveFromPath, out string? error))
+                    return CliParseResult.Failed(error!);
+            }
             else if (argument.StartsWith('-')) {
                 return CliParseResult.Failed($"Unknown option '{argument}'.");
             }
@@ -405,12 +413,16 @@ public static class CliParser {
         }
         try {
             projectPath = Path.GetFullPath(projectPath ?? currentDirectory, currentDirectory);
+            if (resolveFromPath is not null)
+                resolveFromPath = Path.GetFullPath(resolveFromPath, currentDirectory);
             if (conflictOutputPath is not null)
                 conflictOutputPath = Path.GetFullPath(conflictOutputPath, currentDirectory);
         }
         catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException) {
             return CliParseResult.Failed($"Invalid project path: {exception.Message}");
         }
+        if (resolveFromPath is not null && conflictOutputPath is not null)
+            return CliParseResult.Failed("--resolve-from cannot be combined with --conflict-output.");
         if (dryRun && conflictOutputPath is not null)
             return CliParseResult.Failed("--dry-run cannot be combined with --conflict-output because conflict export writes files.");
         return CliParseResult.Parsed(new CliOptions(
@@ -418,7 +430,8 @@ public static class CliParser {
             ProjectPath: projectPath,
             JsonOutput: jsonOutput,
             DryRun: dryRun,
-            ConflictOutputPath: conflictOutputPath));
+            ConflictOutputPath: conflictOutputPath,
+            ResolveFromPath: resolveFromPath));
     }
 
     private static CliParseResult ParseDoctorCommand(string[] args, string currentDirectory) {

@@ -23,4 +23,11 @@
 		</Page>
 	</ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Assets\XamlNexus.png">
+      <TargetPath>Winui3_XamlNexus.MainPanel\Assets\XamlNexus.png</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

@@ -108,8 +108,8 @@ public static class XamlNexusProjectValidator {
                     RequireFile($"{projectName}.Common/Updates/VerifiedUpdateDownloader.cs", "XN1109", "Verified update downloader is missing.");
                     break;
                 case "github-release":
-                    RequireFile(".github/release.json", "XN1110", "Release configuration is missing.");
-                    RequireFile(".github/workflows/release-merged-pull-request.yml", "XN1111", "Release workflow is missing.");
+                    if (!File.Exists(Path.Combine(context.RootDirectory, "eng", "publishing", "release.json")))
+                        RequireFile(".github/release.json", "XN1110", "Release configuration is missing (eng/publishing/release.json).");
                     RequireFile("eng/publishing/Build-Installer.ps1", "XN1112", "Installer build script is missing.");
                     break;
                 case "autostart":

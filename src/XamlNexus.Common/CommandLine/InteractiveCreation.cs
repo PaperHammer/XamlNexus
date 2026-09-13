@@ -26,12 +26,7 @@ public static class InteractiveCreation {
         string preset = config.Framework == Utils.FrameworkType.Winui3_Wpf ? "hybrid" : "winui";
         var choices = GetChoices(config, generator, catalog);
         while (true) {
-            var selected = choices.Count == 0 ? [] : AnsiConsole.Prompt(new MultiSelectionPrompt<IXamlNexusRecipe>()
-                .Title(LanguageRegistry.GetText("Wizard_ChooseCapabilities"))
-                .NotRequired()
-                .InstructionsText(LanguageRegistry.GetText("Wizard_SelectionInstructions"))
-                .AddChoices(choices)
-                .UseConverter(recipe => Markup.Escape($"{recipe.Descriptor.Id} — {recipe.Descriptor.DisplayName}")));
+            var selected = SelectCapabilities(AnsiConsole.Console, choices);
             IReadOnlyList<IXamlNexusRecipe> resolved;
             try {
                 resolved = CompositionPlanner.ResolveForCreation(preset, config.Profile, selected.Select(recipe => recipe.Descriptor.Id),
@@ -52,5 +47,51 @@ public static class InteractiveCreation {
             AnsiConsole.Write(table);
             return new(config, config.Profile, selected.Select(recipe => recipe.Descriptor.Id).ToArray());
         }
+    }
+
+    internal static IReadOnlyList<IXamlNexusRecipe> SelectCapabilities(
+        IAnsiConsole console, IReadOnlyList<IXamlNexusRecipe> choices) {
+        if (choices.Count == 0) return [];
+        var selected = new bool[choices.Count];
+        int cursor = 0;
+
+        Rows Render() {
+            var rows = new List<Spectre.Console.Rendering.IRenderable> {
+                new Markup(LanguageRegistry.GetText("Wizard_ChooseCapabilities")), Text.Empty
+            };
+            for (int index = 0; index < choices.Count; index++) {
+                var recipe = choices[index].Descriptor;
+                string marker = selected[index] ? "[●]" : "[ ]";
+                string label = $"{(index == cursor ? ">" : " ")} {marker} {recipe.Id} — {recipe.DisplayName}";
+                rows.Add(new Text(label, index == cursor ? new Style(Color.Blue) : Style.Plain));
+            }
+            rows.Add(Text.Empty);
+            rows.Add(new Markup(LanguageRegistry.GetText("Wizard_SelectionInstructions")));
+            return new Rows(rows);
+        }
+
+        console.Live(Render()).AutoClear(true).Start(context => {
+            while (true) {
+                // Live displays do not refresh automatically while ReadKey blocks.
+                context.Refresh();
+                var key = console.Input.ReadKey(intercept: true);
+                if (key is null) throw new InvalidOperationException("Interactive input ended before selection was confirmed.");
+                switch (key.Value.Key) {
+                    case ConsoleKey.Enter:
+                        return;
+                    case ConsoleKey.UpArrow:
+                        cursor = Math.Max(0, cursor - 1);
+                        break;
+                    case ConsoleKey.DownArrow:
+                        cursor = Math.Min(choices.Count - 1, cursor + 1);
+                        break;
+                    case ConsoleKey.Spacebar:
+                        selected[cursor] = !selected[cursor];
+                        break;
+                }
+                context.UpdateTarget(Render());
+            }
+        });
+        return choices.Where((_, index) => selected[index]).ToArray();
     }
 }

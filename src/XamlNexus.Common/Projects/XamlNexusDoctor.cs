@@ -252,7 +252,8 @@ public static class XamlNexusDoctor {
             return;
         }
 
-        string configPath = Path.Combine(context.RootDirectory, ".github", "release.json");
+        string configPath = Path.Combine(context.RootDirectory, "eng", "publishing", "release.json");
+        if (!File.Exists(configPath)) configPath = Path.Combine(context.RootDirectory, ".github", "release.json");
         try {
             using JsonDocument document = JsonDocument.Parse(File.ReadAllText(configPath));
             string[] required = ["solution", "versionFile", "project", "executable", "runtimeIdentifier"];
@@ -263,10 +264,10 @@ public static class XamlNexusDoctor {
                 .ToArray();
             checks.Add(missing.Length == 0
                 ? Pass("XD6002", "Publishing", "Release metadata contains all required fields.")
-                : Error("XD6002", "Publishing", $"Release metadata is missing: {string.Join(", ", missing)}.", ".github/release.json"));
+                : Error("XD6002", "Publishing", $"Release metadata is missing: {string.Join(", ", missing)}.", Path.GetRelativePath(context.RootDirectory, configPath)));
         }
         catch (Exception exception) when (exception is IOException or JsonException) {
-            checks.Add(Error("XD6002", "Publishing", $"Release metadata is invalid: {exception.Message}", ".github/release.json"));
+            checks.Add(Error("XD6002", "Publishing", $"Release metadata is invalid: {exception.Message}", Path.GetRelativePath(context.RootDirectory, configPath)));
         }
     }
 

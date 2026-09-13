@@ -12,7 +12,8 @@ xamlnexus upgrade --project D:\Projects\MyApp
 Newly generated projects record every file that came from the selected
 template, including:
 
-- `.github` release configuration and workflows;
+- `.github` PR validation workflow and template;
+- `eng/publishing` local release scripts and configuration;
 - `eng` publishing and release scripts;
 - `Directory.Build.props`, `RELEASING.md`, and the example update manifest;
 - generated update infrastructure under `<App>.Common/Updates`;
@@ -76,6 +77,23 @@ Artifacts mirror the project-relative path with a `.merge` suffix and contain
 `LOCAL`, `BASE`, and `TARGET` sections. Existing artifact files are never
 overwritten. `--conflict-output` cannot be combined with `--dry-run`, because
 conflict export intentionally writes files outside the project transaction.
+
+## Applying resolved conflicts
+
+For ordinary text conflicts, the `.merge` file retains independent edits from both sides and marks only overlapping regions with `<<<<<<< LOCAL`, `||||||| BASE`, `=======`, and `>>>>>>> TARGET`. Structural conflicts in XML or solution files may require whole-file review; their three inputs remain visible rather than hiding a structural disagreement behind a successful line merge.
+
+Edit the exported `.merge` files, resolve each marked region, and remove the markers. Keep the `.xamlnexus-upgrade` export record alongside them. Then preview and apply:
+
+```powershell
+xamlnexus upgrade --project D:\Projects\MyApp --resolve-from .\upgrade-conflicts --dry-run
+xamlnexus upgrade --project D:\Projects\MyApp --resolve-from .\upgrade-conflicts
+```
+
+All resolved files and automatic changes are applied together. The manifest advances only on success and records the target template as the new baseline, so your manual edits remain customizations. The original project stays unchanged while you edit the exports.
+
+`XU2020` means the export no longer matches the upgrade; export again into a new directory and review your resolutions against the new inputs. `XU2021` means a resolved file is missing, still contains conflict markers, contains invalid XML, or is not eligible for this flow. This entry supports text and structural conflicts (`XU2011`). Deleted-versus-modified files, missing baselines, unsupported content, and ownership conflicts still require explicit project changes before retrying. Deleting a `.merge` file does not request deletion of the original file.
+
+`--resolve-from` may be combined with `--dry-run`, but not with `--conflict-output`.
 
 ## Safety model
 

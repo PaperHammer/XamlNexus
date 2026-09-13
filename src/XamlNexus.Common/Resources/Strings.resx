@@ -126,8 +126,11 @@
   <data name="Wizard_AdjustSelection" xml:space="preserve">
     <value>Adjust the capability selection.</value>
   </data>
+  <data name="Wizard_TextInstructions" xml:space="preserve">
+    <value>[grey]Left/Right to move, Home/End to jump, Ctrl+Backspace to delete a word, Enter to confirm[/]</value>
+  </data>
   <data name="Wizard_SelectionInstructions" xml:space="preserve">
-    <value>[grey]Space to select, Enter to continue; dependencies are included automatically[/]</value>
+    <value>[grey]Up/Down to move, Space to select/deselect, Enter to continue; ● means selected; dependencies are included automatically[/]</value>
   </data>
   <data name="Wizard_ChooseCapabilities" xml:space="preserve">
     <value>Choose additional capabilities (optional)</value>
@@ -144,16 +147,84 @@
   <data name="SelectSolutionFormat" xml:space="preserve">
     <value>Choose solution format (slnx requires .NET SDK 9.0.200+)</value>
   </data>
+  <data name="Creation_Finishing" xml:space="preserve">
+    <value>Finishing up…</value>
+  </data>
   <data name="Creation_Run" xml:space="preserve">
     <value>Run: xamlnexus run --project "{0}"</value>
   </data>
-  <data name="Creation_Page" xml:space="preserve">
-    <value>Page: {0}.MainPanel/MainPage.xaml</value>
-  </data>
-  <data name="Creation_ViewModel" xml:space="preserve">
-    <value>ViewModel: {0}.MainPanel/ViewModels/MainViewModel.cs</value>
-  </data>
   <data name="Creation_ReviewRecipes" xml:space="preserve">
     <value>Review each installed Recipe's README for required configuration.</value>
+  </data>
+  <data name="Cli_Help" xml:space="preserve">
+    <value>XamlNexus - Windows desktop prototype scaffolding / XamlNexus - Windows 桌面原型脚手架
+
+Quick start: / 快速开始
+  xamlnexus new MyApp
+  cd MyApp
+  xamlnexus run
+  Stop with Ctrl+C before editing or running again. / 修改或再次运行前，按 Ctrl+C 停止当前运行。
+  Edit MyApp.MainPanel/MainPage.xaml and ViewModels/MainViewModel.cs. / 编辑 MainPage.xaml 及其 ViewModel。
+  xamlnexus page add Workspace
+  xamlnexus run
+  After stopping: xamlnexus add sqlite, then xamlnexus run. / 停止后，可添加 sqlite，再运行项目。
+
+Usage: / 命令用法
+  xamlnexus                         Start interactive mode / 启动交互模式
+  xamlnexus new &lt;name&gt; [options]    Create a project / 创建项目
+  xamlnexus page add &lt;name&gt; [--project &lt;directory&gt;] [--no-navigation] [--dry-run] [--json]
+    添加页面；--no-navigation 跳过导航注册。 / Add a page; --no-navigation skips navigation registration.
+  xamlnexus run [path] [--project &lt;directory&gt;] [--no-build] [--dry-run] [--json]
+    Build and run Debug/x64 unpackaged; Ctrl+C stops this run. / 构建并运行 Debug/x64 非打包应用，Ctrl+C 停止运行。
+    --no-build uses existing output; no watch or hot reload. / --no-build 使用已有构建产物；不提供文件监听或热重载。
+  xamlnexus list [path] [--json]    List project capabilities / 列出项目已安装的能力
+  xamlnexus validate [path] [--json] Validate the manifest and managed files / 检查项目清单和受管理文件
+  xamlnexus doctor [path] [--json] Diagnose environment and project health / 诊断环境和项目状态
+  xamlnexus upgrade [path] [options] Upgrade scaffold-managed infrastructure / 升级脚手架管理的基础代码
+  xamlnexus recipes [--json]        List built-in Recipes / 列出可添加的内置组件
+  xamlnexus add &lt;recipe[,recipe...]&gt; [options]  Install Recipes transactionally / 通过事务添加组件
+  xamlnexus remove &lt;recipe&gt; [options] Remove a Recipe transactionally / 通过事务移除组件
+  xamlnexus update &lt;recipe&gt; [options] Update a Recipe transactionally / 通过事务更新组件
+  xamlnexus --help                  Show help / 显示帮助（也可使用 help、-h、-?）
+  xamlnexus --version               Show version / 显示版本
+
+New options: / 创建项目参数
+  -n, --name &lt;name&gt;                 Project name (or use the positional name) / 项目名称，也可直接写在 new 后
+  -p, --preset &lt;preset&gt;             winui (default) or hybrid / winui（默认）或 hybrid
+  -o, --output &lt;directory&gt;          Parent output directory (default: current directory) / 输出父目录，默认为当前目录
+      --profile &lt;standard|basic&gt;    Starting capability profile (default: standard) / 初始能力组合，默认为 standard
+                                    basic omits the full settings panel; core services remain. / basic 不包含完整设置面板，保留核心服务。
+      --features &lt;ids&gt;               Install comma-separated Recipes during creation / 创建时添加组件，多个 ID 用逗号分隔
+  -l, --language &lt;language&gt;         zh-CN (default) or en-US / 生成应用的语言：zh-CN（默认）或 en-US
+  -f, --solution-format &lt;format&gt;    sln (default) or slnx / sln（默认）或 slnx
+
+Project command options: / 项目命令参数
+  -p, --project &lt;path&gt;              Project directory or xamlnexus.json path / 项目目录或 xamlnexus.json 路径
+  --dry-run                         Validate and show changes without writing files / 检查并预览变更，不写入项目文件
+  --json                            Emit machine-readable query or change output / 以 JSON 输出查询或变更结果
+  --resolve-from &lt;directory&gt;        Apply manually resolved upgrade .merge files / 应用手动解决冲突后的升级 .merge 文件
+  --conflict-output &lt;directory&gt;     Export upgrade merge conflicts (writes files) / 导出升级冲突文件，此选项会写入文件
+
+Examples: / 示例
+  xamlnexus new MyApp
+  xamlnexus new MinimalApp --profile basic
+  xamlnexus new DataApp --profile basic --features settings,sqlite
+  xamlnexus run --project MyApp
+  xamlnexus page add Workspace --project MyApp --dry-run
+  xamlnexus new MyApp --preset hybrid --output D:\Projects --language en-US
+  xamlnexus list D:\Projects\MyApp
+  xamlnexus validate --project D:\Projects\MyApp --json
+  xamlnexus doctor --project D:\Projects\MyApp --json
+  xamlnexus upgrade --project D:\Projects\MyApp --dry-run --json
+  xamlnexus upgrade --project D:\Projects\MyApp --conflict-output .\upgrade-conflicts
+  xamlnexus recipes
+  xamlnexus add editorconfig --project D:\Projects\MyApp --dry-run
+  xamlnexus remove editorconfig --project D:\Projects\MyApp
+  xamlnexus update sqlite --project D:\Projects\MyApp
+
+Recipes: settings, sqlite, system-tray, app-update, editorconfig. / 可用组件：设置、SQLite、系统托盘、应用更新、编辑器配置。
+  standard includes settings; hybrid includes tray and updater. / standard 包含设置；hybrid 包含托盘和更新能力。
+  app-update depends on settings. Do not add already installed Recipes. / app-update 依赖 settings；不要重复添加已安装组件。
+Guide: https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/quickstart.zh-CN.md</value>
   </data>
 </root>

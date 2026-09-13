@@ -131,7 +131,6 @@
                                     <VisualState.Setters>
                                         <Setter Target="RootSplitView.BorderBrush" Value="Transparent" />
                                         <Setter Target="ShadowCaster.Opacity" Value="0" />
-                                        <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -216,7 +215,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <!-- DisplayMode top -->
-                            <StackPanel x:Name="TopNavArea" Background="{ThemeResource NavigationViewTopPaneBackground}" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Canvas.ZIndex="1" XYFocusKeyboardNavigation="Enabled">
+                            <StackPanel x:Name="TopNavArea" Background="{TemplateBinding Background}" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Canvas.ZIndex="1" XYFocusKeyboardNavigation="Enabled">
                                 <Grid x:Name="TopNavTopPadding" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}" />
                                 <Grid x:Name="TopNavGrid" Height="{ThemeResource NavigationViewTopPaneHeight}" Margin="{ThemeResource TopNavigationViewTopNavGridMargin}" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}" BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}">
                                     <Grid.ColumnDefinitions>
@@ -293,7 +292,7 @@
                                 <Border x:Name="TopNavContentOverlayAreaGrid" Child="{TemplateBinding ContentOverlay}" />
                             </StackPanel>
                             <!-- Displaymode (compact/minimal/normal) left -->
-                            <SplitView x:Name="RootSplitView" Background="{TemplateBinding Background}" BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}" BorderThickness="{ThemeResource NavigationViewBorderThickness}" CompactPaneLength="{TemplateBinding CompactPaneLength}" DisplayMode="Inline" IsPaneOpen="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}" IsTabStop="False" OpenPaneLength="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OpenPaneLength}" PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}" Grid.Row="1" CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
+                            <SplitView x:Name="RootSplitView" Background="{TemplateBinding Background}" BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}" BorderThickness="{ThemeResource NavigationViewBorderThickness}" CompactPaneLength="{TemplateBinding CompactPaneLength}" DisplayMode="Inline" IsPaneOpen="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}" IsTabStop="False" OpenPaneLength="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OpenPaneLength}" PaneBackground="{TemplateBinding Background}" Grid.Row="1" CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
                                 <SplitView.Pane>
                                     <Grid x:Name="PaneContentGrid" BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}" HorizontalAlignment="Left" Margin="{ThemeResource NavigationViewPaneContentGridMargin}" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>

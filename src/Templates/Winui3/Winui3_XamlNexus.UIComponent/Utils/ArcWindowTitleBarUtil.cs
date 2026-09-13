@@ -35,18 +35,17 @@ namespace Winui3_XamlNexus.UIComponent.Utils {
             
             window.AppWindow.TitleBar.PreferredTheme = theme == AppTheme.Dark ? Microsoft.UI.Windowing.TitleBarTheme.Dark : Microsoft.UI.Windowing.TitleBarTheme.Light;
 
-           // var foreground = GetCachedSolidBrush(
-           //    isActive
-           //        ? (theme == AppTheme.Dark ? _activeDarkForeground : _activeLightForeground)
-           //        : _inactiveForeground
-           //);
-
-           // window.AppWindow.TitleBar.ButtonForegroundColor = foreground.Color;
-           // window.AppWindow.TitleBar.ButtonHoverForegroundColor = foreground.Color;
-
-           // window.AppWindow.TitleBar.ButtonHoverBackgroundColor = theme == AppTheme.Dark
-           //     ? _hoverDarkBackground
-           //     : _hoverLightBackground;
+            var titleBar = window.AppWindow.TitleBar;
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            titleBar.ButtonForegroundColor = theme == AppTheme.Dark ? Colors.White : Colors.Black;
+            titleBar.ButtonInactiveForegroundColor = _inactiveForeground;
+            titleBar.ButtonHoverForegroundColor = titleBar.ButtonForegroundColor;
+            titleBar.ButtonPressedForegroundColor = titleBar.ButtonForegroundColor;
+            titleBar.ButtonHoverBackgroundColor = theme == AppTheme.Dark
+                ? Color.FromArgb(32, 255, 255, 255) : Color.FromArgb(24, 0, 0, 0);
+            titleBar.ButtonPressedBackgroundColor = theme == AppTheme.Dark
+                ? Color.FromArgb(48, 255, 255, 255) : Color.FromArgb(40, 0, 0, 0);
         }
 
         private static void UpdateTitleBarChildren(

@@ -1,5 +1,6 @@
 using Spectre.Console;
 using XamlNexus.Common.Utils;
+using XamlNexus.Common.CommandLine;
 
 namespace XamlNexus.Common.Generators {
     public static class BaseConfig {
@@ -33,10 +34,8 @@ namespace XamlNexus.Common.Generators {
                     .AddChoices(SolutionType.Sln, SolutionType.Slnx)),
 
                 SlnName = AnsiConsole.Prompt(
-                    new TextPrompt<string>(LanguageRegistry.GetI18n(LangKeys.ProjectName))
-                        .DefaultValue(ProjectConfig.GetDefaultProjectName())
-                        .PromptStyle("gray")
-                        .Validate(name => {
+                    new WizardTextPrompt(LanguageRegistry.GetI18n(LangKeys.ProjectName),
+                        ProjectConfig.GetDefaultProjectName(), name => {
                             if (string.IsNullOrWhiteSpace(name))
                                 return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameEmpty)}[/]");
 
@@ -50,10 +49,8 @@ namespace XamlNexus.Common.Generators {
                         })),
 
                 OutputPath = AnsiConsole.Prompt(
-                    new TextPrompt<string>(LanguageRegistry.GetI18n(LangKeys.OutputPath))
-                        .DefaultValue(ProjectConfig.GetDefaultOutputPath())
-                        .PromptStyle("gray")
-                        .Validate(path => {
+                    new WizardTextPrompt(LanguageRegistry.GetI18n(LangKeys.OutputPath),
+                        ProjectConfig.GetDefaultOutputPath(), path => {
                             if (string.IsNullOrWhiteSpace(path))
                                 return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_PathEmpty)}[/]");
 

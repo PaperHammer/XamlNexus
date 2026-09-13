@@ -1,21 +1,9 @@
-## Summary
+## 变更说明 / Summary
 
-Describe what changed and why.
+<!-- 说明解决的问题、修改后的行为和影响范围。
+Describe the problem, resulting behavior, and affected areas. -->
 
-## Release notes
+## 验证 / Validation
 
-<!-- release-notes:start -->
-
-- Describe the user-visible changes in this pull request.
-
-<!-- release-notes:end -->
-
-## Release type
-
-Apply exactly one label before merging:
-
-- `release:stable`
-- `release:preview`
-- `release:none`
-
-Publishing pull requests must increase the numeric version in `Directory.Build.props`.
+<!-- 填写检查方法及结果，说明尚未验证的部分。
+Describe checks and results, including anything not verified. -->

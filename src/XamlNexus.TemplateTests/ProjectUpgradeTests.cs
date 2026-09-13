@@ -489,6 +489,79 @@ public sealed class ProjectUpgradeTests {
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ResolveConflicts_RejectsMissingFileAndMalformedXml(bool bom) {
+        string parent = CreateTemporaryDirectory();
+        try {
+            var current = CreateProject(Path.Combine(parent, "current"), "1.0.0",
+                new Dictionary<string, string> { ["Page.xaml"] = "<Grid Tag=\"base\" />" });
+            var target = CreateProject(Path.Combine(parent, "target"), "2.0.0",
+                new Dictionary<string, string> { ["Page.xaml"] = "<Grid Tag=\"target\" />" });
+            string local = Path.Combine(current.RootDirectory, "Page.xaml");
+            File.WriteAllText(local, "<Grid Tag=\"local\" />");
+            var plan = XamlNexusProjectUpgrade.CreatePlan(current, target);
+            Assert.Equal("XU2011", Assert.Single(plan.Conflicts).Code);
+            string output = Path.Combine(parent, "conflicts");
+            XamlNexusProjectUpgrade.WriteConflictArtifacts(plan, output);
+            string resolution = Path.Combine(output, "Page.xaml.merge");
+            File.Delete(resolution);
+            Assert.Equal("XU2021", Assert.Throws<XamlNexusProjectUpgradeException>(() =>
+                XamlNexusProjectUpgrade.ResolveConflicts(plan, output)).Code);
+            File.WriteAllText(resolution, "<Grid>");
+            Assert.Equal("XU2021", Assert.Throws<XamlNexusProjectUpgradeException>(() =>
+                XamlNexusProjectUpgrade.ResolveConflicts(plan, output)).Code);
+            Assert.Equal("<Grid Tag=\"local\" />", File.ReadAllText(local));
+            File.WriteAllText(resolution, "<Grid Tag=\"resolved\" />", new System.Text.UTF8Encoding(bom));
+            XamlNexusProjectUpgrade.Apply(current, target, XamlNexusProjectUpgrade.ResolveConflicts(plan, output));
+            Assert.Equal("<Grid Tag=\"resolved\" />", File.ReadAllText(local));
+        }
+        finally { Directory.Delete(parent, recursive: true); }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ResolveConflicts_ValidatesExportThenAppliesTogether(bool stale) {
+        string parent = CreateTemporaryDirectory();
+        try {
+            var current = CreateProject(Path.Combine(parent, "current"), "1.0.0",
+                new Dictionary<string, string> { ["file.txt"] = "base\n", ["other.txt"] = "old\n" });
+            var target = CreateProject(Path.Combine(parent, "target"), "2.0.0",
+                new Dictionary<string, string> { ["file.txt"] = "target\n", ["other.txt"] = "new\n" });
+            string localPath = Path.Combine(current.RootDirectory, "file.txt");
+            File.WriteAllText(localPath, "local\n");
+            var plan = XamlNexusProjectUpgrade.CreatePlan(current, target);
+            string output = Path.Combine(parent, "conflicts");
+            XamlNexusProjectUpgrade.WriteConflictArtifacts(plan, output);
+            Assert.Equal("XU2021", Assert.Throws<XamlNexusProjectUpgradeException>(() =>
+                XamlNexusProjectUpgrade.ResolveConflicts(plan, output)).Code);
+            Assert.Equal("old\n", File.ReadAllText(Path.Combine(current.RootDirectory, "other.txt")));
+            File.WriteAllText(Path.Combine(output, "file.txt.merge"), "resolved\n");
+            if (stale) {
+                File.WriteAllText(localPath, "late edit\n");
+                var fresh = XamlNexusProjectUpgrade.CreatePlan(current, target);
+                Assert.Equal("XU2020", Assert.Throws<XamlNexusProjectUpgradeException>(() =>
+                    XamlNexusProjectUpgrade.ResolveConflicts(fresh, output)).Code);
+                var resolved = XamlNexusProjectUpgrade.ResolveConflicts(plan, output);
+                Assert.Equal("XU2006", Assert.Throws<XamlNexusProjectUpgradeException>(() =>
+                    XamlNexusProjectUpgrade.Apply(current, target, resolved)).Code);
+                Assert.Equal("old\n", File.ReadAllText(Path.Combine(current.RootDirectory, "other.txt")));
+                return;
+            }
+            XamlNexusProjectUpgrade.Apply(current, target, XamlNexusProjectUpgrade.ResolveConflicts(plan, output));
+            Assert.Equal("resolved\n", File.ReadAllText(localPath));
+            Assert.Equal("new\n", File.ReadAllText(Path.Combine(current.RootDirectory, "other.txt")));
+            var manifest = XamlNexusProjectManifestStore.Load(current.ManifestPath);
+            Assert.Equal("2.0.0", manifest.GeneratorVersion);
+            var baseline = manifest.ScaffoldFiles!.Single(file => file.Path == "file.txt");
+            Assert.Equal(System.Text.Encoding.UTF8.GetBytes("target\n"),
+                XamlNexusBaselineContent.Decode(baseline.BaselineContentGzipBase64!));
+        }
+        finally { Directory.Delete(parent, recursive: true); }
+    }
+
     [Fact]
     public void Apply_RejectsPlanThatBecameStale() {
         string parent = CreateTemporaryDirectory();

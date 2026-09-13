@@ -49,7 +49,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils {
         /// 检查指定页面类型是否已注册上下文
         /// </summary>
         public static bool HasContext(ArcPageContextKey key) {
-            return _contexts.ContainsKey(key) && _contexts[key].IsValid;
+            return GetContext(key) is not null;
         }
     }
 }

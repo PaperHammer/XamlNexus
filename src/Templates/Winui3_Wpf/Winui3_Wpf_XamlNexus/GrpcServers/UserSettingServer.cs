@@ -29,8 +29,7 @@ namespace Winui3_Wpf_XamlNexus.GrpcServers {
 
         public override Task<Empty> SetSettings(Grpc_SettingsData request, ServerCallContext context) {
             bool restartRequired =
-                request.Language != _userSetting.Settings.Language
-                || (Common.AppSystemBackdrop)request.SystemBackdrop != _userSetting.Settings.SystemBackdrop;
+                (Common.AppSystemBackdrop)request.SystemBackdrop != _userSetting.Settings.SystemBackdrop;
 
             if (request.IsAutoStart != _userSetting.Settings.IsAutoStart) {
                 _userSetting.Settings.IsAutoStart = request.IsAutoStart;

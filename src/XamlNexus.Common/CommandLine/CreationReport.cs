@@ -5,6 +5,26 @@ using XamlNexus.Common.Utils;
 namespace XamlNexus.Common.CommandLine;
 
 public static class CreationReport {
+    internal static void RunFinishing(Action action) {
+        string message = LanguageRegistry.GetText("Creation_Finishing");
+        if (Console.IsOutputRedirected || !AnsiConsole.Profile.Capabilities.Interactive) {
+            AnsiConsole.WriteLine(message);
+            action();
+            return;
+        }
+        AnsiConsole.Progress().AutoRefresh(true).AutoClear(true)
+            .Columns(new TaskDescriptionColumn(), new SpinnerColumn())
+            .Start(context => {
+                var task = context.AddTask(message);
+                task.IsIndeterminate = true;
+                context.Refresh();
+                action();
+                task.IsIndeterminate = false;
+                task.Value = task.MaxValue;
+                task.StopTask();
+            });
+    }
+
     public static void Write(ProjectConfig config, string outputRoot, bool hasAddedCapabilities = false) {
         var table = new Table().Border(TableBorder.Rounded);
 
@@ -18,8 +38,6 @@ public static class CreationReport {
 
         AnsiConsole.Write(table);
         AnsiConsole.WriteLine(string.Format(LanguageRegistry.GetText("Creation_Run"), outputRoot));
-        AnsiConsole.WriteLine(string.Format(LanguageRegistry.GetText("Creation_Page"), config.SlnName));
-        AnsiConsole.WriteLine(string.Format(LanguageRegistry.GetText("Creation_ViewModel"), config.SlnName));
         if (hasAddedCapabilities) AnsiConsole.WriteLine(LanguageRegistry.GetText("Creation_ReviewRecipes"));
 
         AnsiConsole.WriteLine();

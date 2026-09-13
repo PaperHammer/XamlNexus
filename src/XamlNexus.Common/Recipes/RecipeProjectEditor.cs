@@ -392,6 +392,7 @@ internal static partial class XamlNexusRecipeProjectEditor {
 
         string[] configurations = solution[solutionStart..solutionEnd]
             .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Skip(1) // The section header is not a configuration entry.
             .Select(line => line.Trim())
             .Where(line => line.Contains(" = ", StringComparison.Ordinal))
             .Select(line => line[..line.IndexOf(" = ", StringComparison.Ordinal)])
@@ -410,7 +411,9 @@ internal static partial class XamlNexusRecipeProjectEditor {
                     .Append(".Build.0 = ").Append(projectConfiguration).Append(newline);
             }
         }
-        return solution.Insert(projectEnd, mappings.ToString());
+        // Insert before the closing line's indentation, not before its text.
+        int insertionPoint = solution.LastIndexOf('\n', projectEnd) + 1;
+        return solution.Insert(insertionPoint, mappings.ToString());
     }
 
     private static void ValidatePackage(AddPackageReferenceOperation package) {

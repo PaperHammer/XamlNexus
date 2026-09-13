@@ -1,13 +1,14 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Microsoft.UI.Composition;
+using System.Threading;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Winui3_XamlNexus.Common.Logging;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.UIComponent.Utils;
 using Winui3_XamlNexus.UIComponent.Utils.Extensions;
@@ -31,6 +32,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
                 ArcThemeUtil.SetMainWindowBackdrop(systemBackdrop);
             }
 
+            this.Closed += (_, _) => _isClosed = true;
             this.Activated += ArcWindow_Activated;
             this.AppWindow.Closing += AppWindow_Closing;
         }
@@ -40,11 +42,13 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
             if (_isActive == isActive) return;
             _isActive = isActive;
 
-            ArcWindowTitleBarUtil.UpdateTitleBar(this, ArcThemeUtil.GetFormatMainWindowTheme(), isActive);
+            ArcWindowManager.UpdateWindowVisualState(this);
         }
 
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
             this.Activated -= ArcWindow_Activated;
+            this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
+            this.ContentHost.AppRoot.ActualThemeChanged -= Host_ActualThemeChanged;
 
             if (IsMainWindow) {
                 ArcWindowManager.Cleanup();
@@ -53,13 +57,12 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
 
         private async void AppRoot_Loaded(object sender, RoutedEventArgs e) {
-            _compositor = ElementCompositionPreview.GetElementVisual(this.ContentHost.AppRoot).Compositor;
-            _isLoaded = true;
             await SetThemeAsync();
         }
 
         protected void InitializeWindow() {
             this.ContentHost.AppRoot.Loaded += AppRoot_Loaded;
+            this.ContentHost.AppRoot.ActualThemeChanged += Host_ActualThemeChanged;
 
             if (IsNeedTrack) {
                 ArcWindowManager.TrackWindow(Key, this);
@@ -67,6 +70,8 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
             SetWindowStartupPosition();
             SetWindowStyle();
             SetWindowTitleBar();
+            UpdateThemeIcon();
+            UpdateTheme();
         }
 
         #region theme
@@ -86,35 +91,47 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
 
         public async Task SetThemeAsync() {
-            if (!_isLoaded || _compositor == null || this.ContentHost.AppRoot == null || this.ContentHost.AppRoot.ActualWidth <= 0 || this.ContentHost.AppRoot.ActualHeight <= 0)
-                return;
+            await _themeTransition.WaitAsync();
+            var overlay = ContentHost.AppThemeTransitionImage;
+            try {
+                var root = ContentHost.AppRoot;
+                if (_isClosed || !root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0) return;
+                UpdateThemeIcon();
+                // Same snapshot and Composition fade sequence as VirtualPaper.
+                var bitmap = new RenderTargetBitmap();
+                await bitmap.RenderAsync(root);
+                if (_isClosed) return;
+                overlay.Source = bitmap;
+                overlay.Visibility = Visibility.Visible;
+                overlay.Opacity = 1;
+                UpdateTheme();
+                var visual = ElementCompositionPreview.GetElementVisual(overlay);
+                var fade = visual.Compositor.CreateScalarKeyFrameAnimation();
+                fade.InsertKeyFrame(0, 1);
+                fade.InsertKeyFrame(1, 0);
+                fade.Duration = TimeSpan.FromMilliseconds(600);
+                visual.StartAnimation(nameof(visual.Opacity), fade);
+                await Task.Delay(600);
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<ArcWindow>().Error("Theme transition failed", exception);
+                if (!_isClosed) UpdateTheme();
+            }
+            finally {
+                if (!_isClosed) {
+                    overlay.Visibility = Visibility.Collapsed;
+                    overlay.Source = null;
+                }
+                _themeTransition.Release();
+            }
+        }
 
-            UpdateThemeIcon();
-
-            // 捕获当前界面图像
-            var bitmap = new RenderTargetBitmap();
-            await bitmap.RenderAsync(this.ContentHost.AppRoot);
-            this.ContentHost.AppThemeTransitionImage.Source = bitmap;
-            this.ContentHost.AppThemeTransitionImage.Visibility = Visibility.Visible;
-            this.ContentHost.AppThemeTransitionImage.Opacity = 1.0;
-
-            UpdateTheme();
-
-            // 动画
-            var imageVisual = ElementCompositionPreview.GetElementVisual(this.ContentHost.AppThemeTransitionImage);
-            var fadeAnim = _compositor.CreateScalarKeyFrameAnimation();
-            fadeAnim.InsertKeyFrame(0f, 1f);
-            fadeAnim.InsertKeyFrame(1f, 0f);
-            fadeAnim.Duration = TimeSpan.FromMilliseconds(600);
-            imageVisual.StartAnimation(nameof(imageVisual.Opacity), fadeAnim);
-
-            await Task.Delay(600);
-
-            this.ContentHost.AppThemeTransitionImage.Visibility = Visibility.Collapsed;
-            this.ContentHost.AppThemeTransitionImage.Source = null;
+        private void Host_ActualThemeChanged(FrameworkElement sender, object args) {
+            ArcWindowManager.UpdateWindowVisualState(this);
         }
 
         private void UpdateTheme() {
+            ArcThemeUtil.ApplyTheme(this.ContentHost);
             ArcThemeUtil.ApplyTheme(this.ContentHost.AppRoot);
             ArcWindowManager.UpdateWindowVisualState(this);
         }
@@ -153,8 +170,8 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
         #endregion
 
-        private bool _isLoaded;
-        private Compositor _compositor = null!;
+        private readonly SemaphoreSlim _themeTransition = new(1, 1);
+        private bool _isClosed;
         private bool? _isActive = null;
         private readonly PropertyHost _propertyHost;
     }

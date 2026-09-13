@@ -3,7 +3,9 @@ param([Parameter(Mandatory)][string]$InstallerPath)
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 $root = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
-$config = Get-Content -LiteralPath (Join-Path $root ".github/release.json") -Raw | ConvertFrom-Json
+$releaseConfigPath = Join-Path $PSScriptRoot "release.json"
+if (-not (Test-Path -LiteralPath $releaseConfigPath)) { $releaseConfigPath = Join-Path $root ".github/release.json" }
+$config = Get-Content -LiteralPath $releaseConfigPath -Raw | ConvertFrom-Json
 if (-not [bool]$config.requireSigning) {
     Write-Warning "Installer signing is disabled by release configuration."
     return

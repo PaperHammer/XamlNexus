@@ -10,7 +10,7 @@
     <value>您想使用哪种基础框架?</value>
   </data>
   <data name="SlnName" xml:space="preserve">
-    <value>解决方案名称</value>
+    <value>项目名称</value>
   </data>
   <data name="OutputPath" xml:space="preserve">
     <value>输出目录</value>
@@ -126,8 +126,11 @@
   <data name="Wizard_AdjustSelection" xml:space="preserve">
     <value>请调整能力选择。</value>
   </data>
+  <data name="Wizard_TextInstructions" xml:space="preserve">
+    <value>[grey]左右键移动，Home/End 跳转，Ctrl+退格删除前一段，回车确认[/]</value>
+  </data>
   <data name="Wizard_SelectionInstructions" xml:space="preserve">
-    <value>[grey]空格选择，回车继续；依赖会自动补齐[/]</value>
+    <value>[grey]上下键移动，空格选中/取消，回车继续；● 表示已选中，依赖会自动补齐[/]</value>
   </data>
   <data name="Wizard_ChooseCapabilities" xml:space="preserve">
     <value>选择附加能力（可不选）</value>
@@ -144,14 +147,11 @@
   <data name="SelectSolutionFormat" xml:space="preserve">
     <value>选择解决方案格式（slnx 需要 .NET SDK 9.0.200+）</value>
   </data>
+  <data name="Creation_Finishing" xml:space="preserve">
+    <value>即将完成…</value>
+  </data>
   <data name="Creation_Run" xml:space="preserve">
     <value>运行：xamlnexus run --project "{0}"</value>
-  </data>
-  <data name="Creation_Page" xml:space="preserve">
-    <value>页面：{0}.MainPanel/MainPage.xaml</value>
-  </data>
-  <data name="Creation_ViewModel" xml:space="preserve">
-    <value>视图模型：{0}.MainPanel/ViewModels/MainViewModel.cs</value>
   </data>
   <data name="Creation_ReviewRecipes" xml:space="preserve">
     <value>请阅读已安装组件的 README，完成所需配置。</value>

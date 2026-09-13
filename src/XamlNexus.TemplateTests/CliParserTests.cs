@@ -6,6 +6,14 @@ namespace XamlNexus.TemplateTests;
 
 public sealed class CliParserTests {
     [Fact]
+    public void Parse_UpgradeResolveFrom_AllowsPreview() {
+        var result = CliParser.Parse(["upgrade", "--resolve-from", "resolved", "--dry-run"], Environment.CurrentDirectory);
+        Assert.True(result.Success);
+        Assert.Equal(Path.Combine(Environment.CurrentDirectory, "resolved"), result.Options!.ResolveFromPath);
+        Assert.True(result.Options.DryRun);
+    }
+
+    [Fact]
     public void Parse_Slnx_SelectsXmlSolution() {
         var result = CliParser.Parse(["new", "App", "--solution-format", "slnx"], WorkingDirectory);
         Assert.True(result.Success);
@@ -228,6 +236,8 @@ public sealed class CliParserTests {
     [InlineData("upgrade --json --json", "only be specified once")]
     [InlineData("upgrade --conflict-output one --conflict-output two", "only be specified once")]
     [InlineData("upgrade --dry-run --conflict-output conflicts", "cannot be combined")]
+    [InlineData("upgrade --resolve-from one --conflict-output two", "cannot be combined")]
+    [InlineData("upgrade --resolve-from one --resolve-from two", "only be specified once")]
     [InlineData("doctor --json --json", "only be specified once")]
     [InlineData("doctor --unknown", "Unknown option")]
     [InlineData("recipes unexpected", "does not accept")]

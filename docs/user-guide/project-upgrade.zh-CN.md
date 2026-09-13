@@ -10,7 +10,8 @@ xamlnexus upgrade --project D:\Projects\MyApp
 
 新项目记录来自所选模板的所有文件，包括：
 
-- `.github` 发布配置与工作流；
+- `.github` PR 校验工作流与模板；
+- `eng/publishing` 本地发布脚本与配置；
 - eng 发布脚本；
 - Directory.Build.props、RELEASING.md、示例更新清单；
 - Common/Updates 更新基础设施；
@@ -42,6 +43,23 @@ xamlnexus upgrade --project D:\Projects\MyApp `
 ```
 
 导出路径保留项目相对层级并加 `.merge` 后缀，包含 LOCAL、BASE、TARGET。不会覆盖已有文件。conflict-output 不能与 dry-run 同用，因为导出会在项目事务之外写文件。
+
+## 应用手动解决的冲突
+
+普通文本的 `.merge` 文件保留双方能自动合并的修改，只在重叠区段放置 `<<<<<<< LOCAL`、`||||||| BASE`、`=======` 和 `>>>>>>> TARGET` 标记。XML 或解决方案的结构冲突可能需要整文件确认，此时保留完整三方内容，避免文本合并掩盖结构分歧。
+
+编辑导出的 `.merge` 文件，逐处解决冲突并删除标记。保留同目录下的 `.xamlnexus-upgrade` 导出记录，再预览和应用：
+
+```powershell
+xamlnexus upgrade --project D:\Projects\MyApp --resolve-from .\upgrade-conflicts --dry-run
+xamlnexus upgrade --project D:\Projects\MyApp --resolve-from .\upgrade-conflicts
+```
+
+手动解决的文件与自动合并的修改一起应用。成功后才更新清单，并以目标模板作为新基线，保留你对源码的定制。在编辑导出文件期间，原项目保持不变。
+
+`XU2020` 表示导出记录与当前升级不再匹配，需要重新导出到新目录，并根据新内容检查原来的解决结果。`XU2021` 表示解决文件缺失、仍有冲突标记、XML 格式无效，或冲突类型不支持此流程。该入口支持文本与结构冲突（`XU2011`）；目标删除用户修改文件、缺少基线、不支持的内容和归属冲突，仍需先明确调整项目再重试。删除 `.merge` 文件不代表要求删除原文件。
+
+`--resolve-from` 可与 `--dry-run` 同用，不能与 `--conflict-output` 同用。
 
 ## 安全模型
 

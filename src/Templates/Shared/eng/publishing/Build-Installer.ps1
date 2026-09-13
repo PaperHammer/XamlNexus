@@ -11,7 +11,9 @@ function Write-GitHubOutput([string]$Name, [string]$Value) {
 
 $root = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 Set-Location $root
-$config = Get-Content -LiteralPath ".github/release.json" -Raw | ConvertFrom-Json
+$releaseConfigPath = Join-Path $PSScriptRoot "release.json"
+if (-not (Test-Path -LiteralPath $releaseConfigPath)) { $releaseConfigPath = Join-Path $root ".github/release.json" }
+$config = Get-Content -LiteralPath $releaseConfigPath -Raw | ConvertFrom-Json
 $assemblyVersion = if ($Version.Split('.').Count -eq 3) { "$Version.0" } else { $Version }
 $artifactRoot = Join-Path $root "artifacts/release"
 $publishDirectory = Join-Path $artifactRoot "publish"

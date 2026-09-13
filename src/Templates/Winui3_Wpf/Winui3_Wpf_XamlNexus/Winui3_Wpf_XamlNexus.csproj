@@ -11,6 +11,9 @@
 		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
 		<ApplicationIcon>xamlnexus.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- The UI is copied by an AfterBuild target, not an assembly reference.
+		     Always enter MSBuild so VS cannot skip refreshing the runtime plugin. -->
+		<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
 		<!-- The generated resource class follows the legacy lowercase lang.resx filename. -->
 		<NoWarn>$(NoWarn);CS8981</NoWarn>
 		<!-- Plugins are runtime artifacts, not WPF source files. -->

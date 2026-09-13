@@ -3,7 +3,7 @@ name: Validate pull request
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -13,8 +13,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -22,24 +20,20 @@ jobs:
             8.0.x
             10.0.x
 
-      - name: Validate release metadata
-        shell: pwsh
-        run: ./eng/publishing/Read-ReleaseMetadata.ps1 -Mode Validate
-
       - name: Restore
         shell: pwsh
         run: |
-          $config = Get-Content .github/release.json -Raw | ConvertFrom-Json
+          $config = Get-Content eng/publishing/release.json -Raw | ConvertFrom-Json
           dotnet restore $config.solution -p:NuGetAudit=false
 
       - name: Build
         shell: pwsh
         run: |
-          $config = Get-Content .github/release.json -Raw | ConvertFrom-Json
+          $config = Get-Content eng/publishing/release.json -Raw | ConvertFrom-Json
           dotnet build $config.solution -c Release --no-restore -p:Platform=x64 -p:UseSharedCompilation=false -p:NuGetAudit=false
 
       - name: Test
         shell: pwsh
         run: |
-          $config = Get-Content .github/release.json -Raw | ConvertFrom-Json
+          $config = Get-Content eng/publishing/release.json -Raw | ConvertFrom-Json
           dotnet test $config.solution -c Release --no-build --no-restore -p:Platform=x64 -p:NuGetAudit=false

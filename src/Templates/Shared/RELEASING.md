@@ -1,37 +1,35 @@
-# Application release setup
+# Application release setup / 应用发布配置
 
-This generated project publishes only when a pull request is merged into `main`. Branch pushes, direct pushes, and closed-but-unmerged pull requests do not publish.
+Generated projects include one `.github` workflow that restores, builds, and tests pull requests targeting `main`. To block merging on failures, configure branch protection or a ruleset requiring the check. There are no automatic releases, required release labels, or version-increase checks. Configure release triggers, credentials, and upload destinations yourself. Local publishing helpers remain under `eng/publishing`.
 
-## One-time repository setup
+生成项目的 `.github` 仅提供面向 `main` 的 PR 还原、构建与测试。若需在失败时阻止合并，请通过分支保护或规则集将其设为必需检查。没有自动发布、发布标签要求或版本递增校验。发布触发条件、凭据和上传位置由用户自行配置；本地发布脚本保留在 `eng/publishing` 中。
 
-The generated `.github/release.json` points to the solution format chosen during
-creation (`.sln` or `.slnx`). Both workflows install .NET 8 and .NET 10 so SLNX
-solutions are supported while the application continues to target .NET 8.
+## Build an installer / 生成安装器
 
-1. Create the labels `release:stable`, `release:preview`, and `release:none`.
-2. Protect `main`, require pull requests, and require the `Validate pull request` check.
-3. Obtain an Authenticode code-signing certificate exported as PFX.
-4. Base64-encode the PFX and create these Actions secrets:
-   - `WINDOWS_SIGNING_PFX_BASE64`
-   - `WINDOWS_SIGNING_PASSWORD`
-5. Replace `Consts.Updates.ManifestUrl` with:
+Review `eng/publishing/release.json` for the solution, startup project, application name, runtime, and signing settings. The solution path follows the selected SLN or SLNX format. Prepare a WinUI build environment, the required .NET SDK, and Inno Setup (`ISCC.exe`). SLNX requires SDK 9.0.200 or newer.
 
-   `https://github.com/OWNER/REPOSITORY/releases/download/update-feed/update-manifest.json`
+检查 `eng/publishing/release.json` 中的解决方案、启动项目、应用名、运行时和签名配置。解决方案路径与创建时选择的 SLN/SLNX 格式一致。准备 WinUI 构建环境、所需 .NET SDK 和 Inno Setup（`ISCC.exe`）；SLNX 要求 SDK 9.0.200 或以上。
 
-The release workflow validates this URL against the repository executing the workflow. Signing is required by default. It may be disabled in `.github/release.json` only for internal development builds; unsigned public installers are not recommended.
+From the generated project root / 在生成项目根目录执行：
 
-## Publishing
+```powershell
+./eng/publishing/Build-Installer.ps1 -Version 1.0.4
+```
 
-For a publishing pull request:
+The script publishes a self-contained win-x64 application and creates an installer in `artifacts/release`. Building an installer does not sign or upload it.
 
-1. Increase the numeric `Version` in `Directory.Build.props`.
-2. Keep `AssemblyVersion` and `FileVersion` aligned with it.
-3. Apply either `release:stable` or `release:preview`.
-4. Fill the release-note section in the pull request template.
-5. Merge into `main` after validation succeeds.
+脚本发布自包含的 win-x64 应用，并在 `artifacts/release` 中生成安装器；此步骤不会自动签名或上传。
 
-Desktop update versions contain only three or four numeric components because the runtime updater compares `System.Version` values. Every preview and stable release must therefore receive a unique, increasing numeric version. For example, publish preview `1.2.0`, then stable `1.2.1`.
+## Signing and updates / 签名与更新
 
-The workflow publishes a self-contained `win-x64` application, builds an Inno Setup installer, signs it, verifies the signature, calculates SHA-256, creates an immutable version Release, and finally replaces `update-manifest.json` in the permanent `update-feed` Release.
+Use `Sign-Installer.ps1 -InstallerPath <path>` to sign the installer. It reads `requireSigning` and `timestampUrl` from the release configuration and uses `WINDOWS_SIGNING_PFX_BASE64` and `WINDOWS_SIGNING_PASSWORD` environment variables. Configure these credentials yourself.
 
-Use `release:none` for merges that should not publish. No signing secrets are read in that path.
+使用 `Sign-Installer.ps1 -InstallerPath <path>` 签名。脚本读取发布配置中的 `requireSigning`、`timestampUrl`，以及环境变量 `WINDOWS_SIGNING_PFX_BASE64`、`WINDOWS_SIGNING_PASSWORD`；凭据由用户自行配置。
+
+For online updates, set `Consts.Updates.ManifestUrl` to your update manifest URL. Versions must contain three or four numeric components because the updater compares `System.Version` values. Keep application versions in `Directory.Build.props` aligned with the installer version.
+
+使用在线更新时，将 `Consts.Updates.ManifestUrl` 配置为自己的更新清单地址。更新器按 `System.Version` 比较版本，因此版本使用三段或四段数字；`Directory.Build.props` 中的应用版本需与安装器版本一致。
+
+Prepare and host the update manifest, installer, and hash file using your own release process.
+
+更新清单、安装器及哈希文件由用户按自己的发布流程准备和托管。

@@ -23,7 +23,7 @@ namespace Winui3_XamlNexus.UIComponent.Context {
         /// <summary>
         /// 检查上下文是否有效
         /// </summary>
-        public bool IsValid => PageInstance != null && (LoadingContext?.IsValid ?? true);
+        public bool IsValid => _pageReference.TryGetTarget(out _) && (LoadingContext?.IsValid ?? true);
 
         public TaskBlocking KeepAliveBlocking => _keepAliveBlocking;
 

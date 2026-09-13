@@ -35,7 +35,7 @@ XamlNexus 是用于 Windows 客户端开发的 .NET CLI 脚手架。它生成可
 | `eng`、根目录 `.github` | 仓库构建验收与发布流程 |
 | `docs` | 项目介绍、技术说明和用户手册 |
 
-模板中的 `.github` 和 `.gitignore` 是生成资产：复制到新项目后，由新项目独立使用。当前仓库执行的是根目录 `.github/workflows` 的工作流。
+生成项目包含 `.gitignore` 和 `.github`。`.github` 仅提供 PR 还原、构建、测试工作流及简洁的 PR 模板，自动发布由用户自行配置。本地发布配置位于 `eng/publishing/release.json`。当前仓库自己的工作流仍在根目录 `.github/workflows`。
 
 ## 开始使用
 

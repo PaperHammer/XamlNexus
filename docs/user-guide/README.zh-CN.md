@@ -39,9 +39,11 @@
 
 ## 维护与交付
 
+- [PR 流程与校验开关](pr-checks.zh-CN.md)：自动检查的触发条件、合并限制，以及开启、关闭和调整方式。
+
 - [变更预览和 JSON 输出](change-plans.zh-CN.md)：先检查自动修改计划，再应用变更。
 - [项目升级](project-upgrade.zh-CN.md)：区分组件 `update` 与整体脚手架 `upgrade`，处理本地定制和合并冲突。
 - [环境与项目诊断](doctor.zh-CN.md)：定位 SDK、工程引用和能力接入问题。
-- [生成项目发布说明](../../src/Templates/Shared/RELEASING.md)：安装器、签名和更新资产的准备。实际使用时以生成项目自己的 `RELEASING.md` 与 `.github/release.json` 为准。
+- [生成项目发布说明](../../src/Templates/Shared/RELEASING.md)：安装器、签名和更新资产的准备。实际使用时以生成项目自己的 `RELEASING.md` 与 `eng/publishing/release.json` 为准。
 
 生成的源码和配置都可以修改。内容差异会产生提示；自动移除或升级可能覆盖用户修改时，会报告冲突并停止写入。详情见[产品模型](../introduction/product-model.zh-CN.md)。

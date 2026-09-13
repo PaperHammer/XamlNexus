@@ -121,6 +121,9 @@ Accepts a project path, `--dry-run`, `--json`, and `--conflict-output <directory
 
 `--conflict-output` exports files for resolving merge conflicts when they occur. It writes to the destination, so it cannot be combined with `--dry-run`. It is not an export-only mode: without conflicts, the upgrade still proceeds. Upgrades preserve the solution format rather than converting SLN to SLNX. See [project upgrades](project-upgrade.md).
 
+
+Use `--resolve-from <directory>` to apply edited `.merge` files from a conflict export; add `--dry-run` to preview. Keep the export record and remove all conflict markers first. See [Applying resolved conflicts](project-upgrade.md#applying-resolved-conflicts) for supported conflicts and stale-export checks.
+
 ## Previews, JSON, and exit codes
 
 `--dry-run` is available for `run`, `page add`, `add`, `remove`, `update`, and `upgrade`. It checks and displays pending operations without applying project changes. `--json` changes output formatting only; it does not prevent writes or application startup. Combine both for automated previews:

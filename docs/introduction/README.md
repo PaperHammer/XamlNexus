@@ -35,7 +35,7 @@ See the [product model](product-model.md) for capabilities and constraints. The 
 | `eng`, root `.github` | Repository acceptance and release workflows |
 | `docs` | Introduction, technical documentation, and user guides |
 
-Template `.github` and `.gitignore` files are generated assets used independently by new projects. This repository runs workflows from its root `.github/workflows` directory.
+Generated projects include `.gitignore` and `.github`. The latter provides only a PR restore/build/test workflow and a short PR template; users configure automated publishing themselves. Local release configuration is in `eng/publishing/release.json`. This repository retains its own root `.github/workflows` directory.
 
 ## Getting started
 

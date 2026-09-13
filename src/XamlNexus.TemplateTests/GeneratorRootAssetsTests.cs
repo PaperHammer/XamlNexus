@@ -30,6 +30,7 @@ public sealed class GeneratorRootAssetsTests {
             Assert.True(generator.Generate(config));
             string root = Path.Combine(parent, "BasicDemo");
             AssertReleaseSolution(root, "BasicDemo", format);
+            AssertPanelGrouping(root, "BasicDemo", format, includesSettings: false);
             var context = XamlNexusProjectLocator.Locate(root);
             Assert.Equal("basic", context.Manifest.Project.Profile);
             Assert.DoesNotContain(context.Manifest.Modules, module => module.Id == "settings");
@@ -83,16 +84,18 @@ public sealed class GeneratorRootAssetsTests {
             Assert.True(generator.Generate(config));
             var generatedRoot = Path.Combine(outputParent, appName);
             AssertReleaseSolution(generatedRoot, appName, config.SlnType);
+            AssertPanelGrouping(generatedRoot, appName, config.SlnType, includesSettings: true);
 
             Assert.True(File.Exists(Path.Combine(generatedRoot, "Directory.Build.props")));
-            Assert.True(File.Exists(Path.Combine(generatedRoot, ".github", "release.json")));
-            Assert.True(File.Exists(Path.Combine(generatedRoot, ".github", "workflows", "release-merged-pull-request.yml")));
+            Assert.True(Directory.Exists(Path.Combine(generatedRoot, ".github")));
+            Assert.True(File.Exists(Path.Combine(generatedRoot, "eng", "publishing", "release.json")));
             Assert.True(File.Exists(Path.Combine(generatedRoot, "eng", "publishing", "Build-Installer.ps1")));
+            Assert.False(File.Exists(Path.Combine(generatedRoot, "eng", "publishing", "New-UpdateManifest.ps1")));
             Assert.True(File.Exists(Path.Combine(generatedRoot, "RELEASING.md")));
             Assert.True(File.Exists(Path.Combine(generatedRoot, "xamlnexus.json")));
 
             using var releaseConfig = JsonDocument.Parse(File.ReadAllText(
-                Path.Combine(generatedRoot, ".github", "release.json")));
+                Path.Combine(generatedRoot, "eng", "publishing", "release.json")));
             Assert.Equal(appName, releaseConfig.RootElement.GetProperty("appName").GetString());
             Assert.DoesNotContain(
                 hybrid ? "Winui3_Wpf_XamlNexus" : "Winui3_XamlNexus",
@@ -120,7 +123,7 @@ public sealed class GeneratorRootAssetsTests {
             Assert.Contains(
                 manifest.ScaffoldFiles!,
                 file => file.Path.Equals(
-                    ".github/workflows/release-merged-pull-request.yml",
+                    "eng/publishing/release.json",
                     StringComparison.OrdinalIgnoreCase));
             XamlNexusManagedFile projectBaseline = Assert.Single(
                 manifest.ScaffoldFiles!,
@@ -339,20 +342,72 @@ public sealed class GeneratorRootAssetsTests {
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Generate_SlnxPlacesBothPanelsInFolder(bool hybrid) {
+        string parent = Directory.CreateTempSubdirectory("xamlnexus-panel-tests-").FullName;
+        string templates = Path.Combine(FindRepositoryRoot(), "src", "Templates");
+        BaseGenerator generator = hybrid ? new HybridGenerator(Path.Combine(templates, "Winui3_Wpf"))
+            : new PureGenerator(Path.Combine(templates, "Winui3"));
+        try {
+            Assert.True(generator.Generate(new ProjectConfig {
+                SlnName = "PanelDemo", OutputPath = parent, SlnType = SolutionType.Slnx,
+                Framework = hybrid ? FrameworkType.Winui3_Wpf : FrameworkType.Winui3,
+            }));
+            AssertPanelGrouping(Path.Combine(parent, "PanelDemo"), "PanelDemo", SolutionType.Slnx, includesSettings: true);
+        }
+        finally { Directory.Delete(parent, recursive: true); }
+    }
+
+    private static void AssertPanelGrouping(string root, string appName, SolutionType format, bool includesSettings) {
+        string solution = File.ReadAllText(Path.Combine(root, $"{appName}.{format.ToString().ToLowerInvariant()}"));
+        string[] names = includesSettings ? [appName + ".MainPanel", appName + ".AppSettingsPanel"] : [appName + ".MainPanel"];
+        if (format == SolutionType.Slnx) {
+            var document = XDocument.Parse(solution);
+            var folder = Assert.Single(document.Root!.Elements("Folder"), item => (string?)item.Attribute("Name") == "/Panels/");
+            Assert.Equal(names.Length, folder.Elements("Project").Count());
+            foreach (string name in names)
+                Assert.Contains(folder.Elements("Project"), item =>
+                    ((string?)item.Attribute("Path"))?.Replace('\\', '/') == $"{name}/{name}.csproj");
+        }
+        else {
+            var headers = System.Text.RegularExpressions.Regex.Matches(solution,
+                "(?m)^Project\\(\"[^\"]+\"\\) = \"(?<name>[^\"]+)\", \"[^\"]+\", \"(?<id>[^\"]+)\"");
+            string Id(string name) => Assert.Single(headers.Cast<System.Text.RegularExpressions.Match>(),
+                item => item.Groups["name"].Value == name).Groups["id"].Value;
+            string folderId = Id("Panels");
+            var section = System.Text.RegularExpressions.Regex.Match(solution,
+                @"GlobalSection\(NestedProjects\)[^\r\n]*[\r\n]+(?<items>.*?)EndGlobalSection",
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+            Assert.True(section.Success, "Panel membership must be present in NestedProjects.");
+            foreach (string name in names)
+                Assert.Contains($"{Id(name)} = {folderId}", section.Groups["items"].Value);
+        }
+    }
+
     private static void AssertReleaseSolution(string root, string appName, SolutionType format) {
-        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".github/release.json")));
+        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "eng/publishing/release.json")));
         string solution = config.RootElement.GetProperty("solution").GetString()!;
         Assert.Equal($"{appName}.{format.ToString().ToLowerInvariant()}", solution);
         Assert.True(File.Exists(Path.Combine(root, solution)));
         var listed = ShellExecutor.Run("dotnet", $"sln \"{solution}\" list", root);
         Assert.True(listed.Success, listed.DiagnosticOutput);
         Assert.Contains($"{appName}.UI.csproj", listed.StandardOutput);
-        foreach (string workflow in new[] { "validate-pull-request.yml", "release-merged-pull-request.yml" }) {
-            string content = File.ReadAllText(Path.Combine(root, ".github/workflows", workflow));
-            Assert.Contains("8.0.x", content);
-            Assert.Contains("10.0.x", content);
-            Assert.DoesNotContain("{{SOLUTION_FORMAT}}", content);
-        }
+        string workflowDirectory = Path.Combine(root, ".github", "workflows");
+        string workflow = Assert.Single(Directory.GetFiles(workflowDirectory));
+        Assert.Equal("validate-pull-request.yml", Path.GetFileName(workflow));
+        string content = File.ReadAllText(workflow);
+        Assert.Contains("pull_request:", content);
+        Assert.Contains("dotnet restore", content);
+        Assert.Contains("dotnet build", content);
+        Assert.Contains("dotnet test", content);
+        Assert.Contains("eng/publishing/release.json", content);
+        Assert.DoesNotContain("Read-ReleaseMetadata", content);
+        Assert.DoesNotContain("release:stable", content);
+        Assert.False(File.Exists(Path.Combine(root, "eng/publishing/Read-ReleaseMetadata.ps1")));
+        Assert.False(File.Exists(Path.Combine(root, ".github/release.json")));
+        Assert.DoesNotContain("release-notes", File.ReadAllText(Path.Combine(root, ".github/pull_request_template.md")));
     }
 
     private static string FindRepositoryRoot() {

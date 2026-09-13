@@ -121,6 +121,9 @@ xamlnexus upgrade --conflict-output ./upgrade-conflicts
 
 `--conflict-output` 在发生合并冲突时导出用于处理冲突的文件，会写入指定目录，因此不能与 `--dry-run` 同用。它不是“仅导出”开关，无冲突时仍会执行升级。解决方案格式保持不变，不会将 SLN 转为 SLNX。处理流程见[项目升级](project-upgrade.zh-CN.md)。
 
+
+使用 `--resolve-from <目录>` 应用冲突导出中已编辑的 `.merge` 文件，可加 `--dry-run` 预览。请保留导出记录，并先清除所有冲突标记。支持范围和过期检查见[应用手动解决的冲突](project-upgrade.zh-CN.md#应用手动解决的冲突)。
+
 ## 预览、JSON 与退出码
 
 `--dry-run` 用于 `run`、`page add`、`add`、`remove`、`update`、`upgrade`，检查并显示将执行的操作，不应用项目变更。`--json` 只改变输出格式，不阻止写入或启动；自动化预览应同时指定两个选项：

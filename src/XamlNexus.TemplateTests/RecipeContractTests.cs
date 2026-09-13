@@ -373,15 +373,17 @@ public sealed class RecipeContractTests {
         }
     }
 
-    [Fact]
-    public void Apply_StructuredProjectOperations_AddReferencesAndSolutionProject() {
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public void Apply_StructuredProjectOperations_AddReferencesAndSolutionProject(string newline) {
         string root = CreateProjectDirectory();
         try {
             string appProject = Path.Combine(root, "RecipeTestApp.UI", "RecipeTestApp.UI.csproj");
             Directory.CreateDirectory(Path.GetDirectoryName(appProject)!);
             File.WriteAllText(appProject, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>");
             string solution = Path.Combine(root, "RecipeTestApp.sln");
-            File.WriteAllText(solution, CreateSolutionText());
+            File.WriteAllText(solution, CreateSolutionText().Replace("\r\n", "\n").Replace("\n", newline));
 
             const string dataProjectPath = "RecipeTestApp.Data/RecipeTestApp.Data.csproj";
             var recipe = new TestRecipe(
@@ -420,6 +422,15 @@ public sealed class RecipeContractTests {
             string solutionText = File.ReadAllText(solution);
             Assert.Contains("RecipeTestApp.Data\\RecipeTestApp.Data.csproj", solutionText);
             Assert.Contains(".Debug|Any CPU.Build.0 = Debug|Any CPU", solutionText);
+            Assert.DoesNotContain(".GlobalSection(", solutionText);
+            var mappingLines = solutionText.Split(newline).Where(line => line.Contains(".ActiveCfg = ") || line.Contains(".Build.0 = ")).ToArray();
+            Assert.Equal(4, mappingLines.Length);
+            Assert.All(mappingLines, line => {
+                Assert.StartsWith("\t\t{", line);
+                Assert.DoesNotContain("preSolution", line);
+            });
+            Assert.DoesNotContain(newline + "EndGlobalSection", solutionText);
+            Assert.Contains(newline + "\tEndGlobalSection", solutionText);
             Assert.Equal(3, result.ChangedFiles.Count);
 
             XamlNexusProjectManifest manifest = XamlNexusProjectManifestStore.Load(
