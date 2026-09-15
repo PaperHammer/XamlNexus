@@ -10,6 +10,7 @@ permissions:
 
 concurrency:
   group: production-release
+  queue: max
   cancel-in-progress: false
 
 jobs:
@@ -51,6 +52,14 @@ jobs:
         if: steps.metadata.outputs.should_publish == 'true'
         run: dotnet pack ${{ steps.metadata.outputs.project }} -c Release --no-build --no-restore -o artifacts -p:ContinuousIntegrationBuild=true
 
+      - name: Validate release package
+        if: steps.metadata.outputs.should_publish == 'true'
+        shell: pwsh
+        env:
+          RELEASE_PACKAGE_ID: ${{ steps.metadata.outputs.package_id }}
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+        run: ./eng/release/Test-ReleasePackage.ps1 -Directory artifacts -PackageId $env:RELEASE_PACKAGE_ID -Version $env:RELEASE_VERSION
+
       - name: Publish package to NuGet
         if: steps.metadata.outputs.should_publish == 'true'
         shell: pwsh
@@ -58,7 +67,7 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw "The production environment must define NUGET_API_KEY."
+            throw "Define NUGET_API_KEY in the repository Actions secrets."
           }
           $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg' |
             Where-Object { $_.Name -notlike '*.snupkg' })
