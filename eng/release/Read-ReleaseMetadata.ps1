@@ -1,6 +1,7 @@
 param(
     [ValidateSet("Validate", "Release")]
-    [string]$Mode = "Validate"
+    [string]$Mode = "Validate",
+    [string]$EventPath = $env:GITHUB_EVENT_PATH
 )
 
 $ErrorActionPreference = "Stop"
@@ -95,7 +96,7 @@ $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 Set-Location $repositoryRoot
 
 $config = Get-Content -LiteralPath ".github/release.json" -Raw | ConvertFrom-Json
-$event = Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
+$event = Get-Content -LiteralPath $EventPath -Raw | ConvertFrom-Json
 if ($null -eq $event.pull_request) {
     throw "This release policy only supports pull_request events."
 }

@@ -1,6 +1,6 @@
 # XamlNexus release policy
 
-Releases are driven only by pull requests merged into `main`. Pushes to feature branches and direct pushes to `main` do not trigger the release workflow.
+Releases are driven by pull requests merged into `main`. The workflow uses a `push` trigger because NuGet Trusted Publishing rejects `pull_request_target`. It resolves the merged PR associated with the pushed commit and reads its labels and description. Direct pushes without a matching merged PR skip publishing; feature branch pushes do not trigger the workflow.
 
 ## Repository setup
 
