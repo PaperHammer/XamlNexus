@@ -71,7 +71,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils {
         }
 
         internal static void Cleanup() {
-            foreach (var window in _activeWindows.Values) {
+            foreach (var window in new List<ArcWindow>(_activeWindows.Values)) {
                 if (!window.IsMainWindow) {
                     window.Close();
                 }

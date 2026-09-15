@@ -113,8 +113,8 @@ SQLite adds a Data project and initialization. You implement page data operation
 |---|---|---|
 | Settings panel | `xamlnexus add settings` | For basic; already included in standard |
 | SQLite | `xamlnexus add sqlite` | Both architectures |
-| Tray and notifications | `xamlnexus add system-tray` | Optional in pure WinUI; built into hybrid |
-| App updates | `xamlnexus add app-update` | Optional in pure WinUI, adds settings dependency; configure your own source. Built into hybrid |
+| Tray and notifications | `xamlnexus add tray` | Optional in pure WinUI; built into hybrid |
+| App updates | `xamlnexus add updater` | Optional in pure WinUI, adds settings dependency; configure your own source. Built into hybrid |
 | Editor configuration | `xamlnexus add editorconfig` | Both architectures |
 
 Existing projects support batch installation, for example `xamlnexus add settings,sqlite` in a basic project. Dependencies are handled automatically; do not explicitly re-add installed components. See [SQLite](sqlite-recipe.md), [tray](system-tray-recipe.md), and [updates](app-update-recipe.md).

@@ -34,7 +34,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
 
             this.Closed += (_, _) => _isClosed = true;
             this.Activated += ArcWindow_Activated;
-            this.AppWindow.Closing += AppWindow_Closing;
+            this.Closed += ArcWindow_Closed;
         }
 
         private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
@@ -45,7 +45,8 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
             ArcWindowManager.UpdateWindowVisualState(this);
         }
 
-        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+        // Closing can be cancelled by tray behavior; release resources only after a real close.
+        private void ArcWindow_Closed(object sender, WindowEventArgs args) {
             this.Activated -= ArcWindow_Activated;
             this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
             this.ContentHost.AppRoot.ActualThemeChanged -= Host_ActualThemeChanged;

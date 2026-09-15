@@ -7,9 +7,11 @@ internal static class DevelopmentRunLease {
     public static IDisposable Acquire(string projectRoot) {
         string canonical = Path.TrimEndingDirectorySeparator(Path.GetFullPath(projectRoot));
         if (OperatingSystem.IsWindows()) canonical = canonical.ToUpperInvariant();
+        
         string key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
         string directory = Path.Combine(Path.GetTempPath(), "xamlnexus-run-locks");
         Directory.CreateDirectory(directory);
+        
         try {
             // The OS releases the lease even when the CLI is terminated unexpectedly.
             return new FileStream(Path.Combine(directory, key + ".lock"), FileMode.OpenOrCreate,

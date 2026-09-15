@@ -162,6 +162,10 @@ namespace Winui3_XamlNexus.UI {
         public static void ShutDown() {
             if (_isShuttingDown) return;
             _isShuttingDown = true;
+            // Also cover exits initiated by commands or modules rather than the window close button.
+            ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main))?.Hide();
+            var cleanupTimer = System.Diagnostics.Stopwatch.StartNew();
+            ArcLog.GetLogger<App>().Info("Shutting down UI...");
             try {
                 ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
             }
@@ -169,11 +173,12 @@ namespace Winui3_XamlNexus.UI {
                 ArcLog.GetLogger<App>().Error("Application cleanup failed", exception);
             }
             finally {
-                ArcLog.GetLogger<App>().Info("UI was closed");
+                ArcLog.GetLogger<App>().Info($"UI was closed; service cleanup took {cleanupTimer.ElapsedMilliseconds} ms");
                 Application.Current.Exit();
             }
         }
 
+        internal static bool IsShuttingDown => _isShuttingDown;
         private static bool _isShuttingDown;
         private readonly IUserSettingsClient? _userSettings;
         private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();

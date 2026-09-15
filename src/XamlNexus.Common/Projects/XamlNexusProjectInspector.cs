@@ -1,9 +1,6 @@
 namespace XamlNexus.Common.Projects;
 
-public sealed record XamlNexusProjectContext(
-    string RootDirectory,
-    string ManifestPath,
-    XamlNexusProjectManifest Manifest);
+public sealed record XamlNexusProjectContext(string RootDirectory, string ManifestPath, XamlNexusProjectManifest Manifest);
 
 public static class XamlNexusProjectLocator {
     public static XamlNexusProjectContext Locate(string startPath) {

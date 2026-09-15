@@ -45,6 +45,9 @@ public sealed class SqliteRecipe : IXamlNexusRecipe, IXamlNexusRecipeRemovalPlan
                 $"{dataDirectory}/README.md",
                 CreateReadme(projectName, context.Manifest.Project.Preset)),
             XamlNexusRecipeFileChange.CreateText(
+                $"{dataDirectory}/README.zh-CN.md",
+                CreateChineseReadme(projectName, context.Manifest.Project.Preset)),
+            XamlNexusRecipeFileChange.CreateText(
                 $"{hostDirectory}/Modules/SqliteModule.cs",
                 CreateHostModule(projectName, context.Manifest.Project.Preset)),
         };
@@ -366,42 +369,19 @@ public sealed class SqliteRecipe : IXamlNexusRecipe, IXamlNexusRecipeRemovalPlan
         }
         """;
 
-    private static string CreateReadme(string projectName, string preset) {
-        string hostDescription = preset == "hybrid"
-            ? $"the `{projectName}` WPF background host"
-            : $"the `{projectName}.UI` WinUI application";
-        return $$"""
-            # SQLite data module
+    private static string CreateReadme(string projectName, string preset) =>
+        RecipeReadmeResources.Load("Sqlite/README.md", new Dictionary<string, string> {
+            ["ProjectName"] = projectName,
+            ["EfCoreVersion"] = EfCoreVersion,
+            ["HostDescription"] = preset == "hybrid" ? $"the `{projectName}` WPF background host" : $"the `{projectName}.UI` WinUI application",
+        });
 
-            This project is owned by the XamlNexus `sqlite` Recipe. It uses EF Core
-            {{EfCoreVersion}}, keeps `app.db` under `%LOCALAPPDATA%\{{projectName}}\Data`,
-            enables WAL and a five-second busy timeout, and creates an online backup
-            before applying pending migrations.
-
-            `SqliteDatabaseInitializer` exposes `CreateBackupAsync`, `ListBackups` and
-            `RestoreAsync`. Restore validates a snapshot, requires matching migrations and
-            keeps a pre-restore backup. Pause all database work and dispose contexts first;
-            resume with fresh contexts. Hybrid calls belong in the WPF host. Manual and
-            pre-restore backups are retained in `Data/Backups`; only migration backups are pruned.
-
-            XamlNexus automatically registers and initializes the module in
-            {{hostDescription}}. Database migrations finish before the first window is
-            shown or, for the hybrid Preset, before the gRPC server starts accepting
-            requests.
-
-            Create later migrations from the solution root:
-
-            ```powershell
-            dotnet ef migrations add <Name> --project {{projectName}}.Data
-            ```
-
-            Do not call `EnsureCreated`; this module uses migrations. Keep write
-            transactions short. For the hybrid Preset, only the WPF background host
-            may use this project; expose business operations to WinUI through gRPC.
-            SQLite is not suitable for database files shared across computers or for
-            workloads with many concurrent writers.
-            """;
-    }
+    private static string CreateChineseReadme(string projectName, string preset) =>
+        RecipeReadmeResources.Load("Sqlite/README.zh-CN.md", new Dictionary<string, string> {
+            ["ProjectName"] = projectName,
+            ["EfCoreVersion"] = EfCoreVersion,
+            ["HostDescription"] = preset == "hybrid" ? $"`{projectName}` WPF 后台宿主" : $"`{projectName}.UI` WinUI 应用",
+        });
 
     private static string CreateHostModule(string projectName, string preset) {
         string hostNamespace = preset == "hybrid" ? projectName : $"{projectName}.UI";

@@ -1,14 +1,14 @@
 using Spectre.Console;
-using XamlNexus.Common.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
-using XamlNexus.Common.Recipes;
 using XamlNexus.Common.Utils;
-using XamlNexus.Recipes.BuiltIn;
 using XamlNexus.Utils;
 
 namespace XamlNexus {
     internal partial class Program {
+        /// <summary>
+        /// 生成临时目标脚手架并规划升级或基线补建，按选项处理冲突、预览或应用变更，最后清理临时目录
+        /// </summary>
         private static int UpgradeProject(
             string projectPath,
             bool dryRun,
@@ -135,7 +135,7 @@ namespace XamlNexus {
                 return SuccessExitCode;
             }
             catch (Exception exception) {
-                ShowCommandError("upgrade", exception.Message, jsonOutput, GetErrorCode(exception));
+                ShowCommandError("upgrade", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), jsonOutput, GetErrorCode(exception));
                 return GenerationFailureExitCode;
             }
             finally {
@@ -150,6 +150,9 @@ namespace XamlNexus {
             }
         }
 
+        /// <summary>
+        /// 临时捕获生成器的标准输出以生成升级目标，并在结束时恢复原输出流
+        /// </summary>
         private static bool GenerateUpgradeTarget(IGenerator generator, ProjectConfig config) {
             TextWriter originalOutput = Console.Out;
             using var suppressedOutput = new StringWriter();
@@ -162,6 +165,9 @@ namespace XamlNexus {
             }
         }
 
+        /// <summary>
+        /// 以 JSON 或控制台文本展示升级计划、合并策略、冲突及已导出的冲突文件
+        /// </summary>
         private static void ShowUpgradePlan(
             XamlNexusProjectUpgradePlan plan,
             bool dryRun,
@@ -235,6 +241,9 @@ namespace XamlNexus {
             AnsiConsole.MarkupLine("[yellow]Dry run:[/] no project files were changed.");
         }
 
+        /// <summary>
+        /// 先比较数字版本，再区分正式版和预发布版；同类同数字版本按完整版本字符串的序号顺序比较
+        /// </summary>
         private static int CompareToolVersions(string left, string right) {
             Version leftVersion = Version.Parse(left.Split('-', 2)[0]);
             Version rightVersion = Version.Parse(right.Split('-', 2)[0]);

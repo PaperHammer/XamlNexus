@@ -29,17 +29,14 @@ public sealed class AppUpdateRecipe : IXamlNexusRecipe {
             return XamlNexusRecipeFileChange.CreateText(file.Value,
                 reader.ReadToEnd().Replace("Winui3_XamlNexus", name, StringComparison.Ordinal));
         }).ToList();
-        changes.Add(XamlNexusRecipeFileChange.CreateText("app-update.README.md", $"""
-            # Application updates
-
-            The app-update Recipe registers the updater and enables its settings entry automatically.
-            Configure `Consts.Updates.ManifestUrl` in `{name}.Common/Consts.cs` with your HTTPS
-            update manifest. The installer and SHA-256 URLs must also use HTTPS.
-            Installing this module does not publish an update feed or configure signing.
-            This installer flow targets unpackaged WinUI applications; MSIX uses its distribution channel.
-            Remove unchanged module files with `xamlnexus remove app-update`.
-            Existing projects with a built-in updater must be migrated before adding this Recipe.
-            """));
+        changes.Add(XamlNexusRecipeFileChange.CreateText("app-update.README.md",
+            RecipeReadmeResources.Load("AppUpdate/app-update.README.md", new Dictionary<string, string> {
+                ["ProjectName"] = name,
+            })));
+        changes.Add(XamlNexusRecipeFileChange.CreateText("app-update.README.zh-CN.md",
+            RecipeReadmeResources.Load("AppUpdate/app-update.README.zh-CN.md", new Dictionary<string, string> {
+                ["ProjectName"] = name,
+            })));
         return new XamlNexusRecipePlan { Changes = changes };
     }
 }

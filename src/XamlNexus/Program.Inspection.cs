@@ -1,14 +1,11 @@
 using Spectre.Console;
-using XamlNexus.Common.CommandLine;
-using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
-using XamlNexus.Common.Recipes;
-using XamlNexus.Common.Utils;
-using XamlNexus.Recipes.BuiltIn;
-using XamlNexus.Utils;
 
 namespace XamlNexus {
     internal partial class Program {
+        /// <summary>
+        /// 定位项目并以 JSON 或表格列出清单中的项目属性和已登记模块
+        /// </summary>
         private static int ListProject(string projectPath, bool jsonOutput) {
             try {
                 XamlNexusProjectContext context = XamlNexusProjectLocator.Locate(projectPath);
@@ -51,11 +48,14 @@ namespace XamlNexus {
                 return SuccessExitCode;
             }
             catch (Exception exception) {
-                ShowCommandError("list", exception.Message, jsonOutput, "XL1001");
+                ShowCommandError("list", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), jsonOutput, "XL1001");
                 return GenerationFailureExitCode;
             }
         }
 
+        /// <summary>
+        /// 检查项目清单与受管理结构的一致性并输出问题；仅有警告时仍返回成功
+        /// </summary>
         private static int ValidateProject(string projectPath, bool jsonOutput) {
             try {
                 XamlNexusProjectContext context = XamlNexusProjectLocator.Locate(projectPath);
@@ -96,7 +96,7 @@ namespace XamlNexus {
                 return GenerationFailureExitCode;
             }
             catch (Exception exception) {
-                ShowCommandError("validate", exception.Message, jsonOutput, "XV1001");
+                ShowCommandError("validate", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), jsonOutput, "XV1001");
                 return GenerationFailureExitCode;
             }
         }

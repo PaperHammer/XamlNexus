@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Both languages belong in the main assembly, not culture-specific satellite assemblies. -->
+    <EmbeddedResource Include="Assets/Readmes/Sqlite/*.md" WithCulture="false" LogicalName="Readmes/Sqlite/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets/Readmes/AppUpdate/*.md" WithCulture="false" LogicalName="Readmes/AppUpdate/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets/Readmes/Tray/*.md" WithCulture="false" LogicalName="Readmes/Tray/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets/Readmes/EditorConfig/*.md" WithCulture="false" LogicalName="Readmes/EditorConfig/%(Filename)%(Extension)" />
     <EmbeddedResource Include="../Templates/Winui3/Winui3_XamlNexus.AppSettingsPanel/**/*" Exclude="../Templates/Winui3/Winui3_XamlNexus.AppSettingsPanel/bin/**;../Templates/Winui3/Winui3_XamlNexus.AppSettingsPanel/obj/**;**/*.user" WithCulture="false">
       <LogicalName>Settings.winui/panel/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>

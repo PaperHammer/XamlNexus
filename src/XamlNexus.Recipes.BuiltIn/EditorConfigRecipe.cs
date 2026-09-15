@@ -12,7 +12,8 @@ public sealed class EditorConfigRecipe : IXamlNexusRecipe {
     };
 
     public XamlNexusRecipePlan CreatePlan(XamlNexusRecipeContext context) => new() {
-        Changes = [XamlNexusRecipeFileChange.CreateText(".editorconfig", Content)],
+        Changes = [XamlNexusRecipeFileChange.CreateText(".editorconfig", Content),
+            .. RecipeReadmeResources.CreatePair("EditorConfig", "editorconfig", context.Manifest.Project.Name)],
     };
 
     private const string Content = """

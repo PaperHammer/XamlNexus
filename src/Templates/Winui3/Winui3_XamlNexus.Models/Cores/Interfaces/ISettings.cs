@@ -10,6 +10,7 @@ namespace Winui3_XamlNexus.Models.Cores.Interfaces {
         string Language { get; set; }
         bool IsUpdated { get; set; }
         bool IsAutoStart { get; set; }
+        WindowCloseBehavior WindowCloseBehavior { get; set; }
         bool IsFirstRun { get; set; }
         string DataSaveDir { get; set; }
         #endregion

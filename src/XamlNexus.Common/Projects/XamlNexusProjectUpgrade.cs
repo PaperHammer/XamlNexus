@@ -4,12 +4,14 @@ using System.Text.Json.Serialization;
 
 namespace XamlNexus.Common.Projects;
 
+/// <summary>文件级操作类型；在文件中插入或删除几行，最终仍属于替换整个文件内容</summary>
 public enum XamlNexusUpgradeChangeKind {
     Create,
     Replace,
     Delete,
 }
 
+/// <summary>记录变更内容的生成方式：直接更新、按行合并、XML 结构合并或解决方案结构合并</summary>
 public enum XamlNexusUpgradeChangeStrategy {
     Direct,
     TextMerge,
@@ -17,6 +19,12 @@ public enum XamlNexusUpgradeChangeStrategy {
     SolutionMerge,
 }
 
+/// <summary>升级计划中的一项文件变更，只描述待执行操作，本身不会写入文件</summary>
+/// <param name="Kind">创建、替换或删除文件</param>
+/// <param name="RelativePath">相对于项目根目录的目标文件路径</param>
+/// <param name="ExpectedSha256">预期的修改前文件哈希，用于防止规划后用户又修改文件；创建操作可为空</param>
+/// <param name="Content">准备写入的完整文件字节，不是行级补丁；删除操作不需要内容</param>
+/// <param name="Strategy">此次变更采用的内容生成策略</param>
 public sealed record XamlNexusUpgradeChange(
     XamlNexusUpgradeChangeKind Kind,
     string RelativePath,
@@ -24,6 +32,10 @@ public sealed record XamlNexusUpgradeChange(
     byte[]? Content,
     XamlNexusUpgradeChangeStrategy Strategy = XamlNexusUpgradeChangeStrategy.Direct);
 
+/// <summary>
+/// 无法安全自动应用的升级问题可附带人工合并文档、当前文件哈希和三方输入指纹，
+/// 供导出冲突及后续校验人工处理结果使用；冲突不代表已修改项目文件
+/// </summary>
 public sealed record XamlNexusUpgradeConflict(
     string Code,
     string RelativePath,
@@ -37,6 +49,7 @@ public sealed record XamlNexusProjectUpgradePlan(
     string ToVersion,
     IReadOnlyList<XamlNexusUpgradeChange> Changes,
     IReadOnlyList<XamlNexusUpgradeConflict> Conflicts) {
+    // 即使部分文件可自动合并，只要还有冲突，整个计划就不能直接应用
     public bool CanApply => Conflicts.Count == 0;
 }
 
@@ -56,9 +69,7 @@ public sealed class XamlNexusProjectUpgradeException : Exception {
 }
 
 public static class XamlNexusProjectUpgrade {
-    public static IReadOnlyList<string> WriteConflictArtifacts(
-        XamlNexusProjectUpgradePlan plan,
-        string outputDirectory) {
+    public static IReadOnlyList<string> WriteConflictArtifacts(XamlNexusProjectUpgradePlan plan, string outputDirectory) {
         ArgumentNullException.ThrowIfNull(plan);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
         string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(outputDirectory));
@@ -71,6 +82,7 @@ public static class XamlNexusProjectUpgrade {
             .ToArray();
         var createdFiles = new List<string>();
         var createdDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         try {
             if (artifacts.Length > 0) {
                 ProjectPathSafety.EnsureNoLinks(root);
@@ -120,22 +132,24 @@ public static class XamlNexusProjectUpgrade {
             Documents = plan.Conflicts.Select(conflict => conflict.MergeDocument).ToArray(),
         })));
 
-    public static XamlNexusProjectUpgradePlan ResolveConflicts(
-        XamlNexusProjectUpgradePlan plan, string resolutionDirectory) {
+    public static XamlNexusProjectUpgradePlan ResolveConflicts(XamlNexusProjectUpgradePlan plan, string resolutionDirectory) {
         ArgumentNullException.ThrowIfNull(plan);
         string root = Path.GetFullPath(resolutionDirectory);
         string stamp = ResolvePath(root, ".xamlnexus-upgrade");
         if (!File.Exists(stamp) || File.ReadAllText(stamp) != ResolutionFingerprint(plan))
             throw new XamlNexusProjectUpgradeException("XU2020",
                 "The conflict export is missing or stale. Export conflicts again from the current project and target version.");
+
         var changes = plan.Changes.ToList();
         foreach (var conflict in plan.Conflicts) {
             if (conflict.Code != "XU2011" || conflict.ExpectedSha256 is null)
                 throw new XamlNexusProjectUpgradeException("XU2021",
                     $"This conflict requires manual project changes before retrying upgrade: {conflict.RelativePath} ({conflict.Code}).");
+
             string path = ResolvePath(root, NormalizePath(conflict.RelativePath) + ".merge");
             if (!File.Exists(path))
                 throw new XamlNexusProjectUpgradeException("XU2021", $"Missing resolved file: {conflict.RelativePath}.merge");
+
             byte[] content = File.ReadAllBytes(path);
             string text = new System.Text.UTF8Encoding(false, true).GetString(content);
             if (text.Contains('\0') || text.Split('\n').Any(line => {
@@ -146,21 +160,22 @@ public static class XamlNexusProjectUpgrade {
                     value.StartsWith(">>>>>>>", StringComparison.Ordinal);
             }))
                 throw new XamlNexusProjectUpgradeException("XU2021", $"Unresolved conflict markers or invalid text: {conflict.RelativePath}");
+
             if (IsSemanticXmlPath(conflict.RelativePath)) {
                 try { System.Xml.Linq.XDocument.Parse(text.TrimStart('\uFEFF')); }
                 catch (System.Xml.XmlException exception) {
                     throw new XamlNexusProjectUpgradeException("XU2021", $"Resolved XML is invalid: {conflict.RelativePath}", exception);
                 }
             }
+
             changes.Add(new XamlNexusUpgradeChange(XamlNexusUpgradeChangeKind.Replace,
                 conflict.RelativePath, conflict.ExpectedSha256, content));
         }
+
         return plan with { Changes = changes, Conflicts = [] };
     }
 
-    public static XamlNexusProjectUpgradePlan CreateBaselineAdoptionPlan(
-        XamlNexusProjectContext current,
-        XamlNexusProjectContext target) {
+    public static XamlNexusProjectUpgradePlan CreateBaselineAdoptionPlan(XamlNexusProjectContext current, XamlNexusProjectContext target) {
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(target);
         ValidateIdentity(current.Manifest, target.Manifest);
@@ -181,9 +196,11 @@ public static class XamlNexusProjectUpgrade {
             ?? throw new XamlNexusProjectUpgradeException(
                 "XU1002",
                 "The target template has no scaffold file baseline.");
+
         var conflicts = FindOwnershipConflicts(current.Manifest, target.Manifest);
         if (conflicts.Count > 0)
             return new(current.Manifest.GeneratorVersion, target.Manifest.GeneratorVersion, [], conflicts);
+
         foreach (XamlNexusManagedFile file in desired) {
             string targetPath = ResolvePath(target.RootDirectory, file.Path);
             ValidateTargetFile(file, targetPath);
@@ -201,6 +218,7 @@ public static class XamlNexusProjectUpgrade {
                     "A scaffold file differs from the same-version template."));
             }
         }
+
         return new XamlNexusProjectUpgradePlan(
             current.Manifest.GeneratorVersion,
             target.Manifest.GeneratorVersion,
@@ -208,9 +226,7 @@ public static class XamlNexusProjectUpgrade {
             conflicts);
     }
 
-    public static XamlNexusProjectUpgradePlan CreatePlan(
-        XamlNexusProjectContext current,
-        XamlNexusProjectContext target) {
+    public static XamlNexusProjectUpgradePlan CreatePlan(XamlNexusProjectContext current, XamlNexusProjectContext target) {
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(target);
         ValidateIdentity(current.Manifest, target.Manifest);
@@ -325,8 +341,8 @@ public static class XamlNexusProjectUpgrade {
         string currentPath,
         string? targetPath,
         string actualHash,
-        ICollection<XamlNexusUpgradeChange> changes,
-        ICollection<XamlNexusUpgradeConflict> conflicts) {
+        List<XamlNexusUpgradeChange> changes,
+        List<XamlNexusUpgradeConflict> conflicts) {
         byte[] localContent = File.ReadAllBytes(currentPath);
         byte[] targetContent = targetPath is null ? [] : File.ReadAllBytes(targetPath);
         if (installed.BaselineContentGzipBase64 is null) {
@@ -487,6 +503,7 @@ public static class XamlNexusProjectUpgrade {
                 "XU2007",
                 "The upgrade plan versions do not match the supplied projects.");
         }
+
         using var lease = ProjectWriteLease.Acquire(current.RootDirectory);
         ProjectPathSafety.EnsureNoLinks(current.ManifestPath);
         XamlNexusProjectManifest freshManifest = XamlNexusProjectManifestStore.Load(current.ManifestPath);
@@ -680,7 +697,7 @@ public static class XamlNexusProjectUpgrade {
     private static void EnsureParentDirectory(
         string filePath,
         string rootDirectory,
-        ISet<string> createdDirectories) {
+        HashSet<string> createdDirectories) {
         string? directory = Path.GetDirectoryName(filePath);
         if (string.IsNullOrEmpty(directory) || Directory.Exists(directory)) return;
         var missing = new Stack<string>();

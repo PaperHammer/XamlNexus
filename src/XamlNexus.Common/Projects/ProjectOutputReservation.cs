@@ -2,12 +2,15 @@ namespace XamlNexus.Common.Projects;
 
 internal static class ProjectOutputReservation {
     public static string Create(string parent, string name) {
-        parent = Path.GetFullPath(parent);
         if (string.IsNullOrWhiteSpace(name) || name is "." or ".." || Path.GetFileName(name) != name)
             throw new ArgumentException("The project name must be a single directory name.", nameof(name));
+
+        parent = Path.GetFullPath(parent);
         Directory.CreateDirectory(parent);
+
         string reservation = Path.Combine(parent, ".xamlnexus-reserve-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(reservation);
+        
         string requested = Path.Combine(parent, name);
         string alternate = requested + "_" + DateTime.Now.ToString("yyyyMMddHHmmss");
         try {

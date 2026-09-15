@@ -3,15 +3,15 @@ using System.Reflection;
 using System.Xml.Linq;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Utils;
-using XamlNexus.Models.Attributes;
 
 namespace XamlNexus.Common.Generators {
     public abstract class BaseGenerator : IGenerator {
         public IReadOnlyList<string> GetIncludedModuleIds(string profile) {
             if (profile is not ("standard" or "basic"))
                 throw new ArgumentException("Profile must be standard or basic.", nameof(profile));
-            return GetManagedModuleIds().Where(id => profile != "basic" || id != "settings")
-                .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+            // 只有 basic 模式下的 settings 会被过滤
+            return [.. GetManagedModuleIds().Where(id => !(profile == "basic" && id == "settings")).Distinct(StringComparer.OrdinalIgnoreCase)];
         }
 
         public bool Generate(ProjectConfig config) => Generate(config, reportSuccess: true);
@@ -22,6 +22,7 @@ namespace XamlNexus.Common.Generators {
             try {
                 if (config.Profile is not ("standard" or "basic"))
                     throw new ArgumentException("Profile must be standard or basic.");
+
                 OnBeforeGenerate(config);
 
                 AnsiConsole.MarkupLine($"\n[bold blue]{LanguageRegistry.GetI18n(LangKeys.Text_Start)} - {config.SlnName}[/]");
@@ -40,6 +41,7 @@ namespace XamlNexus.Common.Generators {
                 if (reportSuccess) ShowSuccessReport(config, outputRoot);
 
                 OnAfterGenerate(config, outputRoot);
+
                 return true;
             }
             catch (Exception ex) {
@@ -145,7 +147,9 @@ namespace XamlNexus.Common.Generators {
 
                 InjectProjectMetadata(csprojPath, GetTemplateType());
 
-                result.Add((csprojPath, Folder));
+                // Panel 项目按命名约定统一归入解决方案的 Panels 文件夹。
+                result.Add((csprojPath, Path.GetFileNameWithoutExtension(csprojPath)
+                    .EndsWith("Panel", StringComparison.OrdinalIgnoreCase) ? "Panels" : Folder));
 
                 task.Increment(1);
             }
@@ -239,7 +243,51 @@ namespace XamlNexus.Common.Generators {
             }
 
             string solutionText = File.ReadAllText(slnPath);
+            string startupName = config.SlnName + (Framework == FrameworkType.Winui3 ? ".UI" : "");
+            string startupPath = $"{startupName}/{startupName}.csproj";
+            if (config.SlnType == SolutionType.Slnx) {
+                // dotnet sln add can omit platform mappings. WinUI does not support
+                // the implicit Any CPU configuration used by a minimal SLNX file.
+                var document = XDocument.Parse(solutionText);
+                var root = document.Root!;
+                root.Element("Configurations")?.Remove();
+                root.AddFirst(new XElement("Configurations",
+                    new[] { "x64", "x86", "ARM64" }.Select(platform =>
+                        new XElement("Platform", new XAttribute("Name", platform)))));
+                foreach (var entry in root.Descendants("Project")) {
+                    bool isStartup = entry.Attribute("Path")!.Value.Replace('\\', '/')
+                        .Equals(startupPath, StringComparison.OrdinalIgnoreCase);
+                    entry.SetAttributeValue("DefaultStartup", isStartup ? "true" : null);
+                    string projectPath = Path.Combine(outputRoot, entry.Attribute("Path")!.Value);
+                    var projectXml = XDocument.Load(projectPath);
+                    bool hasArchitecturePlatforms = projectXml.Descendants().Any(element =>
+                        element.Name.LocalName == "Platforms" && element.Value.Split(';').Contains("x64"));
+                    entry.Elements("Platform").Remove();
+                    // Libraries without explicit platforms keep Any CPU; the UI executable
+                    // declares architecture platforms and follows the solution configuration.
+                    entry.Add(new XElement("Platform",
+                        new XAttribute("Project", hasArchitecturePlatforms ? "*" : "Any CPU")));
+                }
+                solutionText = document.ToString();
+                File.WriteAllText(slnPath, solutionText, new System.Text.UTF8Encoding(false));
+            }
+            else {
+                // SLN has no shared startup-project field. Visual Studio uses the first
+                // project on initial open, before a per-user selection has been saved.
+                var blocks = System.Text.RegularExpressions.Regex.Matches(solutionText,
+                    @"(?m)^Project\([^\r\n]+\r?\n[\s\S]*?^EndProject[^\S\r\n]*(?:\r?\n|$)");
+                var startup = blocks.Cast<System.Text.RegularExpressions.Match>().Single(block =>
+                    block.Value.Split('\n')[0].Replace('\\', '/')
+                        .Contains($"\"{startupPath}\"", StringComparison.OrdinalIgnoreCase));
+                int firstProject = blocks[0].Index;
+                solutionText = solutionText.Remove(startup.Index, startup.Length)
+                    .Insert(firstProject, startup.Value);
+                File.WriteAllText(slnPath, solutionText, new System.Text.UTF8Encoding(false));
+            }
             string normalizedSolution = XamlNexusSolutionGuid.NormalizeProjectGuids(solutionText);
+            normalizedSolution = SolutionDocuments.Update(normalizedSolution, slnPath.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase),
+                Directory.EnumerateFiles(outputRoot, "*", SearchOption.TopDirectoryOnly)
+                    .Where(path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)).Select(path => Path.GetFileName(path)), []);
             if (!normalizedSolution.Equals(solutionText, StringComparison.Ordinal))
                 File.WriteAllText(slnPath, normalizedSolution, new System.Text.UTF8Encoding(false));
 
@@ -379,6 +427,7 @@ namespace XamlNexus.Common.Generators {
         private static bool IsInfrastructureFile(string relativePath) =>
             relativePath.Equals("Directory.Build.props", StringComparison.OrdinalIgnoreCase) ||
             relativePath.Equals("RELEASING.md", StringComparison.OrdinalIgnoreCase) ||
+            relativePath.Equals("RELEASING.zh-CN.md", StringComparison.OrdinalIgnoreCase) ||
             relativePath.Equals("update-manifest.example.json", StringComparison.OrdinalIgnoreCase) ||
             relativePath.StartsWith(".github/", StringComparison.OrdinalIgnoreCase) ||
             relativePath.StartsWith("eng/", StringComparison.OrdinalIgnoreCase) ||
@@ -455,10 +504,9 @@ namespace XamlNexus.Common.Generators {
 
         protected virtual string GetTemplatePrefix() => "XamlNexus";
 
-        protected virtual string GetTemplateType() {
-            var attr = GetType().GetCustomAttribute<GeneratorAttribute>();
-            return attr?.Framework.ToString() ?? "Unknown";
-        }
+        protected abstract FrameworkType Framework { get; }
+
+        protected virtual string GetTemplateType() => Framework.ToString();
 
         protected abstract string GetPresetId();
 

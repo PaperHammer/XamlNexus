@@ -126,8 +126,8 @@ SQLite 会增加 Data 工程及初始化逻辑，页面的数据操作由你实�
 |---|---|---|
 | 设置界面 | `xamlnexus add settings` | 用于基础版；标准版已包含 |
 | SQLite | `xamlnexus add sqlite` | 两种架构均支持 |
-| 托盘与通知 | `xamlnexus add system-tray` | 纯 WinUI 可选；混合架构已内置 |
-| 在线更新 | `xamlnexus add app-update` | 纯 WinUI 可选，自动补齐 settings；需配置自己的更新源。混合架构已内置 |
+| 托盘与通知 | `xamlnexus add tray` | 纯 WinUI 可选；混合架构已内置 |
+| 在线更新 | `xamlnexus add updater` | 纯 WinUI 可选，自动补齐 settings；需配置自己的更新源。混合架构已内置 |
 | 编辑器配置 | `xamlnexus add editorconfig` | 两种架构均支持 |
 
 已有项目可批量安装，例如基础版执行 `xamlnexus add settings,sqlite`。

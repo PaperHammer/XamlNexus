@@ -7,10 +7,15 @@ public sealed record XamlNexusSolutionMergeResult(
     XamlNexusMergeStatus Status,
     byte[]? Content);
 
+/// <summary>按项目块和全局配置节合并传统 .sln 文件；不用于 XML 格式的 .slnx</summary>
 public static partial class XamlNexusThreeWaySolutionMerge {
     private const int MaximumContentBytes = 1024 * 1024;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
+    /// <summary>将三份解决方案解析成结构后合并，只返回结果字节，不写入磁盘</summary>
+    /// <param name="baseline">旧版本解决方案基线</param>
+    /// <param name="local">用户当前解决方案</param>
+    /// <param name="target">目标版本生成的解决方案</param>
     public static XamlNexusSolutionMergeResult Merge(
         byte[] baseline,
         byte[] local,
@@ -27,6 +32,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
             return Unsupported();
         }
 
+        // 文件头和 Global 边界整体比较；项目按身份匹配，配置节还可继续细分到配置项
         if (!TryMergeLines(
                 baselineDocument!.Preamble,
                 localDocument!.Preamble,
@@ -57,6 +63,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
             return Conflict();
         }
 
+        // 重组解决方案，沿用本地换行风格及文件末尾是否换行
         var lines = new List<string>(preamble!);
         foreach (SolutionEntry project in projects!) lines.AddRange(project.Lines);
         lines.Add(globalLine!);
@@ -67,6 +74,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return Merged(StrictUtf8.GetBytes(text));
     }
 
+    /// <summary>只接受大小受限的 UTF-8 内容及可识别的 SLN 结构；解析失败不尝试猜测修复</summary>
     private static bool TryParse(byte[] content, out SolutionDocument? document) {
         document = null;
         if (content.Length > MaximumContentBytes || content.Contains((byte)0)) return false;
@@ -86,6 +94,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         int globalIndex = Array.FindIndex(lines, line => line.Trim().Equals("Global", StringComparison.Ordinal));
         if (globalIndex < 0 || !lines[^1].Trim().Equals("EndGlobal", StringComparison.Ordinal)) return false;
 
+        // 第一段项目之前的行作为文件头；每个 Project 到 EndProject 保留为完整项目块
         var preamble = new List<string>();
         var projects = new List<SolutionEntry>();
         bool projectsStarted = false;
@@ -102,6 +111,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
             index = end + 1;
         }
 
+        // Global 内按 GlobalSection 名称索引；重复身份会让合并对象不明确，因此拒绝解析
         var sections = new List<SolutionEntry>();
         for (int index = globalIndex + 1; index < lines.Length - 1;) {
             Match header = SectionHeaderPattern().Match(lines[index]);
@@ -125,6 +135,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return true;
     }
 
+    /// <summary>在指定范围内查找块结束标记，找不到时返回 -1</summary>
     private static int FindTerminator(
         IReadOnlyList<string> lines,
         int start,
@@ -136,6 +147,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return -1;
     }
 
+    /// <summary>以项目类型 GUID 和规范化路径作为身份，避免依赖可能变化的项目实例 GUID</summary>
     private static bool TryProjectKey(string line, out string? key) {
         Match match = ProjectLinePattern().Match(line);
         if (!match.Success) {
@@ -148,6 +160,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return true;
     }
 
+    /// <summary>按键匹配三方条目；保留本地键顺序，再追加仅目标侧出现的键</summary>
     private static bool TryMergeEntries(
         IReadOnlyList<SolutionEntry> baseline,
         IReadOnlyList<SolutionEntry> local,
@@ -175,6 +188,10 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return true;
     }
 
+    /// <summary>
+    /// 处理新增和删除：单边新增可保留，删除遇到另一边未改动可接受，删除与修改并存则冲突
+    /// 两边都存在时交给具体条目合并器；成功且 merged 为空表示该条目应删除
+    /// </summary>
     private static bool TryMergeEntry(
         SolutionEntry? baseline,
         SolutionEntry? local,
@@ -204,6 +221,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return merger(baseline, local, target, out merged);
     }
 
+    /// <summary>把条目视作整体；双方新增同一键必须内容相同，双方不同修改则无法自动选择</summary>
     private static bool MergeExactEntry(
         SolutionEntry? baseline,
         SolutionEntry local,
@@ -219,6 +237,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return merged is not null;
     }
 
+    /// <summary>已有配置节发生双边修改时，分别合并节头、节尾和按键索引的配置行</summary>
     private static bool MergeSection(
         SolutionEntry? baseline,
         SolutionEntry local,
@@ -254,6 +273,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return true;
     }
 
+    /// <summary>以等号左侧作为配置键，无等号时用整行；空行或重复键无法可靠索引</summary>
     private static bool TryIndexSectionLines(
         SolutionEntry section,
         out IReadOnlyList<SolutionEntry>? entries) {
@@ -276,6 +296,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return true;
     }
 
+    /// <summary>单值三方规则：一方未改则采用另一方，双方相同则保留，否则冲突</summary>
     private static bool TryMergeScalar<T>(T baseline, T local, T target, out T? merged) {
         var comparer = EqualityComparer<T>.Default;
         if (comparer.Equals(local, baseline)) merged = target;
@@ -287,6 +308,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         return true;
     }
 
+    /// <summary>将整组行作为一个值比较，不在此处计算逐行差异</summary>
     private static bool TryMergeLines(
         IReadOnlyList<string> baseline,
         IReadOnlyList<string> local,
@@ -323,6 +345,7 @@ public static partial class XamlNexusThreeWaySolutionMerge {
         SolutionEntry target,
         out SolutionEntry? merged);
 
+    // 一个可按身份匹配的结构单元，可以是项目块、配置节或配置行
     private sealed record SolutionEntry(string Key, IReadOnlyList<string> Lines);
 
     private sealed record SolutionDocument(

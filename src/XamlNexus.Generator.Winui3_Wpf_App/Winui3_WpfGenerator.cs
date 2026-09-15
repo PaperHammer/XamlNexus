@@ -1,10 +1,10 @@
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Utils;
-using XamlNexus.Models.Attributes;
 
 namespace XamlNexus.Generator.Winui3_Wpf_App {
-    [Generator(FrameworkType.Winui3_Wpf)]
     public class Winui3_WpfGenerator : BaseGenerator {
+        protected override FrameworkType Framework => FrameworkType.Winui3_Wpf;
+
         protected override string TemplateRoot =>
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", "Winui3_Wpf");
 
@@ -23,7 +23,7 @@ namespace XamlNexus.Generator.Winui3_Wpf_App {
 
         protected override Dictionary<string, string> GetCustomTokens(ProjectConfig config) {
             return new Dictionary<string, string> {
-                { "Winui3_Wpf_XamlNexus", config.SlnName },
+                { GetTemplatePrefix(), config.SlnName },
             };
         }
 

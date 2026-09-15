@@ -1,16 +1,14 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
-using XamlNexus.Common.CommandLine;
-using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
-using XamlNexus.Common.Recipes;
-using XamlNexus.Common.Utils;
 using XamlNexus.Recipes.BuiltIn;
-using XamlNexus.Utils;
 
 namespace XamlNexus {
     internal partial class Program {
+        /// <summary>
+        /// 诊断项目健康状态并输出 JSON 或诊断表；存在错误或诊断失败时返回失败退出码。
+        /// </summary>
         private static int Doctor(string projectPath, bool jsonOutput) {
             try {
                 XamlNexusProjectContext context = XamlNexusProjectLocator.Locate(projectPath);
@@ -57,10 +55,10 @@ namespace XamlNexus {
             }
             catch (Exception exception) {
                 if (jsonOutput) {
-                    Console.WriteLine(JsonSerializer.Serialize(new { error = exception.Message }));
+                    Console.WriteLine(JsonSerializer.Serialize(new { error = XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception) }));
                 }
                 else {
-                    ShowOperationalError(exception.Message);
+                    ShowOperationalError(XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception));
                 }
                 return GenerationFailureExitCode;
             }

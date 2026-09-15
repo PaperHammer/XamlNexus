@@ -59,6 +59,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Winui3_Wpf_XamlNexus.UIComp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNexus.Recipes.BuiltIn", "XamlNexus.Recipes.BuiltIn\XamlNexus.Recipes.BuiltIn.csproj", "{A76308BF-4B9E-4AB4-8F00-F299A6F7CDE3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{5D20AA90-6969-D8BD-9DCD-8634F4692FDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteShowcase.Data", "..\samples\SqliteShowcase\SqliteShowcase.Data\SqliteShowcase.Data.csproj", "{167007FB-36C7-4B55-9C95-856B34525543}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -337,6 +341,18 @@ Global
 		{A76308BF-4B9E-4AB4-8F00-F299A6F7CDE3}.Release|x64.Build.0 = Release|Any CPU
 		{A76308BF-4B9E-4AB4-8F00-F299A6F7CDE3}.Release|x86.ActiveCfg = Release|Any CPU
 		{A76308BF-4B9E-4AB4-8F00-F299A6F7CDE3}.Release|x86.Build.0 = Release|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Debug|x64.Build.0 = Debug|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Debug|x86.Build.0 = Debug|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Release|Any CPU.Build.0 = Release|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Release|x64.ActiveCfg = Release|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Release|x64.Build.0 = Release|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Release|x86.ActiveCfg = Release|Any CPU
+		{167007FB-36C7-4B55-9C95-856B34525543}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -364,6 +380,7 @@ Global
 		{F3138677-76FE-4F6A-942F-06880BA13DA3} = {3191EA29-3EC8-4207-8CC2-2A072860271B}
 		{4C69EF4F-AC74-43D1-BCAE-95EEF57B7B0F} = {3191EA29-3EC8-4207-8CC2-2A072860271B}
 		{0E805260-2D16-4C8F-83AB-4F0BD90CEFA8} = {3191EA29-3EC8-4207-8CC2-2A072860271B}
+		{167007FB-36C7-4B55-9C95-856B34525543} = {5D20AA90-6969-D8BD-9DCD-8634F4692FDA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1B912E0A-12E2-4D28-BD8D-E2FEC49DF39B}

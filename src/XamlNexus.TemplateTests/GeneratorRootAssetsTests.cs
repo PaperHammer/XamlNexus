@@ -13,6 +13,55 @@ namespace XamlNexus.TemplateTests;
 
 public sealed class GeneratorRootAssetsTests {
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TrayAndSettingsCanBeInstalledAndRemovedInEitherOrder(bool settingsFirst) {
+        string parent = Directory.CreateTempSubdirectory("xamlnexus-tray-tests-").FullName;
+        const string name = "TrayDemo";
+        try {
+            var generator = new PureGenerator(Path.Combine(FindRepositoryRoot(), "src", "Templates", "Winui3"));
+            Assert.True(generator.Generate(new ProjectConfig {
+                SlnName = name, Profile = "basic", OutputPath = parent,
+                Framework = FrameworkType.Winui3, SlnType = SolutionType.Sln,
+            }));
+            string root = Path.Combine(parent, name);
+            IXamlNexusRecipe first = settingsFirst ? new SettingsRecipe() : new SystemTrayRecipe();
+            IXamlNexusRecipe second = settingsFirst ? new SystemTrayRecipe() : new SettingsRecipe();
+            foreach (var recipe in new[] { first, second }) {
+                var context = XamlNexusProjectLocator.Locate(root);
+                var preview = XamlNexusRecipeTransaction.PreviewApply(context, recipe);
+                var result = XamlNexusRecipeTransaction.Apply(context, recipe);
+                Assert.Equal(preview.Changes.Select(change => change.RelativePath).Order(), result.ChangedFiles.Order());
+                Assert.All(result.ChangedFiles, path => Assert.DoesNotContain('\\', path));
+            }
+            Assert.True(XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(root)).IsValid);
+            // Updating tray must restore its package reference if project migration removed it.
+            string uiProject = Path.Combine(root, name + ".UI/" + name + ".UI.csproj");
+            var projectXml = XDocument.Load(uiProject);
+            projectXml.Descendants("PackageReference")
+                .Where(item => (string?)item.Attribute("Include") == "H.NotifyIcon.WinUI").Remove();
+            projectXml.Save(uiProject);
+            string manifestPath = Path.Combine(root, "xamlnexus.json");
+            var manifestJson = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(manifestPath))!;
+            manifestJson["modules"]!.AsArray().Single(module => module!["id"]!.GetValue<string>() == "system-tray")!["version"] = "0.9.0";
+            File.WriteAllText(manifestPath, manifestJson.ToJsonString());
+            var updated = XamlNexusRecipeTransaction.Update(XamlNexusProjectLocator.Locate(root), new SystemTrayRecipe());
+            Assert.Contains(name + ".UI/" + name + ".UI.csproj", updated.ChangedFiles);
+            Assert.Contains(XDocument.Load(uiProject).Descendants("PackageReference"),
+                item => (string?)item.Attribute("Include") == "H.NotifyIcon.WinUI");
+            string settingsPath = Path.Combine(root, name + ".Models/Cores/Settings.cs");
+            string settingsBeforeRemoval = File.ReadAllText(settingsPath);
+            foreach (var recipe in new[] { first, second }) {
+                XamlNexusRecipeTransaction.Remove(XamlNexusProjectLocator.Locate(root), recipe);
+                Assert.True(XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(root)).IsValid);
+                Assert.Equal(settingsBeforeRemoval, File.ReadAllText(settingsPath));
+            }
+            Assert.True(File.Exists(Path.Combine(root, name + ".Common/ISystemTraySettings.cs")));
+        }
+        finally { Directory.Delete(parent, recursive: true); }
+    }
+
+    [Theory]
     [InlineData(false, SolutionType.Sln)]
     [InlineData(true, SolutionType.Sln)]
     [InlineData(false, SolutionType.Slnx)]
@@ -30,6 +79,7 @@ public sealed class GeneratorRootAssetsTests {
             Assert.True(generator.Generate(config));
             string root = Path.Combine(parent, "BasicDemo");
             AssertReleaseSolution(root, "BasicDemo", format);
+            AssertStartupProject(root, "BasicDemo", format, hybrid);
             AssertPanelGrouping(root, "BasicDemo", format, includesSettings: false);
             var context = XamlNexusProjectLocator.Locate(root);
             Assert.Equal("basic", context.Manifest.Project.Profile);
@@ -92,6 +142,7 @@ public sealed class GeneratorRootAssetsTests {
             Assert.True(File.Exists(Path.Combine(generatedRoot, "eng", "publishing", "Build-Installer.ps1")));
             Assert.False(File.Exists(Path.Combine(generatedRoot, "eng", "publishing", "New-UpdateManifest.ps1")));
             Assert.True(File.Exists(Path.Combine(generatedRoot, "RELEASING.md")));
+            Assert.True(File.Exists(Path.Combine(generatedRoot, "RELEASING.zh-CN.md")));
             Assert.True(File.Exists(Path.Combine(generatedRoot, "xamlnexus.json")));
 
             using var releaseConfig = JsonDocument.Parse(File.ReadAllText(
@@ -175,7 +226,8 @@ public sealed class GeneratorRootAssetsTests {
             XamlNexusManagedModule recipeModule = Assert.Single(
                 recipeContext.Manifest.Modules,
                 module => module.Id == "editorconfig");
-            XamlNexusManagedFile ownedFile = Assert.Single(recipeModule.Files!);
+            Assert.Equal(3, recipeModule.Files!.Count);
+            XamlNexusManagedFile ownedFile = Assert.Single(recipeModule.Files, file => file.Path == ".editorconfig");
             Assert.Equal(".editorconfig", ownedFile.Path);
             Assert.True(File.Exists(Path.Combine(generatedRoot, ".editorconfig")));
             Assert.Empty(XamlNexusProjectValidator.Validate(recipeContext).Issues);
@@ -258,7 +310,7 @@ public sealed class GeneratorRootAssetsTests {
             XamlNexusManagedModule sqliteModule = Assert.Single(
                 sqliteContext.Manifest.Modules,
                 module => module.Id == "sqlite");
-            Assert.Equal(hybrid ? 13 : 8, sqliteModule.Files!.Count);
+            Assert.Equal(hybrid ? 14 : 9, sqliteModule.Files!.Count);
             Assert.Empty(XamlNexusProjectValidator.Validate(sqliteContext).Issues);
             XamlNexusDoctorReport sqliteDoctor = XamlNexusDoctor.Diagnose(
                 sqliteContext,
@@ -356,6 +408,8 @@ public sealed class GeneratorRootAssetsTests {
                 Framework = hybrid ? FrameworkType.Winui3_Wpf : FrameworkType.Winui3,
             }));
             AssertPanelGrouping(Path.Combine(parent, "PanelDemo"), "PanelDemo", SolutionType.Slnx, includesSettings: true);
+            AssertSlnxPlatforms(Path.Combine(parent, "PanelDemo"), "PanelDemo");
+            AssertStartupProject(Path.Combine(parent, "PanelDemo"), "PanelDemo", SolutionType.Slnx, hybrid);
         }
         finally { Directory.Delete(parent, recursive: true); }
     }
@@ -387,6 +441,7 @@ public sealed class GeneratorRootAssetsTests {
     }
 
     private static void AssertReleaseSolution(string root, string appName, SolutionType format) {
+        if (format == SolutionType.Slnx) AssertSlnxPlatforms(root, appName);
         using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "eng/publishing/release.json")));
         string solution = config.RootElement.GetProperty("solution").GetString()!;
         Assert.Equal($"{appName}.{format.ToString().ToLowerInvariant()}", solution);
@@ -408,6 +463,42 @@ public sealed class GeneratorRootAssetsTests {
         Assert.False(File.Exists(Path.Combine(root, "eng/publishing/Read-ReleaseMetadata.ps1")));
         Assert.False(File.Exists(Path.Combine(root, ".github/release.json")));
         Assert.DoesNotContain("release-notes", File.ReadAllText(Path.Combine(root, ".github/pull_request_template.md")));
+    }
+
+    private static void AssertStartupProject(string root, string appName, SolutionType format, bool hybrid) {
+        string name = appName + (hybrid ? "" : ".UI");
+        string expected = $"{name}/{name}.csproj";
+        string text = File.ReadAllText(Path.Combine(root, $"{appName}.{format.ToString().ToLowerInvariant()}"));
+        if (format == SolutionType.Slnx) {
+            var startup = Assert.Single(XDocument.Parse(text).Descendants("Project"),
+                project => (string?)project.Attribute("DefaultStartup") == "true");
+            Assert.Equal(expected, startup.Attribute("Path")!.Value.Replace('\\', '/'));
+        }
+        else {
+            string firstProject = text.Split('\n').First(line => line.StartsWith("Project("));
+            Assert.Contains($"\"{expected}\"", firstProject.Replace('\\', '/'));
+        }
+    }
+
+    private static void AssertSlnxPlatforms(string root, string appName) {
+        var solution = XDocument.Load(Path.Combine(root, appName + ".slnx")).Root!;
+        string[] platforms = solution.Element("Configurations")!.Elements("Platform")
+            .Select(element => element.Attribute("Name")!.Value).ToArray();
+        Assert.Equal(new[] { "x64", "x86", "ARM64" }, platforms);
+        foreach (var entry in solution.Descendants("Project")) {
+            string path = entry.Attribute("Path")!.Value;
+            var project = XDocument.Load(Path.Combine(root, path));
+            string[] supported = (project.Descendants("Platforms").FirstOrDefault()?.Value ?? "AnyCPU").Split(';');
+            string mapping = entry.Element("Platform")!.Attribute("Project")!.Value;
+            foreach (string platform in platforms) {
+                string mapped = mapping == "*" ? platform : mapping.Replace(" ", "");
+                Assert.Contains(mapped, supported);
+            }
+        }
+        // Exercise the SDK's SLNX reader as well as checking each project's supported platforms.
+        var validation = ShellExecutor.Run("dotnet",
+            $"msbuild \"{appName}.slnx\" -t:ValidateSolutionConfiguration -p:Configuration=Debug -p:Platform=x64 -v:minimal", root);
+        Assert.True(validation.Success, validation.DiagnosticOutput);
     }
 
     private static string FindRepositoryRoot() {

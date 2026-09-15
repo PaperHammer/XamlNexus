@@ -100,7 +100,7 @@
     <value>提示</value>
   </data>
   <data name="Wizard_None" xml:space="preserve">
-    <value>无</value>
+    <value>--</value>
   </data>
   <data name="Wizard_CapabilitiesWithDependencies" xml:space="preserve">
     <value>附加能力（含依赖）</value>
@@ -156,4 +156,243 @@
   <data name="Creation_ReviewRecipes" xml:space="preserve">
     <value>请阅读已安装组件的 README，完成所需配置。</value>
   </data>
+  <data name="RecipeError_AlreadyInstalled" xml:space="preserve">
+    <value>模块“{0}”已安装</value>
+  </data>
+  <data name="RecipeError_MissingInstallationPlan" xml:space="preserve">
+    <value>Recipe 未返回安装计划</value>
+  </data>
+  <data name="RecipeError_InvalidComposedBatch" xml:space="preserve">
+    <value>组合后的批量计划未通过项目校验</value>
+  </data>
+  <data name="RecipeError_BatchProjectMismatch" xml:space="preserve">
+    <value>此批量计划属于另一个项目</value>
+  </data>
+  <data name="RecipeError_StaleBatchManifest" xml:space="preserve">
+    <value>批量规划后项目清单已改变，请重新预览操作</value>
+  </data>
+  <data name="RecipeError_DuplicateCatalogId" xml:space="preserve">
+    <value>Recipe 目录包含重复 ID“{0}”</value>
+  </data>
+  <data name="RecipeError_InvalidRecipeId" xml:space="preserve">
+    <value>Recipe ID 必须使用小写 kebab-case 格式</value>
+  </data>
+  <data name="RecipeError_InvalidRecipeVersion" xml:space="preserve">
+    <value>Recipe 版本必须是语义化版本，例如 1.0.0</value>
+  </data>
+  <data name="RecipeError_MissingDisplayName" xml:space="preserve">
+    <value>必须提供 Recipe 显示名称</value>
+  </data>
+  <data name="RecipeError_InvalidSupportedPresets" xml:space="preserve">
+    <value>支持的预设必须包含 winui、hybrid 中的至少一项</value>
+  </data>
+  <data name="RecipeError_DuplicateDependencies" xml:space="preserve">
+    <value>Recipe 依赖项不能重复</value>
+  </data>
+  <data name="RecipeError_DuplicateConflicts" xml:space="preserve">
+    <value>Recipe 冲突项不能重复</value>
+  </data>
+  <data name="RecipeError_SelfDependencyOrConflict" xml:space="preserve">
+    <value>Recipe 不能依赖自身或与自身冲突</value>
+  </data>
+  <data name="RecipeError_DependencyConflictOverlap" xml:space="preserve">
+    <value>同一模块不能同时是依赖项和冲突项</value>
+  </data>
+  <data name="RecipeError_UnsupportedPreset" xml:space="preserve">
+    <value>Recipe“{0}”不支持预设“{1}”</value>
+  </data>
+  <data name="RecipeError_MissingDependencies" xml:space="preserve">
+    <value>缺少依赖项：{0}</value>
+  </data>
+  <data name="RecipeError_ConflictingModules" xml:space="preserve">
+    <value>已安装冲突模块：{0}</value>
+  </data>
+  <data name="RecipeError_EmptyFileChange" xml:space="preserve">
+    <value>Recipe 计划包含空的文件变更</value>
+  </data>
+  <data name="RecipeError_FilePathMustBeRelative" xml:space="preserve">
+    <value>Recipe 文件路径必须相对于项目根目录</value>
+  </data>
+  <data name="RecipeError_FilePathEscapesProject" xml:space="preserve">
+    <value>Recipe 路径超出项目目录：{0}</value>
+  </data>
+  <data name="RecipeError_DirectManifestEditForbidden" xml:space="preserve">
+    <value>Recipe 不能直接编辑 xamlnexus.json</value>
+  </data>
+  <data name="RecipeError_DuplicateFileChange" xml:space="preserve">
+    <value>Recipe 多次修改同一路径：{0}</value>
+  </data>
+  <data name="RecipeError_FileTargetIsDirectory" xml:space="preserve">
+    <value>Recipe 文件目标是已有目录：{0}</value>
+  </data>
+  <data name="RecipeError_ParentPathIsFile" xml:space="preserve">
+    <value>父路径是已有文件：{0}</value>
+  </data>
+  <data name="RecipeError_FileAlreadyExists" xml:space="preserve">
+    <value>Recipe 将覆盖已有文件：{0}</value>
+  </data>
+  <data name="RecipeError_MissingCreateContent" xml:space="preserve">
+    <value>创建操作缺少内容：{0}</value>
+  </data>
+  <data name="RecipeError_ExpectedFileMissing" xml:space="preserve">
+    <value>Recipe 所需文件不存在：{0}</value>
+  </data>
+  <data name="RecipeError_MissingReplaceContent" xml:space="preserve">
+    <value>替换操作缺少内容：{0}</value>
+  </data>
+  <data name="RecipeError_InvalidExpectedHash" xml:space="preserve">
+    <value>必须提供有效的预期 SHA-256：{0}</value>
+  </data>
+  <data name="RecipeError_FileHashMismatch" xml:space="preserve">
+    <value>文件已修改，不符合 Recipe 前置条件：{0}</value>
+  </data>
+  <data name="RecipeError_InvalidRelatedModuleId" xml:space="preserve">
+    <value>无效的 {0} 模块 ID“{1}”</value>
+  </data>
+  <data name="RecipeError_EmptyProjectOperation" xml:space="preserve">
+    <value>Recipe 计划包含空的项目操作</value>
+  </data>
+  <data name="RecipeError_UnsupportedProjectOperation" xml:space="preserve">
+    <value>不支持的项目操作：{0}</value>
+  </data>
+  <data name="RecipeError_OverlappingFileAndProjectOperations" xml:space="preserve">
+    <value>项目操作与文件操作指向同一文件：{0}</value>
+  </data>
+  <data name="RecipeError_ProjectOperationTargetMissing" xml:space="preserve">
+    <value>项目操作目标不存在：{0}</value>
+  </data>
+  <data name="RecipeError_UnsupportedProjectFileType" xml:space="preserve">
+    <value>不支持的项目操作文件类型：{0}</value>
+  </data>
+  <data name="RecipeError_InvalidProjectXml" xml:space="preserve">
+    <value>无效的 MSBuild 项目 XML：{0}</value>
+  </data>
+  <data name="RecipeError_MissingProjectRoot" xml:space="preserve">
+    <value>MSBuild 项目缺少根元素</value>
+  </data>
+  <data name="RecipeError_PackageReferenceAlreadyExists" xml:space="preserve">
+    <value>PackageReference“{0}”已存在</value>
+  </data>
+  <data name="RecipeError_ReferencedProjectMissing" xml:space="preserve">
+    <value>引用的项目不存在：{0}</value>
+  </data>
+  <data name="RecipeError_ProjectReferenceAlreadyExists" xml:space="preserve">
+    <value>ProjectReference“{0}”已存在</value>
+  </data>
+  <data name="RecipeError_ProjectReferenceMissing" xml:space="preserve">
+    <value>ProjectReference“{0}”不存在</value>
+  </data>
+  <data name="RecipeError_ProtobufSourceMissing" xml:space="preserve">
+    <value>Protobuf 源文件不存在：{0}</value>
+  </data>
+  <data name="RecipeError_InvalidProtobufExtension" xml:space="preserve">
+    <value>Protobuf 源文件必须是 .proto 文件：{0}</value>
+  </data>
+  <data name="RecipeError_ProtobufAlreadyIncluded" xml:space="preserve">
+    <value>Protobuf 源文件已包含：{0}</value>
+  </data>
+  <data name="RecipeError_ProtobufReferenceMissing" xml:space="preserve">
+    <value>未包含 Protobuf 源文件：{0}</value>
+  </data>
+  <data name="RecipeError_InvalidCsprojOperation" xml:space="preserve">
+    <value>只有引用操作可以应用于 .csproj 文件</value>
+  </data>
+  <data name="RecipeError_InvalidSlnxXml" xml:space="preserve">
+    <value>SLNX XML 无效</value>
+  </data>
+  <data name="RecipeError_MissingSolutionRoot" xml:space="preserve">
+    <value>SLNX 必须包含 Solution 根元素</value>
+  </data>
+  <data name="RecipeError_InvalidSlnxOperation" xml:space="preserve">
+    <value>只有解决方案操作可以应用于 .slnx 文件</value>
+  </data>
+  <data name="RecipeError_ProjectNotInSolution" xml:space="preserve">
+    <value>项目不在解决方案中：{0}</value>
+  </data>
+  <data name="RecipeError_SolutionProjectMissing" xml:space="preserve">
+    <value>解决方案项目不存在：{0}</value>
+  </data>
+  <data name="RecipeError_InvalidSolutionProjectType" xml:space="preserve">
+    <value>解决方案项目必须是 .csproj 文件</value>
+  </data>
+  <data name="RecipeError_ProjectAlreadyInSolution" xml:space="preserve">
+    <value>项目已存在于解决方案中：{0}</value>
+  </data>
+  <data name="RecipeError_MissingGlobalSection" xml:space="preserve">
+    <value>解决方案文件缺少 Global 段</value>
+  </data>
+  <data name="RecipeError_InvalidSlnOperation" xml:space="preserve">
+    <value>只有解决方案操作可以应用于 .sln 文件</value>
+  </data>
+  <data name="RecipeError_InvalidSolutionProjectPath" xml:space="preserve">
+    <value>解决方案项目必须是 .csproj 文件：{0}</value>
+  </data>
+  <data name="RecipeError_IncompleteSolutionProject" xml:space="preserve">
+    <value>解决方案项目条目不完整：{0}</value>
+  </data>
+  <data name="RecipeError_OperationPathMustBeRelative" xml:space="preserve">
+    <value>{0} 路径必须是相对路径</value>
+  </data>
+  <data name="RecipeError_OperationPathEscapesProject" xml:space="preserve">
+    <value>{0} 路径超出项目目录：{1}</value>
+  </data>
+  <data name="RecipeError_MissingConfigurationSections" xml:space="preserve">
+    <value>解决方案文件缺少配置段</value>
+  </data>
+  <data name="RecipeError_IncompleteConfigurationSection" xml:space="preserve">
+    <value>解决方案配置段不完整</value>
+  </data>
+  <data name="RecipeError_MissingBuildConfigurations" xml:space="preserve">
+    <value>解决方案没有构建配置</value>
+  </data>
+  <data name="RecipeError_InvalidPackageReference" xml:space="preserve">
+    <value>PackageReference 必须提供有效的包 ID 和版本</value>
+  </data>
+  <data name="RecipeError_InvalidMinimumPackageVersion" xml:space="preserve">
+    <value>PackageReference 必须提供有效的包 ID 和数字形式的最低版本</value>
+  </data>
+  <data name="RecipeError_ConditionalPackageReference" xml:space="preserve">
+    <value>“{1}”中的 PackageReference“{0}”带有条件。XamlNexus 无法保证所有构建配置都满足依赖要求，因此不会自动修改。请检查条件，提供满足最低版本要求的无条件引用后重试</value>
+  </data>
+  <data name="RecipeError_UnsupportedPackageVersion" xml:space="preserve">
+    <value>PackageReference“{0}”使用不支持的版本表达式“{1}”</value>
+  </data>
+  <data name="RecipeError_RemovalModuleNotInstalled" xml:space="preserve">
+    <value>模块“{0}”未安装</value>
+  </data>
+  <data name="RecipeError_RemovalRequiresRecipeModule" xml:space="preserve">
+    <value>模块“{0}”不是通过 Recipe 安装的，不能以此方式移除</value>
+  </data>
+  <data name="RecipeError_UpdateModuleNotInstalled" xml:space="preserve">
+    <value>模块“{0}”未安装</value>
+  </data>
+  <data name="RecipeError_UpdateRequiresRecipeModule" xml:space="preserve">
+    <value>模块“{0}”不是通过 Recipe 安装的，不能以此方式更新</value>
+  </data>
+  <data name="RecipeError_AlreadyAtTargetVersion" xml:space="preserve">
+    <value>Recipe“{0}”已是版本 {1}</value>
+  </data>
+  <data name="RecipeError_DowngradeNotSupported" xml:space="preserve">
+    <value>不支持将 Recipe 从 {0} 降级到 {1}</value>
+  </data>
+  <data name="RecipeError_UpdateUnsupportedPreset" xml:space="preserve">
+    <value>Recipe“{0}”不支持预设“{1}”</value>
+  </data>
+  <data name="RecipeError_UpdateMissingDependencies" xml:space="preserve">
+    <value>缺少依赖项：{0}</value>
+  </data>
+  <data name="RecipeError_UpdateConflictingModules" xml:space="preserve">
+    <value>已安装冲突模块：{0}</value>
+  </data>
+  <data name="RecipeError_StaleProjectContext" xml:space="preserve">
+    <value>项目上下文加载后清单已改变，请重新加载项目并预览操作</value>
+  </data>
+  <data name="RecipeError_UnsupportedFileChangeKind" xml:space="preserve">
+    <value>不支持的文件变更类型：{0}</value>
+  </data>
+  <data name="RecipeError_MissingTrayScaffoldSupport" xml:space="preserve">
+    <value>此 WinUI 脚手架不支持窗口关闭设置。请使用最新 XamlNexus 重新生成项目，或先迁移脚手架再安装 settings/tray</value>
+  </data>
+  <data name="RecipeError_TransactionRolledBack" xml:space="preserve"><value>Recipe“{0}”执行失败，所有文件变更已回滚</value></data>
+  <data name="RecipeError_TransactionRollbackFailed" xml:space="preserve"><value>Recipe“{0}”执行失败，回滚时发生 {1} 个额外错误</value></data>
 </root>

@@ -87,7 +87,8 @@ namespace XamlNexus.Common.Generators {
 #if DEBUG
             return Path.Combine(Environment.CurrentDirectory, "debug");
 #else
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+            // 使用专用项目目录，降低生成或清理操作影响用户日常文件的风险。
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "XamlNexus", "Projects");
 #endif
         }
     }

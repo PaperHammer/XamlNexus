@@ -1,12 +1,7 @@
 using System.Reflection;
 using Spectre.Console;
 using XamlNexus.Common.CommandLine;
-using XamlNexus.Common.Generators;
-using XamlNexus.Common.Projects;
-using XamlNexus.Common.Recipes;
 using XamlNexus.Common.Utils;
-using XamlNexus.Recipes.BuiltIn;
-using XamlNexus.Utils;
 
 namespace XamlNexus {
     internal partial class Program {
@@ -14,6 +9,9 @@ namespace XamlNexus {
         private const int GenerationFailureExitCode = 1;
         private const int UsageErrorExitCode = 2;
 
+        /// <summary>
+        /// 初始化控制台并解析、分发命令行请求，将参数错误和未处理异常转换为退出码
+        /// </summary>
         static int Main(string[] args) {
             try {
                 // Set encoding before Spectre captures the console writer/profile.
@@ -85,6 +83,9 @@ namespace XamlNexus {
             }
         }
 
+        /// <summary>
+        /// 读取当前程序集的信息版本并移除构建元数据；未声明版本时返回 unknown
+        /// </summary>
         private static string GetVersion() {
             var rawVersion = Assembly
                 .GetExecutingAssembly()
@@ -94,6 +95,9 @@ namespace XamlNexus {
             return rawVersion?.Split('+')[0] ?? "unknown";
         }
 
+        /// <summary>
+        /// 输出当前语言对应的命令行帮助
+        /// </summary>
         private static void ShowHelp() => AnsiConsole.WriteLine(LanguageRegistry.GetText("Cli_Help"));
     }
 }

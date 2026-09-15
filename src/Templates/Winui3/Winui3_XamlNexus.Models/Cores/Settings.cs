@@ -17,6 +17,7 @@ namespace Winui3_XamlNexus.Models.Cores {
         public string Language { get; set; } = string.Empty;
         public bool IsUpdated { get; set; }
         public bool IsAutoStart { get; set; }
+        public WindowCloseBehavior WindowCloseBehavior { get; set; } = WindowCloseBehavior.Ask;
         public bool IsFirstRun { get; set; }
         public string DataSaveDir { get; set; } = string.Empty;
         #endregion

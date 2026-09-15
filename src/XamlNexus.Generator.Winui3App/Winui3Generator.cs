@@ -1,10 +1,10 @@
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Utils;
-using XamlNexus.Models.Attributes;
 
 namespace XamlNexus.Generator.Winui3App {
-    [Generator(FrameworkType.Winui3)]
     public class Winui3Generator : BaseGenerator {
+        protected override FrameworkType Framework => FrameworkType.Winui3;
+
         protected override string TemplateRoot =>
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", "Winui3");
 
@@ -15,13 +15,11 @@ namespace XamlNexus.Generator.Winui3App {
         protected override IEnumerable<string> GetManagedModuleIds() =>
             base.GetManagedModuleIds().Where(id => id != "updater");
 
-        protected override Dictionary<string, string> GetCustomTokens(ProjectConfig config) {
-            return new Dictionary<string, string> {
-                { "Winui3_XamlNexus", config.SlnName },
-                // Preserve compatibility with the legacy Models template casing.
-                { "WInui3_XamlNexus", config.SlnName }
-            };
-        }
+        protected override Dictionary<string, string> GetCustomTokens(ProjectConfig config) => new() {
+            [GetTemplatePrefix()] = config.SlnName,
+            // 兼容旧版 Models 模板的大小写，字符串替换区分大小写
+            ["WInui3_XamlNexus"] = config.SlnName
+        };
 
         protected override IEnumerable<(string Name, string? Folder)> GetProjects() {
             return [

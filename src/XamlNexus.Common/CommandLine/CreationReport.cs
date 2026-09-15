@@ -41,6 +41,6 @@ public static class CreationReport {
         if (hasAddedCapabilities) AnsiConsole.WriteLine(LanguageRegistry.GetText("Creation_ReviewRecipes"));
 
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine($" [bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Success)}[/]");
+        AnsiConsole.MarkupLine($" [grey][[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}]][/] [bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Success)}[/]");
     }
 }

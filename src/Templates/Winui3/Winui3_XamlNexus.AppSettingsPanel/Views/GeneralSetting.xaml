@@ -12,6 +12,7 @@
 
     <ScrollView>
         <StackPanel Margin="15 0 15 15" Orientation="Vertical">
+
             <StackPanel x:Name="Version" Orientation="Vertical"
                 Visibility="{x:Bind _viewModel.HasAppUpdater, Converter={StaticResource VisibilityByValueConverter}}">
                 <TextBlock l:Uids.Uid="Settings_General_Text_Version" x:Name="VersionHeader"
@@ -274,6 +275,27 @@
                         SelectedValuePath="Language"
                         Width="200" />
                 </Grid>
+
+                <StackPanel x:Name="TraySettings" Visibility="Collapsed">
+                    <Grid Height="90" Margin="0 5" Padding="20 0"
+                        Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Margin="0 0 20 0" Glyph="&#xF78A;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 0 20 0">
+                            <TextBlock x:Name="TraySettingsHeader" />
+                            <TextBlock x:Name="TraySettingsDescription" TextWrapping="Wrap"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        </StackPanel>
+                        <ComboBox x:Name="TrayCloseBehavior" Grid.Column="2"
+                            Width="200" VerticalAlignment="Center"
+                            SelectionChanged="TrayCloseBehavior_SelectionChanged" />
+                    </Grid>
+                    <InfoBar x:Name="TraySettingsError" Severity="Error" IsOpen="False" />
+                </StackPanel>
 
                 <Expander x:Name="FileStorage"
                     Margin="0 5"

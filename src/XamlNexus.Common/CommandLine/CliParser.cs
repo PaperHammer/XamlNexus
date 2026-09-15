@@ -231,7 +231,7 @@ public static class CliParser {
             SlnType = solutionFormat.Equals("slnx", StringComparison.OrdinalIgnoreCase) ? SolutionType.Slnx : SolutionType.Sln,
         };
         return CliParseResult.Parsed(new CliOptions(CliCommand.New, project, Profile: profile ?? "standard",
-            Features: features?.Split(',', StringSplitOptions.TrimEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()));
+            Features: features?.Split(',', StringSplitOptions.TrimEntries).Select(RecipeCommandNames.ToRecipeId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()));
     }
 
     private static CliParseResult ParseProjectCommand(
@@ -336,7 +336,11 @@ public static class CliParser {
                 return CliParseResult.Failed($"Unknown option '{argument}'.");
             }
             else if (recipeId is not null) {
-                return CliParseResult.Failed("Only one Recipe id can be specified.");
+                if (command == CliCommand.Add &&
+                    (recipeId.TrimEnd().EndsWith(',') || argument.TrimStart().StartsWith(',')))
+                    recipeId += argument.Trim();
+                else
+                    return CliParseResult.Failed("Only one Recipe id can be specified.");
             }
             else {
                 recipeId = argument;
@@ -359,7 +363,8 @@ public static class CliParser {
         return CliParseResult.Parsed(new CliOptions(
             command,
             ProjectPath: projectPath,
-            RecipeId: recipeId,
+            RecipeId: command == CliCommand.PageAdd ? recipeId
+                : string.Join(",", recipeId.Split(',').Select(RecipeCommandNames.ToRecipeId)),
             JsonOutput: jsonOutput,
             DryRun: dryRun,
             SkipNavigation: skipNavigation));

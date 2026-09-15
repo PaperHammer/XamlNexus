@@ -80,8 +80,8 @@ The defaults are winui and standard. Basic retains theme, localization, configur
 |---|---|
 | `settings` | Optional in basic; included in standard |
 | `sqlite` | Both architectures; hybrid data access belongs to the host |
-| `system-tray` | Optional in pure WinUI; already built into hybrid |
-| `app-update` | Optional in pure WinUI, depends on settings and needs your update source; built into hybrid |
+| `tray` | Optional in pure WinUI; already built into hybrid |
+| `updater` | Optional in pure WinUI, depends on settings and needs your update source; built into hybrid |
 | `editorconfig` | Both architectures |
 
 For an existing basic project, `xamlnexus add settings,sqlite` installs both transactionally.

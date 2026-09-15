@@ -96,7 +96,7 @@ xamlnexus remove sqlite --dry-run
 
 上述批量添加适用于尚未安装这两个组件的项目，例如基础版。标准版已包含 settings。不要重复添加已安装组件。`remove` 和 `update` 每次处理一个组件；同版本更新不做修改，降级会被拒绝。
 
-内置组件包括 `settings`、`editorconfig`、`sqlite`、`system-tray`、`app-update`。前三个支持两种架构；后两个用于纯 WinUI，混合宿主已有对应能力。`app-update` 依赖 `settings`。批量添加会处理依赖顺序；组件边界见[产品模型](../introduction/product-model.zh-CN.md)。
+内置组件包括 `settings`、`editorconfig`、`sqlite`、`tray`、`updater`。前三个支持两种架构；后两个用于纯 WinUI，混合宿主已有对应能力。`updater` 依赖 `settings`。批量添加会处理依赖顺序；组件边界见[产品模型](../introduction/product-model.zh-CN.md)。
 
 生成源码和配置都可以自行修改。组件更新和移除会检查文件，遇到用户修改或缺失时停止，避免覆盖用户内容；不会自动丢弃修改或重新计算哈希来跳过检查。
 
@@ -143,3 +143,5 @@ xamlnexus add sqlite --dry-run --json
 | `xamlnexus upgrade` | 项目中由脚手架管理的基础设施 |
 
 工具更新不会自动修改已有项目。执行项目更新前先保存或提交修改，再预览变更。客户端的安装包、签名和在线更新发布使用生成项目自己的发布配置，详见[快速开始](quickstart.zh-CN.md)。
+
+命令行名称 `updater` 和 `tray` 仍兼容旧名称 `app-update` 和 `system-tray`；为兼容已有项目，清单内部 ID 和受管理文件名保持不变。

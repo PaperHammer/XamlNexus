@@ -96,7 +96,7 @@ xamlnexus remove sqlite --dry-run
 
 The batch-add example requires a project without either component, such as a basic project. Standard already includes settings. Do not add installed components again. `remove` and `update` handle one component at a time. Updating to the same version does nothing; downgrades are rejected.
 
-Built-in components are `settings`, `editorconfig`, `sqlite`, `system-tray`, and `app-update`. The first three support both architectures; the last two serve pure WinUI, since hybrid already includes those capabilities. `app-update` depends on `settings`. Batch addition handles dependency ordering. See the [product model](../introduction/product-model.md) for boundaries.
+Built-in components are `settings`, `editorconfig`, `sqlite`, `tray`, and `updater`. The first three support both architectures; the last two serve pure WinUI, since hybrid already includes those capabilities. `updater` depends on `settings`. Batch addition handles dependency ordering. See the [product model](../introduction/product-model.md) for boundaries.
 
 You can customize generated source and configuration. Component updates and removal check files and stop on user changes or missing files to protect your work. They do not discard edits or recalculate hashes to bypass checks.
 
@@ -143,3 +143,5 @@ Regular commands return `0` on success, `1` on execution or validation failure, 
 | `xamlnexus upgrade` | Scaffold-managed project infrastructure |
 
 Updating the tool does not modify existing projects. Save or commit edits before project updates, then preview the changes. Client installers, signing, and online-update releases use the generated project's own release configuration; see the [quickstart](quickstart.md).
+
+The command names `updater` and `tray` also accept the legacy aliases `app-update` and `system-tray`. Manifest IDs and managed file names remain unchanged for compatibility.

@@ -11,6 +11,8 @@ public sealed class SettingsRecipe : IXamlNexusRecipe, IXamlNexusRecipeRemovalPl
 
     public XamlNexusRecipePlan CreatePlan(XamlNexusRecipeContext context) {
         string name = context.Manifest.Project.Name;
+        if (context.Manifest.Project.Preset == "winui")
+            SystemTrayRecipe.EnsureCloseBehaviorSupport(context);
         string template = context.Manifest.Project.Preset == "hybrid" ? "Winui3_Wpf_XamlNexus" : "Winui3_XamlNexus";
         string prefix = $"Settings.{context.Manifest.Project.Preset}/";
         var assembly = typeof(SettingsRecipe).Assembly;

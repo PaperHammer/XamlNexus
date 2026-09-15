@@ -1,4 +1,7 @@
 using System;
+using WinUIEx;
+using Microsoft.Extensions.DependencyInjection;
+using Winui3_XamlNexus.Common.Utils.DI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
@@ -34,6 +37,11 @@ namespace Winui3_XamlNexus.UI {
             _navigationMenu.Select("home");
 
             _userSettings = userSettings;
+            this.AppWindow.Closing += (_, _) => {
+                // With tray installed, its close dialog decides whether to hide or exit.
+                if (App.IsShuttingDown || AppServiceLocator.Services.GetService<ISystemTraySettings>() is null)
+                    this.Hide();
+            };
             this.Closed += MainWindow_Closed;
         }
 

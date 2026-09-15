@@ -5,8 +5,8 @@
 The current pure WinUI template does not register an updater or expose update controls by default.
 
 ```powershell
-xamlnexus add app-update --project <project-directory>
-xamlnexus remove app-update --project <project-directory>
+xamlnexus add updater --project <project-directory>
+xamlnexus remove updater --project <project-directory>
 ```
 
 Adding the Recipe installs the HTTPS update source, verified downloader, installer lifecycle,
@@ -19,7 +19,7 @@ own HTTPS manifest; publication and signing remain application-specific work.
 Removal deletes unchanged owned files and disables the settings entry on the next build/run.
 User-edited owned files are protected by the existing Recipe transaction checks. The minimal
 updater contract remains in the core template and the settings presentation remains
-in the settings module. Removing app-update leaves settings installed.
+in the settings module. Removing updater leaves settings installed.
 
 This Recipe supports new pure WinUI projects. Hybrid and the existing Showcase retain their
 built-in updater. Older projects containing a built-in updater require migration first;

@@ -142,13 +142,13 @@
     <value>Language settings</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppLanguageExplain" xml:space="preserve">
-    <value>The interface language changes immediately</value>
+    <value>The interface language changes immediately.</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop" xml:space="preserve">
     <value>UI texture</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdropExplain" xml:space="preserve">
-    <value>The new background texture will take effect the next time you restart</value>
+    <value>The new background texture will take effect the next time you restart.</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop_Acrylic_Hyperlink" xml:space="preserve">
     <value>Acrylic</value>
@@ -160,7 +160,7 @@
     <value>App Theme</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppThemeExplain" xml:space="preserve">
-    <value>Changing the theme requires a restart of the UI</value>
+    <value>Changing the theme requires a restart of the UI.</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppThemeHyperlink" xml:space="preserve">
     <value>Windows Theme Settings</value>
@@ -250,13 +250,13 @@
     <value>Debuger</value>
   </data>
   <data name="Settings_System_Developer_DebugExplain" xml:space="preserve">
-    <value>Displays information about the specific operations when the program is executed</value>
+    <value>Displays information about the specific operations when the program is executed.</value>
   </data>
   <data name="Settings_System_Developer_Log" xml:space="preserve">
     <value>Log</value>
   </data>
   <data name="Settings_System_Developer_LogExplain" xml:space="preserve">
-    <value>Create a log protection report</value>
+    <value>Create a log protection report.</value>
   </data>
   <data name="Settings_System_Text_Debug" xml:space="preserve">
     <value>Open</value>
@@ -289,9 +289,9 @@
   <data name="Settings_General_AppearanceAndAction_AppFileStorage_ModifyTooltip.Content" xml:space="preserve"><value>Modify the directory</value></data>
   <data name="Settings_General_AppearanceAndAction_AppFileStorage_OpenTooltip.Content" xml:space="preserve"><value>Browser the directory</value></data>
   <data name="Settings_General_AppearanceAndAction_AppLanguage.Text" xml:space="preserve"><value>Language settings</value></data>
-  <data name="Settings_General_AppearanceAndAction_AppLanguageExplain.Text" xml:space="preserve"><value>The interface language changes immediately</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppLanguageExplain.Text" xml:space="preserve"><value>The interface language changes immediately.</value></data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop.Text" xml:space="preserve"><value>UI texture</value></data>
-  <data name="Settings_General_AppearanceAndAction_AppSystemBackdropExplain.Text" xml:space="preserve"><value>The new background texture will take effect the next time you restart</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppSystemBackdropExplain.Text" xml:space="preserve"><value>The new background texture will take effect the next time you restart.</value></data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop_Acrylic_Hyperlink.Content" xml:space="preserve"><value>Acrylic</value></data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop_Mica_Hyperlink.Content" xml:space="preserve"><value>Mica</value></data>
   <data name="Settings_General_AppearanceAndAction_AutoStart.Text" xml:space="preserve"><value>Starts automatically when the device is turned on</value></data>
@@ -308,7 +308,7 @@
   <data name="Settings_General_Version_UpdateErr.Title" xml:space="preserve"><value>Update failed, please check the network status.</value></data>
   <data name="Settings_General_Version_UptoNewest.Title" xml:space="preserve"><value>It's the latest version!</value></data>
   <data name="Settings_System_Developer_Log.Text" xml:space="preserve"><value>Log</value></data>
-  <data name="Settings_System_Developer_LogExplain.Text" xml:space="preserve"><value>Create a log protection report</value></data>
+  <data name="Settings_System_Developer_LogExplain.Text" xml:space="preserve"><value>Create a log protection report.</value></data>
   <data name="Settings_System_Text_Developer.Text" xml:space="preserve"><value>Developers</value></data>
   <data name="SidebarHomePage.Text" xml:space="preserve"><value>Home</value></data>
   <data name="Text_Cancel.Content" xml:space="preserve"><value>Cancel</value></data>

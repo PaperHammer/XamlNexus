@@ -8,19 +8,126 @@ using Xunit;
 namespace XamlNexus.TemplateTests;
 
 public sealed class RecipeContractTests {
+    [Theory]
+    [InlineData("sln")]
+    [InlineData("slnx")]
+    public void RootReadmes_AreRegisteredAndRemovedTransactionally(string format) {
+        string root = CreateProjectDirectory();
+        try {
+            string solution = Path.Combine(root, "DocsTest." + format);
+            File.WriteAllText(solution, format == "slnx" ? "<Solution />" : "Global\nEndGlobal\n");
+            var recipe = new TestRecipe(CreateDescriptor(), new XamlNexusRecipePlan {
+                Changes = [XamlNexusRecipeFileChange.CreateText("sample.README.md", "English"),
+                    XamlNexusRecipeFileChange.CreateText("sample.README.zh-CN.md", "中文")],
+            });
+            var context = XamlNexusProjectLocator.Locate(root);
+            XamlNexusRecipeTransaction.PreviewApply(context, recipe);
+            Assert.DoesNotContain("sample.README", File.ReadAllText(solution));
+            XamlNexusRecipeTransaction.Apply(context, recipe);
+            string added = File.ReadAllText(solution);
+            Assert.Contains("Docs", added);
+            Assert.Contains("sample.README.md", added);
+            Assert.Contains("sample.README.zh-CN.md", added);
+            if (format == "slnx") {
+                var folder = Assert.Single(XDocument.Parse(added).Root!.Elements("Folder"));
+                Assert.Equal(2, folder.Elements("File").Count());
+            }
+            XamlNexusRecipeTransaction.Remove(XamlNexusProjectLocator.Locate(root), recipe);
+            Assert.DoesNotContain("sample.README", File.ReadAllText(solution));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void EveryBuiltInRecipe_IncludesBothReadmeLanguages() {
+        string root = CreateProjectDirectory();
+        try {
+            foreach (string relative in new[] { "RecipeTestApp.Common/ISystemTraySettings.cs",
+                "RecipeTestApp.Models/Cores/Settings.cs", "RecipeTestApp.Models/Cores/Interfaces/ISettings.cs" }) {
+                string path = Path.Combine(root, relative);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllText(path, "// WindowCloseBehavior support fixture");
+            }
+            var project = XamlNexusProjectLocator.Locate(root);
+            foreach (var recipe in BuiltInRecipeCatalog.Create().Recipes) {
+                var plan = recipe.CreatePlan(new(root, project.Manifest));
+                var readmes = plan.Changes.Where(change => change.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase)).ToArray();
+                Assert.Contains(readmes, change => change.RelativePath.EndsWith("README.md", StringComparison.Ordinal));
+                Assert.Contains(readmes, change => change.RelativePath.EndsWith("README.zh-CN.md", StringComparison.Ordinal));
+                foreach (var readme in readmes) {
+                    string text = Encoding.UTF8.GetString(readme.Content!);
+                    Assert.DoesNotContain("{{", text);
+                    Assert.Contains("[English]", text);
+                    Assert.Contains("[简体中文]", text);
+                }
+            }
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Theory]
+    [InlineData("sln", false, "CustomPanel")]
+    [InlineData("sln", true, "CustomPanel")]
+    [InlineData("slnx", false, "CustomPanel")]
+    [InlineData("slnx", true, "CustomPanel")]
+    [InlineData("sln", true, "Otherpanel")]
+    [InlineData("slnx", true, "Otherpanel")]
+    public void AddPanel_CreatesOrReusesSolutionFolder(string format, bool existingFolder, string panelName) {
+        string root = CreateProjectDirectory();
+        try {
+            const string folderGuid = "{CCCCCCCC-3333-3333-3333-333333333333}";
+            string solution = "PanelsTest." + format;
+            string initial = format == "slnx"
+                ? "<Solution>" + (existingFolder ? "<Folder Name=\"/Panels/\" />" : "") + "</Solution>"
+                : (existingFolder ? $"Project(\"{{2150E333-8FDC-42A3-9474-1A3956D46DE8}}\") = \"Panels\", \"Panels\", \"{folderGuid}\"\nEndProject\n" : "")
+                    + "Global\n\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\n\t\tDebug|Any CPU = Debug|Any CPU\n\tEndGlobalSection\n"
+                    + "\tGlobalSection(ProjectConfigurationPlatforms) = postSolution\n\tEndGlobalSection\nEndGlobal\n";
+            File.WriteAllText(Path.Combine(root, solution), initial);
+            var recipe = new TestRecipe(CreateDescriptor(), new XamlNexusRecipePlan {
+                Changes = [XamlNexusRecipeFileChange.CreateText(panelName + ".csproj", "<Project />")],
+                ProjectOperations = [new AddProjectToSolutionOperation(solution, panelName + ".csproj")],
+            });
+            XamlNexusRecipeTransaction.Apply(XamlNexusProjectLocator.Locate(root), recipe);
+            string actual = File.ReadAllText(Path.Combine(root, solution));
+            if (format == "slnx") {
+                var folder = Assert.Single(XDocument.Parse(actual).Root!.Elements("Folder"));
+                Assert.Equal("/Panels/", (string?)folder.Attribute("Name"));
+                Assert.Equal(panelName + ".csproj", (string?)Assert.Single(folder.Elements("Project")).Attribute("Path"));
+            }
+            else {
+                var headers = actual.Split('\n').Where(line => line.Contains(" = \"Panels\", ")).ToArray();
+                string header = Assert.Single(headers);
+                string expectedFolder = header.Split(',')[2].Trim().Trim('"');
+                if (existingFolder) Assert.Equal(folderGuid, expectedFolder);
+                string projectGuid = XamlNexusSolutionGuid.CreateDeterministic(panelName + ".csproj").ToString("B").ToUpperInvariant();
+                Assert.Contains($"{projectGuid} = {expectedFolder}", actual);
+                Assert.Contains("GlobalSection(NestedProjects)", actual);
+            }
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
     [Fact]
     public void AppUpdateRecipe_InstallsAndRemovesWithoutEditingHost() {
         string root = CreateProjectDirectory();
         try {
             var recipe = new AppUpdateRecipe();
             var result = XamlNexusRecipeTransaction.Apply(XamlNexusProjectLocator.Locate(root), recipe);
-            Assert.Equal(6, result.ChangedFiles.Count);
+            Assert.Equal(7, result.ChangedFiles.Count);
+            foreach (string name in new[] { "app-update.README.md", "app-update.README.zh-CN.md" }) {
+                string readme = File.ReadAllText(Path.Combine(root, name));
+                Assert.Contains("RecipeTestApp.Common/Consts.cs", readme);
+                Assert.Contains("app-update.README.zh-CN.md", readme);
+                Assert.DoesNotContain("{{", readme);
+            }
             string module = File.ReadAllText(Path.Combine(root, "RecipeTestApp.UI/Modules/AppUpdateModule.cs"));
             Assert.Contains("RecipeTestApp.UI.Modules", module);
             Assert.DoesNotContain("Winui3_XamlNexus", module);
             Assert.False(File.Exists(Path.Combine(root, "RecipeTestApp.UI/App.xaml.cs")));
             XamlNexusRecipeTransaction.Remove(XamlNexusProjectLocator.Locate(root), recipe);
             Assert.False(File.Exists(Path.Combine(root, "RecipeTestApp.UI/Modules/AppUpdateModule.cs")));
+            Assert.False(File.Exists(Path.Combine(root, "app-update.README.md")));
+            Assert.False(File.Exists(Path.Combine(root, "app-update.README.zh-CN.md")));
             Assert.DoesNotContain(XamlNexusProjectLocator.Locate(root).Manifest.Modules, item => item.Id == "app-update");
         }
         finally { Directory.Delete(root, recursive: true); }
@@ -67,7 +174,15 @@ public sealed class RecipeContractTests {
             ? "RecipeTestApp/Modules/SqliteModule.cs"
             : "RecipeTestApp.UI/Modules/SqliteModule.cs";
         Assert.Contains(plan.Changes, change => change.RelativePath == expectedModule);
-        Assert.Equal(preset == "hybrid" ? 13 : 8, plan.Changes.Count);
+        Assert.Equal(preset == "hybrid" ? 14 : 9, plan.Changes.Count);
+        foreach (string name in new[] { "README.md", "README.zh-CN.md" }) {
+            var readme = Assert.Single(plan.Changes, change => change.RelativePath == "RecipeTestApp.Data/" + name);
+            string text = Encoding.UTF8.GetString(readme.Content!);
+            Assert.Contains("RecipeTestApp.Data", text);
+            Assert.Contains(preset == "hybrid" ? "`RecipeTestApp` WPF" : "`RecipeTestApp.UI` WinUI", text);
+            Assert.Contains("README.zh-CN.md", text);
+            Assert.DoesNotContain("{{", text);
+        }
         Assert.Equal(
             preset == "hybrid",
             plan.ProjectOperations.OfType<AddProtobufOperation>().Any());

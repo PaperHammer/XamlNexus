@@ -24,8 +24,8 @@ Basic removes the full settings panel while retaining startup, navigation, MVVM,
 | Theme and localization infrastructure | Included | Included | Settings provides the configuration UI |
 | Full settings panel | Optional | Included | `add settings` |
 | SQLite | Optional | Optional | Both architectures; hybrid frontend accesses host data through RPC |
-| Tray, menus, notifications | Architecture-dependent | Architecture-dependent | Pure WinUI: `add system-tray`; hybrid: built in |
-| App updates | Architecture-dependent | Architecture-dependent | Pure WinUI: `add app-update`, depending on settings; hybrid: built in |
+| Tray, menus, notifications | Architecture-dependent | Architecture-dependent | Pure WinUI: `add tray`; hybrid: built in |
+| App updates | Architecture-dependent | Architecture-dependent | Pure WinUI: `add updater`, depending on settings; hybrid: built in |
 | Logon startup | Core implementation retained | Configurable in settings | No standalone Recipe; registration is not enabled by default |
 | Editor configuration | Optional | Optional | `add editorconfig` |
 | Publishing, installers, signing | Scripts included | Scripts included | Maintainer configuration and execution; separate from development running |
@@ -51,7 +51,7 @@ Source and configuration from both initial generation and `add` belong to the us
 
 Unsafe automatic changes must report conflicts without overwriting user content or requiring hash recalculation to continue development. Capabilities suit components when they have distinct uses, dependencies, or configuration costs and clear installation/removal boundaries. Existing projects support batch add, dependency/conflict checks, previews, updates, removal, and rollback. Creation reuses included capabilities; explicitly adding an already installed module to an existing project reports an error.
 
-App updates still use the settings UI and shared contracts; basic projects automatically receive settings when installing app-update. Themes and localization remain core mechanisms, without standalone Recipes or a generic settings-extension framework. Hybrid SQLite access belongs to the host; ordinary page generation does not create custom business RPCs.
+App updates still use the settings UI and shared contracts; basic projects automatically receive settings when installing updater. Themes and localization remain core mechanisms, without standalone Recipes or a generic settings-extension framework. Hybrid SQLite access belongs to the host; ordinary page generation does not create custom business RPCs.
 
 ## Serialization compatibility
 

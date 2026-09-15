@@ -233,6 +233,24 @@ public sealed class DevelopmentRunnerTests : IDisposable {
         await process.StopAsync();
     }
 
+    [Fact]
+    public async Task ApplicationOutputPreservesUtf8OnBothStreams() {
+        string powershell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WindowsPowerShell/v1.0/powershell.exe");
+        const string script = "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::WriteLine('OS: Microsoft Windows 11 企业版'); [Console]::Error.WriteLine('错误：中文输出'); exit 7";
+        var lines = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        var runtime = new DevelopmentRuntime(lines.Enqueue);
+        using var process = runtime.Start(new(powershell,
+            ["-NoProfile", "-NonInteractive", "-EncodedCommand", Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script))], root));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        try {
+            Assert.Equal(7, await process.WaitForExitAsync(timeout.Token));
+            Assert.Contains("OS: Microsoft Windows 11 企业版", lines);
+            Assert.Contains("错误：中文输出", lines);
+            Assert.Equal(2, lines.Count);
+        }
+        finally { await process.StopAsync(); }
+    }
+
     private sealed class FakeRuntime(string root) : IDevelopmentRuntime {
         public List<string> Events { get; } = [];
         public bool FailBuild { get; init; }

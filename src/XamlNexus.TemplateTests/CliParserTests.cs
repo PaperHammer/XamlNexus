@@ -5,6 +5,45 @@ using Xunit;
 namespace XamlNexus.TemplateTests;
 
 public sealed class CliParserTests {
+    [Theory]
+    [InlineData("add", "updater", "app-update")]
+    [InlineData("remove", "UPDATER", "app-update")]
+    [InlineData("update", "tray", "system-tray")]
+    [InlineData("add", "TRAY", "system-tray")]
+    [InlineData("remove", "system-tray", "system-tray")]
+    [InlineData("update", "app-update", "app-update")]
+    public void Parse_RecipeNames_KeepPersistentIds(string command, string name, string expected) {
+        var result = CliParser.Parse([command, name], WorkingDirectory);
+        Assert.True(result.Success);
+        Assert.Equal(expected, result.Options!.RecipeId);
+        Assert.Equal(expected == "app-update" ? "updater" : "tray", RecipeCommandNames.ToCommandName(expected));
+    }
+
+    [Fact]
+    public void Parse_NewFeatures_NormalizesAliasesBeforeDeduplication() {
+        var result = CliParser.Parse(["new", "App", "--features", "updater,app-update,tray,system-tray"], WorkingDirectory);
+        Assert.True(result.Success);
+        Assert.Equal(new[] { "app-update", "system-tray" }, result.Options!.Features);
+    }
+
+    [Fact]
+    public void Parse_PageName_IsNotARecipeAlias() {
+        var result = CliParser.Parse(["page", "add", "updater"], WorkingDirectory);
+        Assert.True(result.Success);
+        Assert.Equal("updater", result.Options!.PageName);
+    }
+
+    [Theory]
+    [InlineData("app-update,app-update,editorconfig, system-tray")]
+    [InlineData("app-update , app-update , editorconfig , system-tray")]
+    [InlineData("app-update,  app-update,  editorconfig  ,system-tray")]
+    public void Parse_AddAcceptsWhitespaceAroundCommas(string ids) {
+        var result = CliParser.Parse(["add", .. ids.Split(' ', StringSplitOptions.RemoveEmptyEntries), "--dry-run"], Environment.CurrentDirectory);
+        Assert.True(result.Success);
+        Assert.Equal(new[] { "app-update", "app-update", "editorconfig", "system-tray" },
+            result.Options!.RecipeId!.Split(',', StringSplitOptions.TrimEntries));
+        Assert.True(result.Options.DryRun);
+    }
     [Fact]
     public void Parse_UpgradeResolveFrom_AllowsPreview() {
         var result = CliParser.Parse(["upgrade", "--resolve-from", "resolved", "--dry-run"], Environment.CurrentDirectory);

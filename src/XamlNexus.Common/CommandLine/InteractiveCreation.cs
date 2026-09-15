@@ -33,7 +33,7 @@ public static class InteractiveCreation {
                     catalog, generator.GetIncludedModuleIds(config.Profile));
             }
             catch (InvalidOperationException exception) {
-                AnsiConsole.MarkupLine($"[red]{Markup.Escape(exception.Message)}[/]");
+                AnsiConsole.MarkupLine($"[red]{Markup.Escape(LanguageRegistry.GetExceptionMessage(exception))}[/]");
                 AnsiConsole.WriteLine(LanguageRegistry.GetText("Wizard_AdjustSelection"));
                 continue;
             }
@@ -43,7 +43,7 @@ public static class InteractiveCreation {
             table.AddRow(LanguageRegistry.GetText("Wizard_Architecture"), preset);
             table.AddRow(LanguageRegistry.GetText("Wizard_Profile"), config.Profile);
             table.AddRow(LanguageRegistry.GetText("Wizard_CapabilitiesWithDependencies"),
-                resolved.Count == 0 ? LanguageRegistry.GetText("Wizard_None") : Markup.Escape(string.Join(", ", resolved.Select(recipe => recipe.Descriptor.Id))));
+                resolved.Count == 0 ? LanguageRegistry.GetText("Wizard_None") : Markup.Escape(string.Join(", ", resolved.Select(recipe => RecipeCommandNames.ToCommandName(recipe.Descriptor.Id)))));
             AnsiConsole.Write(table);
             return new(config, config.Profile, selected.Select(recipe => recipe.Descriptor.Id).ToArray());
         }
@@ -62,7 +62,7 @@ public static class InteractiveCreation {
             for (int index = 0; index < choices.Count; index++) {
                 var recipe = choices[index].Descriptor;
                 string marker = selected[index] ? "[●]" : "[ ]";
-                string label = $"{(index == cursor ? ">" : " ")} {marker} {recipe.Id} — {recipe.DisplayName}";
+                string label = $"{(index == cursor ? ">" : " ")} {marker} {RecipeCommandNames.ToCommandName(recipe.Id)} — {recipe.DisplayName}";
                 rows.Add(new Text(label, index == cursor ? new Style(Color.Blue) : Style.Plain));
             }
             rows.Add(Text.Empty);

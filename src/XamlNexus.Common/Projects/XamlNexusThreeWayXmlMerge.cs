@@ -8,9 +8,11 @@ public sealed record XamlNexusXmlMergeResult(
     XamlNexusMergeStatus Status,
     byte[]? Content);
 
+/// <summary>按 XML 元素、属性和子节点顺序执行三方合并，不执行 MSBuild 或 XAML 业务校验</summary>
 public static class XamlNexusThreeWayXmlMerge {
     private const int MaximumContentBytes = 1024 * 1024;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
+    // 按此优先级选取第一个存在的属性作为节点身份的一部分，不把所有属性都拼进身份
     private static readonly string[] IdentityAttributes = [
         "Include",
         "Update",
@@ -23,6 +25,13 @@ public static class XamlNexusThreeWayXmlMerge {
         "Label",
     ];
 
+    /// <summary>
+    /// 解析旧基线、本地文件和目标文件，先合并 XML 声明，再递归合并根节点
+    /// 无法安全处理的结构返回 Unsupported，无法确定取舍或顺序时返回 Conflict
+    /// </summary>
+    /// <param name="baseline">旧版本文件的内容快照</param>
+    /// <param name="local">用户当前文件内容</param>
+    /// <param name="target">目标模板文件内容</param>
     public static XamlNexusXmlMergeResult Merge(
         byte[] baseline,
         byte[] local,
@@ -72,6 +81,7 @@ public static class XamlNexusThreeWayXmlMerge {
             Serialize(mergedDocument, DetectNewLine(local), HasUtf8Bom(local)));
     }
 
+    /// <summary>先处理单边改动，再逐项合并属性、叶节点文本或子元素集合</summary>
     private static XamlNexusMergeStatus MergeElement(
         XElement baseline,
         XElement local,
@@ -126,6 +136,7 @@ public static class XamlNexusThreeWayXmlMerge {
         return XamlNexusMergeStatus.Merged;
     }
 
+    /// <summary>遍历三方属性名的并集，分别合并属性值；null 表示属性不存在或被删除</summary>
     private static XamlNexusMergeStatus MergeAttributes(
         XElement baseline,
         XElement local,
@@ -153,6 +164,7 @@ public static class XamlNexusThreeWayXmlMerge {
         return XamlNexusMergeStatus.Merged;
     }
 
+    /// <summary>按节点身份处理新增、删除和递归修改，再单独决定存活节点的排列顺序</summary>
     private static XamlNexusMergeStatus MergeChildren(
         XElement baseline,
         XElement local,
@@ -186,6 +198,7 @@ public static class XamlNexusThreeWayXmlMerge {
             processed.Add(id);
             bool hasBaseline = baselineChildren.TryGetValue(id, out XElement? baselineChild);
             bool hasTarget = targetChildren.TryGetValue(id, out XElement? targetChild);
+            // 新增节点：双方使用相同身份却给出不同内容时冲突，不能同时保留成两个节点
             if (!hasBaseline) {
                 if (hasTarget && !XNode.DeepEquals(localChild, targetChild)) {
                     merged = null;
@@ -194,6 +207,7 @@ public static class XamlNexusThreeWayXmlMerge {
                 result.Add(id, new XElement(localChild));
                 continue;
             }
+            // 目标删除而本地修改了该节点时冲突；本地未改动则接受删除
             if (!hasTarget) {
                 if (!XNode.DeepEquals(localChild, baselineChild)) {
                     merged = null;
@@ -227,6 +241,10 @@ public static class XamlNexusThreeWayXmlMerge {
         return MergeChildOrder(baselineChildren, localChildren, targetChildren, result, out merged);
     }
 
+    /// <summary>
+    /// 合并节点顺序：先确定存活旧节点的顺序，再把新增节点与邻居的先后关系转为有向图
+    /// 对图进行拓扑排序；若存在环，则插入位置或重排要求互相矛盾，返回冲突
+    /// </summary>
     private static XamlNexusMergeStatus MergeChildOrder(
         IReadOnlyDictionary<string, XElement> baseline,
         IReadOnlyDictionary<string, XElement> local,
@@ -237,6 +255,7 @@ public static class XamlNexusThreeWayXmlMerge {
         string[] baselineOrder = baseline.Keys.Where(children.ContainsKey).ToArray();
         string[] localOrder = local.Keys.Where(id => children.ContainsKey(id) && baseline.ContainsKey(id)).ToArray();
         string[] targetOrder = target.Keys.Where(id => children.ContainsKey(id) && baseline.ContainsKey(id)).ToArray();
+        // 排除新增和已删除节点后再比较，避免将单纯插入误判为旧节点重排
         bool localReordered = !localOrder.SequenceEqual(baselineOrder);
         bool targetReordered = !targetOrder.SequenceEqual(baselineOrder);
         if (localReordered && targetReordered && !localOrder.SequenceEqual(targetOrder))
@@ -247,6 +266,7 @@ public static class XamlNexusThreeWayXmlMerge {
         string[] order = localReordered ? localOrder : targetOrder;
         var edges = children.Keys.ToDictionary(id => id, _ => new HashSet<string>(StringComparer.Ordinal));
         var incoming = children.Keys.ToDictionary(id => id, _ => 0);
+        // 边 before -> after 表示 before 必须先出现，incoming 保存每个节点剩余的前置约束数
         void AddEdge(string before, string after) {
             if (edges[before].Add(after)) incoming[after]++;
         }
@@ -266,6 +286,7 @@ public static class XamlNexusThreeWayXmlMerge {
 
         // Stable tie-breaking keeps independent local/target additions deterministic.
         var priority = children.Keys.Select((id, index) => (id, index)).ToDictionary(item => item.id, item => item.index);
+        // 入度为 0 的节点可输出；多个节点同时就绪时用固定优先级，保证结果可重复
         var ready = new PriorityQueue<string, int>();
         foreach (string id in children.Keys)
             if (incoming[id] == 0) ready.Enqueue(id, priority[id]);
@@ -280,6 +301,7 @@ public static class XamlNexusThreeWayXmlMerge {
         return XamlNexusMergeStatus.Merged;
     }
 
+    /// <summary>同一身份出现多次且该组发生变化时拒绝匹配，避免用位置序号误认被编辑的节点</summary>
     private static bool HasAmbiguousChildMatches(XElement[] baseline, XElement[] local, XElement[] target) {
         var baselineGroups = baseline.ToLookup(ElementIdentity, StringComparer.Ordinal);
         var localGroups = local.ToLookup(ElementIdentity, StringComparer.Ordinal);
@@ -303,6 +325,7 @@ public static class XamlNexusThreeWayXmlMerge {
     private static IReadOnlyDictionary<string, XElement> IndexChildren(XElement parent) =>
         EnumerateIndexedChildren(parent).ToDictionary(item => item.Id, item => item.Element);
 
+    /// <summary>给同一身份追加出现序号作为字典键；重复组是否安全已由歧义检查负责判断</summary>
     private static IEnumerable<(string Id, XElement Element)> EnumerateIndexedChildren(XElement parent) {
         var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (XElement element in parent.Elements()) {
@@ -313,6 +336,10 @@ public static class XamlNexusThreeWayXmlMerge {
         }
     }
 
+    /// <summary>
+    /// 用元素名和选定属性匹配节点；SLNX 项目特判 Path，其他节点优先采用 Include、Name 等属性
+    /// 普通 XAML Binding 的 Path 是可修改的值，不用它作为节点身份；无标识属性时退回元素名
+    /// </summary>
     private static string ElementIdentity(XElement element) {
         // Path identifies a solution project, but is an editable value on XAML bindings.
         if (element.Name == "Project" && element.Document?.Root?.Name == "Solution"
@@ -327,6 +354,7 @@ public static class XamlNexusThreeWayXmlMerge {
         return element.Name.ToString();
     }
 
+    /// <summary>一方未变就采用另一方，双方结果相同则接受；双方改为不同值时冲突</summary>
     private static XamlNexusMergeStatus MergeScalar(
         string? baseline,
         string? local,
@@ -346,6 +374,7 @@ public static class XamlNexusThreeWayXmlMerge {
 
     private static bool HasUtf8Bom(byte[] content) => content.AsSpan().StartsWith(new byte[] { 0xEF, 0xBB, 0xBF });
 
+    /// <summary>严格按 UTF-8 解析，可去除 BOM；禁止 DTD 和外部实体解析</summary>
     private static bool TryParse(byte[] content, out XDocument? document) {
         document = null;
         if (content.Contains((byte)0)) return false;
@@ -365,6 +394,7 @@ public static class XamlNexusThreeWayXmlMerge {
         }
     }
 
+    /// <summary>拒绝注释、处理指令、CDATA 和元素内的非空混合文本，避免重建 XML 时静默丢失内容</summary>
     private static bool HasUnsupportedNodes(XDocument document) =>
         document.Nodes().Any(node => node is not XElement) ||
         document.Root!.DescendantsAndSelf().Any(element => {
@@ -391,6 +421,7 @@ public static class XamlNexusThreeWayXmlMerge {
 
     private static string? EmptyToNull(string value) => value.Length == 0 ? null : value;
 
+    /// <summary>用两空格重新缩进 XML，并保留本地的换行类型及 UTF-8 BOM 选择，不保持原始排版</summary>
     private static byte[] Serialize(XDocument document, string newLine, bool emitBom) {
         using var output = new MemoryStream();
         using (XmlWriter writer = XmlWriter.Create(output, new XmlWriterSettings {

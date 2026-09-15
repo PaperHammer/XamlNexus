@@ -8,6 +8,7 @@ internal static class ProjectPathSafety {
             try { attributes = File.GetAttributes(path); }
             catch (FileNotFoundException) { continue; }
             catch (DirectoryNotFoundException) { continue; }
+            
             if ((attributes & FileAttributes.ReparsePoint) != 0)
                 throw new IOException($"Linked project files or directories are not supported: {path}");
         }
