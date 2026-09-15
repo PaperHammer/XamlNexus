@@ -3,10 +3,15 @@ name: Validate pull request
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
+
+# Keep only the newest validation run for each PR.
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   check-skip:
