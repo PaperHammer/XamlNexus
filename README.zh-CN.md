@@ -87,7 +87,7 @@ xamlnexus new HybridApp --preset hybrid
 | `updater` | 应用更新；WinUI 可选装且依赖 settings，hybrid 已内置；需要配置更新源 |
 | `editorconfig` | 编辑器格式配置 |
 
-使用 `xamlnexus add settings,sqlite` 一次安装多个组件，已安装的组件会跳过。具体配置请阅读生成项目中各组件的 README。
+使用 `xamlnexus add settings,sqlite` 一次安装多个组件，已安装的组件会跳过。具体配置请阅读生成项目中各组件的 README，文档提供英文和简体中文两个版本。
 
 ## 项目维护
 
