@@ -1,9 +1,8 @@
 name: Release merged pull request
 
 on:
-  pull_request_target:
+  push:
     branches: [main]
-    types: [closed]
 
 permissions:
   contents: write
@@ -15,20 +14,39 @@ concurrency:
 
 jobs:
   check-skip:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read
     outputs:
       skip: ${{ steps.check.outputs.skip }}
+      pr_event: ${{ steps.check.outputs.pr_event }}
     steps:
       - name: Check commit messages for skip marker
         id: check
         uses: actions/github-script@v7
         with:
           script: |
-            // Check the PR tip as well as the merged revision for merge and squash workflows.
-            const pr = context.payload.pull_request;
+            // NuGet OIDC rejects pull_request_target. Resolve the merged PR from the main push.
+            core.setOutput('skip', 'true');
+            const pulls = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
+              ...context.repo, commit_sha: context.sha, per_page: 100
+            });
+            const matches = pulls.filter(pr => pr.merged_at && pr.base.ref === 'main'
+              && pr.base.repo.full_name.toLowerCase() === `${context.repo.owner}/${context.repo.repo}`.toLowerCase()
+              && pr.merge_commit_sha === context.sha);
+            if (matches.length === 0) {
+              core.info('No merged main PR for this commit; skipping release.');
+              return;
+            }
+            if (matches.length !== 1) throw new Error('Ambiguous merged PR for this commit.');
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: matches[0].number });
+            if (!pr.merged || pr.merge_commit_sha !== context.sha || pr.base.ref !== 'main') {
+              throw new Error('Merged PR does not match the pushed revision.');
+            }
+            // The push's previous main revision is the version baseline, not the updated PR base.
+            pr.base.sha = context.payload.before;
+            core.setOutput('pr_event', JSON.stringify({ pull_request: pr }));
             const refs = [...new Set([pr.head.sha, pr.merge_commit_sha])];
             let skip = false;
             for (const ref of refs) {
@@ -43,7 +61,7 @@ jobs:
 
   release:
     needs: check-skip
-    if: github.event.pull_request.merged == true && needs.check-skip.outputs.skip != 'true'
+    if: needs.check-skip.outputs.skip == 'false'
     runs-on: windows-latest
     permissions:
       contents: write
@@ -52,7 +70,7 @@ jobs:
       - name: Check out exact merged revision
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Set up .NET
@@ -65,7 +83,12 @@ jobs:
       - name: Read release metadata
         id: metadata
         shell: pwsh
-        run: ./eng/release/Read-ReleaseMetadata.ps1 -Mode Release
+        env:
+          RELEASE_PR_EVENT: ${{ needs.check-skip.outputs.pr_event }}
+        run: |
+          $eventPath = Join-Path $env:RUNNER_TEMP 'release-pr-event.json'
+          [IO.File]::WriteAllText($eventPath, $env:RELEASE_PR_EVENT)
+          ./eng/release/Read-ReleaseMetadata.ps1 -Mode Release -EventPath $eventPath
 
       - name: Restore
         if: steps.metadata.outputs.should_publish == 'true'
@@ -140,7 +163,7 @@ jobs:
               'release', 'create', $tag,
               '--title', $title,
               '--notes-file', '${{ steps.metadata.outputs.notes_path }}',
-              '--target', '${{ github.event.pull_request.merge_commit_sha }}'
+              '--target', '${{ github.sha }}'
             )
             $arguments += @($packages.FullName)
             if ('${{ steps.metadata.outputs.channel }}' -eq 'preview') {
