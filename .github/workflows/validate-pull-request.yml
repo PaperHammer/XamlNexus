@@ -3,14 +3,14 @@ name: Validate pull request
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
 
-# Metadata edits must not cancel a build for the same PR.
+# Keep only the newest validation run for each PR.
 concurrency:
-  group: pr-validation-${{ github.event.pull_request.number }}-${{ contains(fromJSON('["opened","synchronize","reopened"]'), github.event.action) && 'build' || 'metadata' }}
+  group: pr-validation-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.check.outputs.skip }}
-      full_build: ${{ steps.check.outputs.full_build }}
     steps:
       - name: Check commit message for skip marker
         id: check
@@ -31,7 +30,6 @@ jobs:
             });
             const skip = /\[skip ci\]/i.test(data.commit.message);
             core.setOutput('skip', String(skip));
-            core.setOutput('full_build', String(['opened', 'synchronize', 'reopened'].includes(context.payload.action)));
             core.info(skip ? 'Skipping PR checks: commit contains [skip ci].' : 'PR checks enabled.');
 
   validate:
@@ -45,7 +43,6 @@ jobs:
           fetch-depth: 0
 
       - name: Set up .NET
-        if: needs.check-skip.outputs.full_build == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
@@ -57,20 +54,17 @@ jobs:
         run: ./eng/release/Read-ReleaseMetadata.ps1 -Mode Validate
 
       - name: Restore
-        if: needs.check-skip.outputs.full_build == 'true'
         run: dotnet restore src/XamlNexus.sln
 
       - name: Build
-        if: needs.check-skip.outputs.full_build == 'true'
         run: dotnet build src/XamlNexus.sln -c Release --no-restore -p:UseSharedCompilation=false -p:NuGetAudit=false
 
       - name: Test
-        if: needs.check-skip.outputs.full_build == 'true'
         run: dotnet test src/XamlNexus.sln -c Release --no-build --no-restore -p:NuGetAudit=false
 
   generated-projects:
     needs: check-skip
-    if: needs.check-skip.outputs.skip != 'true' && needs.check-skip.outputs.full_build == 'true'
+    if: needs.check-skip.outputs.skip != 'true'
     runs-on: windows-latest
     timeout-minutes: 45
     strategy:
