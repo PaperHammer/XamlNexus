@@ -25,7 +25,7 @@ The optional GitHub `production` environment can be added later if releases shou
 
 1. Increase `Version`, `AssemblyVersion`, and `PackageVersion` in `src/XamlNexus/XamlNexus.csproj`.
 2. Apply exactly one release label.
-3. Put user-visible changes between the release-note markers in the pull request template.
+3. Write user-visible changes in the PR description. The entire description becomes the GitHub Release body; no special markers are required. Put review-only details in PR comments instead.
 4. Merge the pull request into `main` after validation succeeds.
 
 Stable labels require a stable semantic version such as `1.2.0`. Preview labels require a prerelease version such as `1.3.0-preview.1`.

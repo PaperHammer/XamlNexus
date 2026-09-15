@@ -18,7 +18,8 @@ function Get-ProjectVersion([string]$Revision, [string]$ProjectPath) {
         }
     }
 
-    [xml]$project = $content
+    # git show 会保留文件开头的 BOM；字符串转 XML 前需要移除它。
+    [xml]$project = $content.TrimStart([char]0xFEFF)
     $versionNode = @($project.Project.PropertyGroup.Version) |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
         Select-Object -First 1
@@ -112,15 +113,12 @@ $channel = if ($releaseLabel -eq "release:preview") { "preview" } elseif ($shoul
 $version = Get-ProjectVersion "" ([string]$config.project)
 $parsedVersion = ConvertFrom-SemVer $version
 
-$body = [string]$event.pull_request.body
-$notesMatch = [regex]::Match(
-    $body,
-    '(?s)<!--\s*release-notes:start\s*-->(.*?)<!--\s*release-notes:end\s*-->')
-$releaseNotes = if ($notesMatch.Success) { $notesMatch.Groups[1].Value.Trim() } else { "" }
+# 与 VirtualPaper 一致：整份 PR 描述直接作为 Release 正文，不截取标记区间。
+$releaseNotes = [string]$event.pull_request.body
 
 if ($shouldPublish) {
     if ([string]::IsNullOrWhiteSpace($releaseNotes)) {
-        throw "Publishing pull requests must contain release notes between the release-notes markers."
+        throw "Publishing pull requests must have a non-empty description for the release notes."
     }
     if ($channel -eq "stable" -and -not [string]::IsNullOrEmpty($parsedVersion.Prerelease)) {
         throw "A stable release cannot use prerelease version '$version'."
