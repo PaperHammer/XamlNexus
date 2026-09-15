@@ -9,7 +9,27 @@ permissions:
   contents: read
 
 jobs:
+  check-skip:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Check commit message for skip marker
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCommit({
+              ...context.repo,
+              ref: context.payload.pull_request.head.sha
+            });
+            const skip = /\[skip ci\]/i.test(data.commit.message);
+            core.setOutput('skip', String(skip));
+            core.info(skip ? 'Skipping PR checks: commit contains [skip ci].' : 'PR checks enabled.');
+
   validate:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
     runs-on: windows-latest
     steps:
       - name: Check out pull request
@@ -38,6 +58,8 @@ jobs:
         run: dotnet test src/XamlNexus.sln -c Release --no-build --no-restore -p:NuGetAudit=false
 
   generated-projects:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
     runs-on: windows-latest
     timeout-minutes: 45
     strategy:

@@ -14,9 +14,40 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
+  check-skip:
     if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Check commit messages for skip marker
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Check the PR tip as well as the merged revision for merge and squash workflows.
+            const pr = context.payload.pull_request;
+            const refs = [...new Set([pr.head.sha, pr.merge_commit_sha])];
+            let skip = false;
+            for (const ref of refs) {
+              const { data } = await github.rest.repos.getCommit({ ...context.repo, ref });
+              if (/\[skip ci\]/i.test(data.commit.message)) {
+                skip = true;
+                break;
+              }
+            }
+            core.setOutput('skip', String(skip));
+            core.info(skip ? 'Skipping release: commit contains [skip ci].' : 'Release policy checks enabled.');
+
+  release:
+    needs: check-skip
+    if: github.event.pull_request.merged == true && needs.check-skip.outputs.skip != 'true'
     runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - name: Check out exact merged revision
         uses: actions/checkout@v4
@@ -60,14 +91,21 @@ jobs:
           RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
         run: ./eng/release/Test-ReleasePackage.ps1 -Directory artifacts -PackageId $env:RELEASE_PACKAGE_ID -Version $env:RELEASE_VERSION
 
+      - name: Log in to NuGet with OIDC
+        if: steps.metadata.outputs.should_publish == 'true'
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Publish package to NuGet
         if: steps.metadata.outputs.should_publish == 'true'
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw "Define NUGET_API_KEY in the repository Actions secrets."
+            throw "NuGet OIDC login did not return a temporary API key."
           }
           $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg' |
             Where-Object { $_.Name -notlike '*.snupkg' })

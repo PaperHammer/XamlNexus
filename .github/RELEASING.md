@@ -10,7 +10,13 @@ Create these labels:
 - `release:preview`
 - `release:none`
 
-Add a `NUGET_API_KEY` Actions secret with permission to publish the package named in `.github/release.json`.
+Configure [NuGet Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing):
+
+1. On nuget.org, create a trusted publishing policy for repository owner `PaperHammer`, repository `XamlNexus`, and workflow file `release-merged-pull-request.yml` (filename only).
+2. Leave the environment field empty: the current release job does not bind a GitHub environment. Grant publishing permission for the `XamlNexus` package to the appropriate package owner.
+3. In GitHub Settings > Secrets and variables > Actions, add a repository secret named `NUGET_USER` containing your nuget.org username (profile name, not email address).
+
+The release job requests an OIDC token and uses `NuGet/login@v1` to obtain a temporary API key immediately before uploading. A stored `NUGET_API_KEY` is no longer required. If an environment is added later, update both the job and the NuGet policy to match.
 
 Protect `main` and require:
 
