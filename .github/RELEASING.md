@@ -14,10 +14,10 @@ Create these labels:
 Configure [NuGet Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing):
 
 1. On nuget.org, create a trusted publishing policy for repository owner `PaperHammer`, repository `XamlNexus`, and workflow file `release-merged-pull-request.yml` (filename only).
-2. Leave the environment field empty: the current release job does not bind a GitHub environment. Grant publishing permission for the `XamlNexus` package to the appropriate package owner.
+2. Set the policy environment to `production`, matching the release job's GitHub environment. Grant publishing permission for the `XamlNexus` package to the appropriate package owner.
 3. In GitHub Settings > Secrets and variables > Actions, add a repository secret named `NUGET_USER` containing your nuget.org username (profile name, not email address).
 
-The release job requests an OIDC token and uses `NuGet/login@v1` to obtain a temporary API key immediately before uploading. A stored `NUGET_API_KEY` is no longer required. If an environment is added later, update both the job and the NuGet policy to match.
+The release job requests an OIDC token and uses `NuGet/login@v1` to obtain a temporary API key immediately before uploading. A stored `NUGET_API_KEY` is no longer required. Keep the environment name consistent between the job and the NuGet policy.
 
 Protect `main` and require:
 
@@ -26,7 +26,7 @@ Protect `main` and require:
 - resolved review conversations;
 - no force pushes or branch deletion.
 
-The optional GitHub `production` environment can be added later if releases should require a manual approval. Publishing-labeled PRs publish automatically after merge; PRs without a release label do not publish.
+The release job uses the GitHub `production` environment. Configure its protection rules under Settings > Environments; required reviewers are optional and will pause the job for approval if enabled. Publishing-labeled PRs publish after merge and any required environment approval; PRs without a release label do not publish.
 
 ## Publishing pull requests
 

@@ -63,6 +63,7 @@ jobs:
     needs: check-skip
     if: needs.check-skip.outputs.skip == 'false'
     runs-on: windows-latest
+    environment: production
     permissions:
       contents: write
       id-token: write
