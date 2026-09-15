@@ -9,6 +9,7 @@ Create these labels:
 - `release:stable`
 - `release:preview`
 - `release:none`
+- `release:retry` (supplemental label for retrying an unpublished version)
 
 Configure [NuGet Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing):
 
@@ -29,8 +30,8 @@ The optional GitHub `production` environment can be added later if releases shou
 
 ## Publishing pull requests
 
-1. Increase `Version`, `AssemblyVersion`, and `PackageVersion` in `src/XamlNexus/XamlNexus.csproj`.
-2. Apply `release:stable` or `release:preview`. Multiple release labels are rejected, including combinations with `release:none`.
+1. Set `Version`, `AssemblyVersion`, and `PackageVersion` in `src/XamlNexus/XamlNexus.csproj` for the release. Normally the version must exceed the base branch version. If that version was merged but publishing never completed, add `release:retry` to permit the same version. Downgrades are always rejected. Existing tags block new publishing PRs; only rerunning the release for the same commit may reuse a tag.
+2. Apply exactly one publishing channel: `release:stable` or `release:preview`. The optional `release:retry` label must accompany one of these; it cannot be used alone or with `release:none`.
 3. Write user-visible changes in the PR description. The entire description becomes the GitHub Release body; no special markers are required. Put review-only details in PR comments instead.
 4. Merge the pull request into `main` after validation succeeds.
 

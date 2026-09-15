@@ -110,6 +110,10 @@ if ($releaseLabels.Count -gt 1) {
 # 未选择发布标签时只校验、合并，不发布；其他普通 PR 标签不影响此规则。
 $releaseLabel = if ($releaseLabels.Count -eq 0) { "release:none" } else { $releaseLabels[0] }
 $shouldPublish = $releaseLabel -ne "release:none"
+$retryRequested = @($event.pull_request.labels | ForEach-Object { [string]$_.name }) -contains 'release:retry'
+if ($retryRequested -and -not $shouldPublish) {
+    throw 'release:retry must be combined with release:stable or release:preview.'
+}
 $channel = if ($releaseLabel -eq "release:preview") { "preview" } elseif ($shouldPublish) { "stable" } else { "none" }
 $version = Get-ProjectVersion "" ([string]$config.project)
 $parsedVersion = ConvertFrom-SemVer $version
@@ -129,19 +133,26 @@ if ($shouldPublish) {
     }
 
     $baseVersion = Get-ProjectVersion ([string]$event.pull_request.base.sha) ([string]$config.project)
-    if ((Compare-SemVer $version $baseVersion) -le 0) {
-        throw "Release version '$version' must be greater than base version '$baseVersion'."
+    # 补发标签只放宽版本相等的情况，仍禁止降级和覆盖其他提交的发布标签。
+    $comparison = Compare-SemVer $version $baseVersion
+    if ($comparison -lt 0) {
+        throw "Release version '$version' must not be lower than base version '$baseVersion'."
+    }
+    if ($comparison -eq 0 -and -not $retryRequested) {
+        throw "Release version '$version' must be greater than base version '$baseVersion'. Add release:retry to retry an unpublished version."
     }
 
     $tag = "$($config.tagPrefix)$version"
-    if ($Mode -eq "Release") {
-        $existingTag = & git tag --list $tag
-        if (-not [string]::IsNullOrWhiteSpace(($existingTag -join ""))) {
-            $tagCommit = ((& git rev-list -n 1 $tag) -join "").Trim()
-            $mergeCommit = [string]$event.pull_request.merge_commit_sha
-            if ([string]::IsNullOrWhiteSpace($mergeCommit) -or $tagCommit -ne $mergeCommit) {
-                throw "Tag '$tag' already points to another commit. Refusing to replace it."
-            }
+    # Validate 阶段也检查标签，避免已经发布的版本到合并后才发现冲突。
+    # Release 重跑仅允许复用指向同一合并提交的标签。
+    $existingTag = & git tag --list $tag
+    if ($LASTEXITCODE -ne 0) { throw "Unable to inspect release tag '$tag'." }
+    if (-not [string]::IsNullOrWhiteSpace(($existingTag -join ""))) {
+        $tagCommit = ((& git rev-list -n 1 $tag) -join "").Trim()
+        if ($LASTEXITCODE -ne 0) { throw "Unable to resolve release tag '$tag'." }
+        $mergeCommit = [string]$event.pull_request.merge_commit_sha
+        if ($Mode -ne 'Release' -or [string]::IsNullOrWhiteSpace($mergeCommit) -or $tagCommit -ne $mergeCommit) {
+            throw "Tag '$tag' already exists. Only a release retry for the same commit may reuse it."
         }
     }
 }
