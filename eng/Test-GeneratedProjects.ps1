@@ -63,7 +63,7 @@ function Invoke-Checked([string]$Label, [string[]]$Arguments, [string]$Directory
 
 function Test-Build([string]$Name, [string]$Root, [string]$Stage) {
     $label = "$Name-$Stage"
-    $release = Get-Content -LiteralPath (Join-Path $Root '.github/release.json') -Raw | ConvertFrom-Json
+    $release = Get-Content -LiteralPath (Join-Path $Root 'eng/publishing/release.json') -Raw | ConvertFrom-Json
     $expectedSolution = "$Name.$SolutionFormat"
     if ([string]$release.solution -cne $expectedSolution) {
         throw "$label release configuration points to '$($release.solution)', expected '$expectedSolution'."
