@@ -1,5 +1,7 @@
 namespace XamlNexus.Common.Generators {
     public interface IGenerator {
-        void Generate(ProjectConfig config);
+        IReadOnlyList<string> GetIncludedModuleIds(string profile) => [];
+        bool Generate(ProjectConfig config);
+        bool Generate(ProjectConfig config, bool reportSuccess) => Generate(config);
     }
 }

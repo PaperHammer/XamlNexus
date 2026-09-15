@@ -6,7 +6,7 @@
     xmlns:local="using:Winui3_Wpf_XamlNexus.AppSettingsPanel"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:markup="using:Winui3_Wpf_XamlNexus.UIComponent.ArcMarkupExtension"
+    xmlns:l="using:WinUI3Localizer"
     xmlns:arc="using:Winui3_Wpf_XamlNexus.UIComponent.Templates"
     mc:Ignorable="d">
 
@@ -20,8 +20,8 @@
             SelectionChanged="SelectorBar_SelectionChanged"
             Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}"
             HorizontalAlignment="Stretch">
-            <SelectorBarItem Text="{markup:I18n Key=AppSettings_SelBarItem1_General}" Tag="GeneralView" IsSelected="True"/>
-            <SelectorBarItem Text="{markup:I18n Key=AppSettings_SelBarItem2_System}" Tag="SystemView"/>
+            <SelectorBarItem l:Uids.Uid="AppSettings_SelBarItem1_General"  Tag="GeneralView" IsSelected="True"/>
+            <SelectorBarItem l:Uids.Uid="AppSettings_SelBarItem2_System"  Tag="SystemView"/>
         </SelectorBar>
 
         <Frame x:Name="ContentFrame" Grid.Row="1"/>

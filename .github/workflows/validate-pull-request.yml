@@ -1,0 +1,68 @@
+name: Validate pull request
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Validate release metadata
+        shell: pwsh
+        run: ./eng/release/Read-ReleaseMetadata.ps1 -Mode Validate
+
+      - name: Restore
+        run: dotnet restore src/XamlNexus.sln
+
+      - name: Build
+        run: dotnet build src/XamlNexus.sln -c Release --no-restore -p:UseSharedCompilation=false -p:NuGetAudit=false
+
+      - name: Test
+        run: dotnet test src/XamlNexus.sln -c Release --no-build --no-restore -p:NuGetAudit=false
+
+  generated-projects:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [winui, hybrid]
+        profile: [basic, standard]
+        format: [sln, slnx]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Build generated application before and after composition
+        shell: pwsh
+        run: ./eng/Test-GeneratedProjects.ps1 -Preset ${{ matrix.preset }} -Profile ${{ matrix.profile }} -SolutionFormat ${{ matrix.format }}
+      - name: Upload build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-${{ matrix.preset }}-${{ matrix.profile }}-${{ matrix.format }}
+          include-hidden-files: true
+          path: |
+            .artifacts/generated-build-*/*.log
+            .artifacts/generated-build-*/*.binlog
+            .artifacts/generated-build-*/results.json

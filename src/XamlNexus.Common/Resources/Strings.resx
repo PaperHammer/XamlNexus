@@ -1,0 +1,475 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="SelectFramework" xml:space="preserve">
+    <value>Which basic framework do you want to use?</value>
+  </data>
+  <data name="SlnName" xml:space="preserve">
+    <value>Solution Name</value>
+  </data>
+  <data name="OutputPath" xml:space="preserve">
+    <value>Output Path</value>
+  </data>
+  <data name="Text_Frontend" xml:space="preserve">
+    <value>Frontend</value>
+  </data>
+  <data name="Text_Backend" xml:space="preserve">
+    <value>Backend</value>
+  </data>
+  <data name="Text_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Text_Generating_Module" xml:space="preserve">
+    <value>Generat Modules</value>
+  </data>
+  <data name="Text_Generating" xml:space="preserve">
+    <value>Generating...</value>
+  </data>
+  <data name="Text_Internal_Error" xml:space="preserve">
+    <value>Internal error, try updating or reinstalling</value>
+  </data>
+  <data name="Text_Modules_Generated" xml:space="preserve">
+    <value>All modules generated</value>
+  </data>
+  <data name="Text_Generating_Solution" xml:space="preserve">
+    <value>Generat Solution</value>
+  </data>
+  <data name="Text_Fail_To_Create_Sln" xml:space="preserve">
+    <value>Solution generation failed</value>
+  </data>
+  <data name="Text_Linking" xml:space="preserve">
+    <value>Link module to solution...</value>
+  </data>
+  <data name="Text_Fail_To_Link_Project" xml:space="preserve">
+    <value>Module failed to link to the solution</value>
+  </data>
+  <data name="Text_Soluton_Created" xml:space="preserve">
+    <value>Solution generation completed</value>
+  </data>
+  <data name="Text_Property" xml:space="preserve">
+    <value>Property</value>
+  </data>
+  <data name="Text_Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Text_Project" xml:space="preserve">
+    <value>Project Name</value>
+  </data>
+  <data name="Text_Framework" xml:space="preserve">
+    <value>Basic framework</value>
+  </data>
+  <data name="Text_Format" xml:space="preserve">
+    <value>Sln Type</value>
+  </data>
+  <data name="Text_OutputPath" xml:space="preserve">
+    <value>Output path</value>
+  </data>
+  <data name="Text_Success" xml:space="preserve">
+    <value>Success!</value>
+  </data>
+  <data name="Text_Error" xml:space="preserve">
+    <value>An error occurred: </value>
+  </data>
+  <data name="Text_ProjectNameEmpty" xml:space="preserve">
+    <value>Project name cannot be empty</value>
+  </data>
+  <data name="Text_ProjectNameInvalidChars" xml:space="preserve">
+    <value>Project name can only contain letters, numbers, and underscore</value>
+  </data>
+  <data name="Text_ProjectNameStartChar" xml:space="preserve">
+    <value>Project name must start with a letter or underscore</value>
+  </data>
+  <data name="Text_PathEmpty" xml:space="preserve">
+    <value>Path cannot be empty</value>
+  </data>
+  <data name="Text_PathInvalidChars" xml:space="preserve">
+    <value>Path contains invalid characters</value>
+  </data>
+  <data name="Text_PathNotAbsolute" xml:space="preserve">
+    <value>Please enter a full absolute path</value>
+  </data>
+  <data name="Text_ProjectNameCapitalized" xml:space="preserve">
+    <value>Project name's first letter was automatically capitalized</value>
+  </data>
+  <data name="Text_Notice" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="Wizard_None" xml:space="preserve">
+    <value>--</value>
+  </data>
+  <data name="Wizard_CapabilitiesWithDependencies" xml:space="preserve">
+    <value>Additional capabilities (including dependencies)</value>
+  </data>
+  <data name="Wizard_Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Wizard_Architecture" xml:space="preserve">
+    <value>Architecture</value>
+  </data>
+  <data name="Wizard_OutputDirectory" xml:space="preserve">
+    <value>Output directory</value>
+  </data>
+  <data name="Wizard_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Wizard_Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Wizard_ProjectConfiguration" xml:space="preserve">
+    <value>Project configuration</value>
+  </data>
+  <data name="Wizard_AdjustSelection" xml:space="preserve">
+    <value>Adjust the capability selection.</value>
+  </data>
+  <data name="Wizard_TextInstructions" xml:space="preserve">
+    <value>[grey]Left/Right to move, Home/End to jump, Ctrl+Backspace to delete a word, Enter to confirm[/]</value>
+  </data>
+  <data name="Wizard_SelectionInstructions" xml:space="preserve">
+    <value>[grey]Up/Down to move, Space to select/deselect, Enter to continue; ● means selected; dependencies are included automatically[/]</value>
+  </data>
+  <data name="Wizard_ChooseCapabilities" xml:space="preserve">
+    <value>Choose additional capabilities (optional)</value>
+  </data>
+  <data name="Wizard_BasicProfile" xml:space="preserve">
+    <value>Basic: core services; add the settings interface when needed</value>
+  </data>
+  <data name="Wizard_StandardProfile" xml:space="preserve">
+    <value>Standard: includes the settings interface (default)</value>
+  </data>
+  <data name="Wizard_ChooseProfile" xml:space="preserve">
+    <value>Choose a starting profile</value>
+  </data>
+  <data name="SelectSolutionFormat" xml:space="preserve">
+    <value>Choose solution format (slnx requires .NET SDK 9.0.200+)</value>
+  </data>
+  <data name="Creation_Finishing" xml:space="preserve">
+    <value>Finishing up…</value>
+  </data>
+  <data name="Creation_Run" xml:space="preserve">
+    <value>Run: xamlnexus run --project "{0}"</value>
+  </data>
+  <data name="Creation_ReviewRecipes" xml:space="preserve">
+    <value>Review each installed Recipe's README for required configuration.</value>
+  </data>
+  <data name="Cli_Help" xml:space="preserve">
+    <value>XamlNexus - Windows desktop prototype scaffolding
+
+Quick start:
+  xamlnexus new MyApp
+  cd MyApp
+  xamlnexus run
+  Stop with Ctrl+C before editing or running again.
+  Edit MyApp.MainPanel/MainPage.xaml and ViewModels/MainViewModel.cs.
+  xamlnexus page add Workspace
+  xamlnexus run
+  After stopping: xamlnexus add sqlite, then xamlnexus run.
+
+Usage:
+  xamlnexus                         Start interactive mode
+  xamlnexus new &lt;name&gt; [options]    Create a project
+  xamlnexus page add &lt;name&gt; [--project &lt;directory&gt;] [--no-navigation] [--dry-run] [--json]
+    Add a page; --no-navigation skips navigation registration.
+  xamlnexus run [path] [--project &lt;directory&gt;] [--no-build] [--dry-run] [--json]
+    Build and run Debug/x64 unpackaged; Ctrl+C stops this run.
+    --no-build uses existing output; no watch or hot reload.
+  xamlnexus list [path] [--json]    List project capabilities
+  xamlnexus validate [path] [--json] Validate the manifest and managed files
+  xamlnexus doctor [path] [--json] Diagnose environment and project health
+  xamlnexus upgrade [path] [options] Upgrade scaffold-managed infrastructure
+  xamlnexus recipes [--json]        List built-in Recipes
+  xamlnexus add &lt;recipe[,recipe...]&gt; [options]  Install Recipes transactionally
+  xamlnexus remove &lt;recipe&gt; [options] Remove a Recipe transactionally
+  xamlnexus update &lt;recipe&gt; [options] Update a Recipe transactionally
+  xamlnexus --help                  Show help (aliases: help, -h, -?)
+  xamlnexus --version               Show version
+
+New options:
+  -n, --name &lt;name&gt;                 Project name (or use the positional name)
+  -p, --preset &lt;preset&gt;             winui (default) or hybrid
+  -o, --output &lt;directory&gt;          Parent output directory (default: current directory)
+      --profile &lt;standard|basic&gt;    Starting capability profile (default: standard)
+                                    basic omits the full settings panel; core services remain.
+      --features &lt;ids&gt;               Install comma-separated Recipes during creation
+  -l, --language &lt;language&gt;         Generated application language: zh-CN (default) or en-US
+  -f, --solution-format &lt;format&gt;    sln (default) or slnx
+
+Project command options:
+  -p, --project &lt;path&gt;              Project directory or xamlnexus.json path
+  --dry-run                         Validate and show changes without writing files
+  --json                            Emit machine-readable query or change output
+  --resolve-from &lt;directory&gt;        Apply manually resolved upgrade .merge files
+  --conflict-output &lt;directory&gt;     Export upgrade merge conflicts (writes files)
+
+Examples:
+  xamlnexus new MyApp
+  xamlnexus new MinimalApp --profile basic
+  xamlnexus new DataApp --profile basic --features settings,sqlite
+  xamlnexus run --project MyApp
+  xamlnexus page add Workspace --project MyApp --dry-run
+  xamlnexus new MyApp --preset hybrid --output D:\Projects --language en-US
+  xamlnexus list D:\Projects\MyApp
+  xamlnexus validate --project D:\Projects\MyApp --json
+  xamlnexus doctor --project D:\Projects\MyApp --json
+  xamlnexus upgrade --project D:\Projects\MyApp --dry-run --json
+  xamlnexus upgrade --project D:\Projects\MyApp --conflict-output .\upgrade-conflicts
+  xamlnexus recipes
+  xamlnexus add editorconfig --project D:\Projects\MyApp --dry-run
+  xamlnexus remove editorconfig --project D:\Projects\MyApp
+  xamlnexus update sqlite --project D:\Projects\MyApp
+
+Recipes: settings, sqlite, tray, updater, editorconfig.
+  standard includes settings; hybrid includes tray and updater.
+  updater depends on settings. Already installed Recipes are skipped.
+Guide: https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/quickstart.md
+
+Tip: Use "xn" as an alias in the current terminal session:
+  CMD:        doskey xn=xamlnexus $*
+  PowerShell: Set-Alias xn xamlnexus
+  Then run:   xn -h
+  The alias expires when the session ends.</value>
+  </data>
+  <data name="RecipeError_AlreadyInstalled" xml:space="preserve">
+    <value>Module '{0}' is already installed.</value>
+  </data>
+  <data name="RecipeError_MissingInstallationPlan" xml:space="preserve">
+    <value>Recipe returned no installation plan.</value>
+  </data>
+  <data name="RecipeError_InvalidComposedBatch" xml:space="preserve">
+    <value>The composed batch failed project validation.</value>
+  </data>
+  <data name="RecipeError_BatchProjectMismatch" xml:space="preserve">
+    <value>The batch belongs to another project.</value>
+  </data>
+  <data name="RecipeError_StaleBatchManifest" xml:space="preserve">
+    <value>The project manifest changed after batch planning. Preview the operation again.</value>
+  </data>
+  <data name="RecipeError_DuplicateCatalogId" xml:space="preserve">
+    <value>Recipe catalog contains duplicate id '{0}'.</value>
+  </data>
+  <data name="RecipeError_InvalidRecipeId" xml:space="preserve">
+    <value>Recipe id must use lowercase kebab-case.</value>
+  </data>
+  <data name="RecipeError_InvalidRecipeVersion" xml:space="preserve">
+    <value>Recipe version must be a semantic version such as 1.0.0.</value>
+  </data>
+  <data name="RecipeError_MissingDisplayName" xml:space="preserve">
+    <value>Recipe display name is required.</value>
+  </data>
+  <data name="RecipeError_InvalidSupportedPresets" xml:space="preserve">
+    <value>Supported presets must contain one or more of: winui, hybrid.</value>
+  </data>
+  <data name="RecipeError_DuplicateDependencies" xml:space="preserve">
+    <value>Recipe dependencies must be unique.</value>
+  </data>
+  <data name="RecipeError_DuplicateConflicts" xml:space="preserve">
+    <value>Recipe conflicts must be unique.</value>
+  </data>
+  <data name="RecipeError_SelfDependencyOrConflict" xml:space="preserve">
+    <value>A Recipe cannot depend on or conflict with itself.</value>
+  </data>
+  <data name="RecipeError_DependencyConflictOverlap" xml:space="preserve">
+    <value>A module cannot be both a dependency and a conflict.</value>
+  </data>
+  <data name="RecipeError_UnsupportedPreset" xml:space="preserve">
+    <value>Recipe '{0}' does not support preset '{1}'.</value>
+  </data>
+  <data name="RecipeError_MissingDependencies" xml:space="preserve">
+    <value>Missing dependencies: {0}.</value>
+  </data>
+  <data name="RecipeError_ConflictingModules" xml:space="preserve">
+    <value>Conflicting modules are installed: {0}.</value>
+  </data>
+  <data name="RecipeError_EmptyFileChange" xml:space="preserve">
+    <value>Recipe plan contains an empty file change.</value>
+  </data>
+  <data name="RecipeError_FilePathMustBeRelative" xml:space="preserve">
+    <value>Recipe file paths must be relative to the project root.</value>
+  </data>
+  <data name="RecipeError_FilePathEscapesProject" xml:space="preserve">
+    <value>Recipe path escapes the project: {0}</value>
+  </data>
+  <data name="RecipeError_DirectManifestEditForbidden" xml:space="preserve">
+    <value>Recipes cannot edit xamlnexus.json directly.</value>
+  </data>
+  <data name="RecipeError_DuplicateFileChange" xml:space="preserve">
+    <value>Recipe changes the same path more than once: {0}</value>
+  </data>
+  <data name="RecipeError_FileTargetIsDirectory" xml:space="preserve">
+    <value>Recipe file target is an existing directory: {0}</value>
+  </data>
+  <data name="RecipeError_ParentPathIsFile" xml:space="preserve">
+    <value>A parent path is an existing file: {0}</value>
+  </data>
+  <data name="RecipeError_FileAlreadyExists" xml:space="preserve">
+    <value>Recipe would overwrite an existing file: {0}</value>
+  </data>
+  <data name="RecipeError_MissingCreateContent" xml:space="preserve">
+    <value>Create operation has no content: {0}</value>
+  </data>
+  <data name="RecipeError_ExpectedFileMissing" xml:space="preserve">
+    <value>Recipe expects a file that does not exist: {0}</value>
+  </data>
+  <data name="RecipeError_MissingReplaceContent" xml:space="preserve">
+    <value>Replace operation has no content: {0}</value>
+  </data>
+  <data name="RecipeError_InvalidExpectedHash" xml:space="preserve">
+    <value>A valid expected SHA-256 is required for: {0}</value>
+  </data>
+  <data name="RecipeError_FileHashMismatch" xml:space="preserve">
+    <value>File was modified and does not match the Recipe precondition: {0}</value>
+  </data>
+  <data name="RecipeError_InvalidRelatedModuleId" xml:space="preserve">
+    <value>Invalid {0} module id '{1}'.</value>
+  </data>
+  <data name="RecipeError_EmptyProjectOperation" xml:space="preserve">
+    <value>Recipe plan contains an empty project operation.</value>
+  </data>
+  <data name="RecipeError_UnsupportedProjectOperation" xml:space="preserve">
+    <value>Unsupported project operation: {0}</value>
+  </data>
+  <data name="RecipeError_OverlappingFileAndProjectOperations" xml:space="preserve">
+    <value>A project operation and file operation target the same file: {0}</value>
+  </data>
+  <data name="RecipeError_ProjectOperationTargetMissing" xml:space="preserve">
+    <value>Project operation target does not exist: {0}</value>
+  </data>
+  <data name="RecipeError_UnsupportedProjectFileType" xml:space="preserve">
+    <value>Unsupported project operation file type: {0}</value>
+  </data>
+  <data name="RecipeError_InvalidProjectXml" xml:space="preserve">
+    <value>Invalid MSBuild project XML: {0}</value>
+  </data>
+  <data name="RecipeError_MissingProjectRoot" xml:space="preserve">
+    <value>MSBuild project has no root element.</value>
+  </data>
+  <data name="RecipeError_PackageReferenceAlreadyExists" xml:space="preserve">
+    <value>PackageReference '{0}' already exists.</value>
+  </data>
+  <data name="RecipeError_ReferencedProjectMissing" xml:space="preserve">
+    <value>Referenced project does not exist: {0}</value>
+  </data>
+  <data name="RecipeError_ProjectReferenceAlreadyExists" xml:space="preserve">
+    <value>ProjectReference '{0}' already exists.</value>
+  </data>
+  <data name="RecipeError_ProjectReferenceMissing" xml:space="preserve">
+    <value>ProjectReference '{0}' does not exist.</value>
+  </data>
+  <data name="RecipeError_ProtobufSourceMissing" xml:space="preserve">
+    <value>Protobuf source does not exist: {0}</value>
+  </data>
+  <data name="RecipeError_InvalidProtobufExtension" xml:space="preserve">
+    <value>Protobuf source must be a .proto file: {0}</value>
+  </data>
+  <data name="RecipeError_ProtobufAlreadyIncluded" xml:space="preserve">
+    <value>Protobuf source is already included: {0}</value>
+  </data>
+  <data name="RecipeError_ProtobufReferenceMissing" xml:space="preserve">
+    <value>Protobuf source is not included: {0}</value>
+  </data>
+  <data name="RecipeError_InvalidCsprojOperation" xml:space="preserve">
+    <value>Only reference operations can target a .csproj file.</value>
+  </data>
+  <data name="RecipeError_InvalidSlnxXml" xml:space="preserve">
+    <value>Invalid SLNX XML.</value>
+  </data>
+  <data name="RecipeError_MissingSolutionRoot" xml:space="preserve">
+    <value>SLNX requires a Solution root.</value>
+  </data>
+  <data name="RecipeError_InvalidSlnxOperation" xml:space="preserve">
+    <value>Only solution operations can target a .slnx file.</value>
+  </data>
+  <data name="RecipeError_ProjectNotInSolution" xml:space="preserve">
+    <value>Project is not in the solution: {0}</value>
+  </data>
+  <data name="RecipeError_SolutionProjectMissing" xml:space="preserve">
+    <value>Solution project does not exist: {0}</value>
+  </data>
+  <data name="RecipeError_InvalidSolutionProjectType" xml:space="preserve">
+    <value>Solution project must be a .csproj file.</value>
+  </data>
+  <data name="RecipeError_ProjectAlreadyInSolution" xml:space="preserve">
+    <value>Project is already in the solution: {0}</value>
+  </data>
+  <data name="RecipeError_MissingGlobalSection" xml:space="preserve">
+    <value>Solution file does not contain a Global section.</value>
+  </data>
+  <data name="RecipeError_InvalidSlnOperation" xml:space="preserve">
+    <value>Only solution operations can target a .sln file.</value>
+  </data>
+  <data name="RecipeError_InvalidSolutionProjectPath" xml:space="preserve">
+    <value>Solution project must be a .csproj file: {0}</value>
+  </data>
+  <data name="RecipeError_IncompleteSolutionProject" xml:space="preserve">
+    <value>Solution project entry is incomplete: {0}</value>
+  </data>
+  <data name="RecipeError_OperationPathMustBeRelative" xml:space="preserve">
+    <value>The {0} path must be relative.</value>
+  </data>
+  <data name="RecipeError_OperationPathEscapesProject" xml:space="preserve">
+    <value>The {0} path escapes the project: {1}</value>
+  </data>
+  <data name="RecipeError_MissingConfigurationSections" xml:space="preserve">
+    <value>Solution file is missing configuration sections.</value>
+  </data>
+  <data name="RecipeError_IncompleteConfigurationSection" xml:space="preserve">
+    <value>Solution configuration section is incomplete.</value>
+  </data>
+  <data name="RecipeError_MissingBuildConfigurations" xml:space="preserve">
+    <value>Solution has no build configurations.</value>
+  </data>
+  <data name="RecipeError_InvalidPackageReference" xml:space="preserve">
+    <value>PackageReference requires a valid package id and version.</value>
+  </data>
+  <data name="RecipeError_InvalidMinimumPackageVersion" xml:space="preserve">
+    <value>PackageReference requires a valid package id and numeric minimum version.</value>
+  </data>
+  <data name="RecipeError_ConditionalPackageReference" xml:space="preserve">
+    <value>PackageReference '{0}' in '{1}' is conditional. XamlNexus cannot guarantee the required dependency for every build configuration and will not modify it automatically. Review the conditions and provide an unconditional reference meeting the minimum version before retrying.</value>
+  </data>
+  <data name="RecipeError_UnsupportedPackageVersion" xml:space="preserve">
+    <value>PackageReference '{0}' uses an unsupported version expression '{1}'.</value>
+  </data>
+  <data name="RecipeError_RemovalModuleNotInstalled" xml:space="preserve">
+    <value>Module '{0}' is not installed.</value>
+  </data>
+  <data name="RecipeError_RemovalRequiresRecipeModule" xml:space="preserve">
+    <value>Module '{0}' was not installed by a Recipe and cannot be removed this way.</value>
+  </data>
+  <data name="RecipeError_UpdateModuleNotInstalled" xml:space="preserve">
+    <value>Module '{0}' is not installed.</value>
+  </data>
+  <data name="RecipeError_UpdateRequiresRecipeModule" xml:space="preserve">
+    <value>Module '{0}' was not installed by a Recipe and cannot be updated this way.</value>
+  </data>
+  <data name="RecipeError_AlreadyAtTargetVersion" xml:space="preserve">
+    <value>Recipe '{0}' is already at version {1}.</value>
+  </data>
+  <data name="RecipeError_DowngradeNotSupported" xml:space="preserve">
+    <value>Recipe downgrade from {0} to {1} is not supported.</value>
+  </data>
+  <data name="RecipeError_UpdateUnsupportedPreset" xml:space="preserve">
+    <value>Recipe '{0}' does not support preset '{1}'.</value>
+  </data>
+  <data name="RecipeError_UpdateMissingDependencies" xml:space="preserve">
+    <value>Missing dependencies: {0}.</value>
+  </data>
+  <data name="RecipeError_UpdateConflictingModules" xml:space="preserve">
+    <value>Conflicting modules are installed: {0}.</value>
+  </data>
+  <data name="RecipeError_StaleProjectContext" xml:space="preserve">
+    <value>The project manifest changed after the context was loaded. Reload the project and preview the operation again.</value>
+  </data>
+  <data name="RecipeError_UnsupportedFileChangeKind" xml:space="preserve">
+    <value>Unsupported file change kind: {0}</value>
+  </data>
+  <data name="RecipeError_MissingTrayScaffoldSupport" xml:space="preserve">
+    <value>This WinUI scaffold has no window-close settings support. Regenerate the project with the latest XamlNexus build, or migrate its scaffold before installing settings/system-tray.</value>
+  </data>
+  <data name="RecipeError_TransactionRolledBack" xml:space="preserve"><value>Recipe '{0}' failed. All file changes were rolled back.</value></data>
+  <data name="RecipeError_TransactionRollbackFailed" xml:space="preserve"><value>Recipe '{0}' failed. Rollback encountered {1} additional error(s).</value></data>
+</root>

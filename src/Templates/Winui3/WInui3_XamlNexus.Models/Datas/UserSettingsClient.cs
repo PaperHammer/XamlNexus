@@ -1,5 +1,4 @@
 using Winui3_XamlNexus.Common;
-using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils.Storage;
 using Winui3_XamlNexus.Models.Cores;
 using Winui3_XamlNexus.Models.Cores.Interfaces;
@@ -10,22 +9,18 @@ namespace Winui3_XamlNexus.Models.Datas {
         public ISettings Settings { get; private set; } = new Settings();
 
         public UserSettingsClient() {
-            Task.Run(async () => {
-                var loadTask = LoadAsync<ISettings>();
-
-                await Task.WhenAll(loadTask);
-            }).Wait();
+            Task.Run(() => LoadAsync<ISettings>()).GetAwaiter().GetResult();
         }
 
         public async Task LoadAsync<T>() {
             if (typeof(T) == typeof(ISettings)) {
+                await _saveLock.WaitAsync();
                 try {
-                    Settings = await JsonSaver.LoadAsync<Settings>(_settingsPath, SettingsContext.Default);
+                    Settings = await JsonSaver.LoadOrCreateAsync(_settingsPath, SettingsContext.Default,
+                        () => new Settings());
                 }
-                catch (Exception e) {
-                    ArcLog.GetLogger<UserSettingsClient>().Error(e);
-                    Settings = new Settings();
-                    await SaveAsync<T>();
+                finally {
+                    _saveLock.Release();
                 }
             }
             else {
@@ -35,7 +30,13 @@ namespace Winui3_XamlNexus.Models.Datas {
 
         public async Task SaveAsync<T>() {
             if (typeof(T) == typeof(ISettings)) {
-                await JsonSaver.SaveAsync(_settingsPath, Settings, SettingsContext.Default);
+                await _saveLock.WaitAsync();
+                try {
+                    await JsonSaver.SaveAsync(_settingsPath, Settings, SettingsContext.Default);
+                }
+                finally {
+                    _saveLock.Release();
+                }
             }
             else {
                 throw new InvalidCastException($"ValueType not found: {typeof(T)}");
@@ -60,5 +61,6 @@ namespace Winui3_XamlNexus.Models.Datas {
         #endregion
 
         private readonly string _settingsPath = Consts.CommonPaths.UserSettingsPath;
+        private readonly SemaphoreSlim _saveLock = new(1, 1);
     }
 }

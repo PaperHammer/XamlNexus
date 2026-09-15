@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Core;
-using Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels;
+
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Common.Utils;
@@ -16,6 +16,7 @@ using Winui3_Wpf_XamlNexus.Common.Utils.PInvoke;
 using Winui3_Wpf_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_Wpf_XamlNexus.Grpc.Client;
 using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
+using Winui3_Wpf_XamlNexus.UI.Modules;
 using Winui3_Wpf_XamlNexus.UIComponent.Utils;
 using WinUIEx;
 
@@ -41,6 +42,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
                 }
             }
             catch (AbandonedMutexException e) {
+                _ = e;
 #if DEBUG
                 //unexpected app termination.
                 DebugUtil.Output(e.Message);
@@ -68,7 +70,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             }
             catch (Exception ex) {
                 System.Windows.MessageBox.Show(ex.Message, "AppData directory creation failed, exiting..", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                ShutDown();
+                Application.Current.Exit();
                 return;
             }
             #endregion
@@ -81,6 +83,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
                 _ = Native.MessageBox(IntPtr.Zero, "Winui3_Wpf_XamlNexus core is not running, run \"Winui3_Wpf_XamlNexus.exe\" first before opening UI.", "Winui3_Wpf_XamlNexus", 16);
                 //Sad dev noises.. this.Exit() does not work without Window: https://github.com/microsoft/microsoft-ui-xaml/issues/5931
                 Process.GetCurrentProcess().Kill();
+                return;
             }
 
             ArcLog.GetLogger<App>().Info("Starting UI...");
@@ -94,6 +97,11 @@ namespace Winui3_Wpf_XamlNexus.UI {
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args) {
+            if (_userSettings is null) {
+                Application.Current.Exit();
+                return;
+            }
+
             CrossThreadInvoker.Initialize(new UiSynchronizationContext());
 
             // ref: https://github.com/microsoft/WindowsAppSDK/issues/1687
@@ -107,24 +115,22 @@ namespace Winui3_Wpf_XamlNexus.UI {
                 await LanguageUtil.InitializeLocalizerForUnpackaged(_userSettings.Settings.Language);
             }
 
+            await _moduleCatalog.InitializeAsync(AppServiceLocator.Services);
+
             var m_window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
             m_window.Show();
         }
 
         private ServiceProvider ConfigureServices() {
-            var provider = new ServiceCollection()
+            var services = new ServiceCollection()
                 .AddSingleton<MainWindow>()
 
                 .AddSingleton<IUserSettingsClient, UserSettingsClient>()
                 .AddSingleton<ICommandsClient, CommandsClient>()
-                .AddSingleton<IAppUpdaterClient, AppUpdaterClient>()
+                .AddSingleton<IAppUpdaterClient, AppUpdaterClient>();
 
-                .AddSingleton<GeneralSettingViewModel>()
-                .AddSingleton<SystemSettingViewModel>()
-
-                .BuildServiceProvider();
-
-            return provider;
+            _moduleCatalog.ConfigureServices(services);
+            return services.BuildServiceProvider();
         }
 
         private static void LogUnhandledException(Exception exception) => ArcLog.GetLogger<App>().Error(exception);
@@ -153,7 +159,8 @@ namespace Winui3_Wpf_XamlNexus.UI {
             Application.Current.Exit();
         }
 
-        private readonly IUserSettingsClient _userSettings;
+        private readonly IUserSettingsClient? _userSettings;
+        private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();
         private readonly Mutex _mutex = new(false, Consts.CoreField.UniqueAppUIUid);
     }
 }

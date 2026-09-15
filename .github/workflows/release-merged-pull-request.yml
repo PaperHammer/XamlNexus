@@ -1,0 +1,113 @@
+name: Release merged pull request
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production-release
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: windows-latest
+    steps:
+      - name: Check out exact merged revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Read release metadata
+        id: metadata
+        shell: pwsh
+        run: ./eng/release/Read-ReleaseMetadata.ps1 -Mode Release
+
+      - name: Restore
+        if: steps.metadata.outputs.should_publish == 'true'
+        run: dotnet restore ${{ steps.metadata.outputs.solution }}
+
+      - name: Build
+        if: steps.metadata.outputs.should_publish == 'true'
+        run: dotnet build ${{ steps.metadata.outputs.solution }} -c Release --no-restore -p:UseSharedCompilation=false -p:NuGetAudit=false
+
+      - name: Test
+        if: steps.metadata.outputs.should_publish == 'true'
+        run: dotnet test ${{ steps.metadata.outputs.solution }} -c Release --no-build --no-restore -p:NuGetAudit=false
+
+      - name: Pack .NET tool
+        if: steps.metadata.outputs.should_publish == 'true'
+        run: dotnet pack ${{ steps.metadata.outputs.project }} -c Release --no-build --no-restore -o artifacts -p:ContinuousIntegrationBuild=true
+
+      - name: Validate release package
+        if: steps.metadata.outputs.should_publish == 'true'
+        shell: pwsh
+        env:
+          RELEASE_PACKAGE_ID: ${{ steps.metadata.outputs.package_id }}
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+        run: ./eng/release/Test-ReleasePackage.ps1 -Directory artifacts -PackageId $env:RELEASE_PACKAGE_ID -Version $env:RELEASE_VERSION
+
+      - name: Publish package to NuGet
+        if: steps.metadata.outputs.should_publish == 'true'
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            throw "Define NUGET_API_KEY in the repository Actions secrets."
+          }
+          $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg' |
+            Where-Object { $_.Name -notlike '*.snupkg' })
+          if ($packages.Count -ne 1) {
+            throw "Expected exactly one NuGet package, found $($packages.Count)."
+          }
+          $package = $packages[0]
+          dotnet nuget push $package.FullName `
+            --api-key $env:NUGET_API_KEY `
+            --source https://api.nuget.org/v3/index.json `
+            --skip-duplicate
+
+      - name: Create GitHub release
+        if: steps.metadata.outputs.should_publish == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg')
+          if ($packages.Count -eq 0) { throw "No release packages were produced." }
+          $tag = '${{ steps.metadata.outputs.tag }}'
+          $title = 'XamlNexus ${{ steps.metadata.outputs.version }}'
+          & gh release view $tag 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            & gh release upload $tag @($packages.FullName) --clobber
+            if ($LASTEXITCODE -ne 0) { throw "GitHub Release asset upload failed." }
+            & gh release edit $tag --title $title --notes-file '${{ steps.metadata.outputs.notes_path }}'
+            if ($LASTEXITCODE -ne 0) { throw "GitHub Release update failed." }
+          }
+          else {
+            $arguments = @(
+              'release', 'create', $tag,
+              '--title', $title,
+              '--notes-file', '${{ steps.metadata.outputs.notes_path }}',
+              '--target', '${{ github.event.pull_request.merge_commit_sha }}'
+            )
+            $arguments += @($packages.FullName)
+            if ('${{ steps.metadata.outputs.channel }}' -eq 'preview') {
+              $arguments += '--prerelease'
+            }
+            & gh @arguments
+            if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed." }
+          }

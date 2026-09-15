@@ -61,10 +61,6 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
         protected virtual void Dispose(bool disposing) {
             if (_disposed) return;
 
-            if (disposing) {
-                _client = null;
-            }
-
             _disposed = true;
         }
 
@@ -74,7 +70,6 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
         }
         #endregion
 
-        private readonly string _settingsPath = Consts.CommonPaths.UserSettingsPath;
-        private Grpc_UserSettingsService.Grpc_UserSettingsServiceClient _client;
+        private readonly Grpc_UserSettingsService.Grpc_UserSettingsServiceClient _client;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SqliteShowcase.UI (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "SqliteShowcase.UI (Package)": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

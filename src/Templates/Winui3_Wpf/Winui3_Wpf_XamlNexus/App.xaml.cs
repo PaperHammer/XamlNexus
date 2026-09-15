@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 using GrpcDotNetNamedPipes;
@@ -11,13 +12,14 @@ using Winui3_Wpf_XamlNexus.Common.Events;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Common.Utils;
 using Winui3_Wpf_XamlNexus.Common.Utils.Files;
+using Winui3_Wpf_XamlNexus.Common.Updates;
 using Winui3_Wpf_XamlNexus.Core;
 using Winui3_Wpf_XamlNexus.Core.AppUpdate;
 using Winui3_Wpf_XamlNexus.Core.Monitor;
-using Winui3_Wpf_XamlNexus.Core.TrayControl;
 using Winui3_Wpf_XamlNexus.GrpcServers;
 using Winui3_Wpf_XamlNexus.Lang;
 using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
+using Winui3_Wpf_XamlNexus.Modules;
 using Winui3_Wpf_XamlNexus.Services;
 using Winui3_Wpf_XamlNexus.Services.Interfaces;
 using Winui3_Wpf_XamlNexus.Utils;
@@ -38,7 +40,7 @@ public partial class App : Application {
 
     public static IServiceProvider Services {
         get {
-            IServiceProvider serviceProvider = ((App)Current)._serviceProvider;
+            IServiceProvider? serviceProvider = ((App)Current)._serviceProvider;
             return serviceProvider ?? throw new InvalidOperationException("The service provider is not initialized");
         }
     }
@@ -48,12 +50,17 @@ public partial class App : Application {
         try {
             // 保证全局只有一个实例
             if (!_mutex.WaitOne(TimeSpan.FromSeconds(1), false)) {
+                if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
+                    Console.Error.WriteLine("The background host is already running. Exit it before starting a development run.");
+                    Environment.Exit(1);
+                }
                 MessageBox.Show("已存在正在运行的程序，请检查托盘或任务管理器\nThere are already running programs, check the tray or Task Manager", "Winui3_Wpf_XamlNexus", MessageBoxButton.OK, MessageBoxImage.Information);
                 ShutDown();
                 return;
             }
         }
         catch (AbandonedMutexException e) {
+            _ = e;
 #if DEBUG
             //unexpected app termination.
             Debug.WriteLine(e.Message);
@@ -86,11 +93,15 @@ public partial class App : Application {
         }
         #endregion
 
+        ReportUpdateStartup();
+
         #region 初始化核心组件
         // 依赖注入
         _serviceProvider = ConfigureServices();
+        // 模块必须在 gRPC 服务开放前完成初始化（例如数据库迁移）。
+        _moduleCatalog.InitializeAsync(_serviceProvider).GetAwaiter().GetResult();
         // 将方法绑定到 Grpc 服务上
-        _grpcServer = ConfigureGrpcServer();
+        _grpcServer = ConfigureGrpcServer(_serviceProvider);
         #endregion
 
         #region 用户配置
@@ -109,9 +120,18 @@ public partial class App : Application {
         try {
             // 启动托盘（后台）服务
             Services.GetRequiredService<MainWindow>().Show();
+            var appUpdater = Services.GetRequiredService<IAppUpdaterService>();
+            appUpdater.UpdateChecked += AppUpdateChecked;
+            appUpdater.InstallerLaunched += AppUpdater_InstallerLaunched;
+            appUpdater.Start();
         }
         catch (Exception ex) {
             ArcLog.GetLogger<App>().Error(ex);
+            if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
+                Console.Error.WriteLine($"Could not initialize the background host: {ex}");
+                ShutDown();
+                Environment.Exit(1);
+            }
             MessageBox.Show("Cores runtime Error, please restart or reinstall.\n" + ex.Message);
             return;
         }
@@ -119,12 +139,17 @@ public partial class App : Application {
 
         try {
             //first run Setup-Wizard show..
-            if (UserSettings.Settings.IsFirstRun) {
+            if (UserSettings.Settings.IsFirstRun || Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
                 Services.GetRequiredService<IUIRunnerService>().ShowUI();
             }
         }
         catch (Exception ex) {
             ArcLog.GetLogger<App>().Error(ex);
+            if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
+                Console.Error.WriteLine($"Could not start the UI: {ex}");
+                ShutDown();
+                Environment.Exit(1);
+            }
             MessageBox.Show("Cores runtime Error, please restart or reinstall.\n" + ex.Message);
             return;
         }
@@ -154,7 +179,7 @@ public partial class App : Application {
     }
 
     private ServiceProvider ConfigureServices() {
-        var provider = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddSingleton<IContentDialogService, ContentDialogService>()
             .AddSingleton<IMonitorManager, MonitorManager>()
             .AddSingleton<JobService>()
@@ -166,20 +191,19 @@ public partial class App : Application {
             .AddSingleton<UserSettingServer>()
             .AddSingleton<AppUpdateServer>()
             .AddSingleton<CommandsServer>()
-            .AddSingleton<MainWindow>()
-            .AddTransient<TrayCommand>()
+            .AddSingleton<MainWindow>();
 
-            .BuildServiceProvider();
-
-        return provider;
+        _moduleCatalog.ConfigureServices(services);
+        return services.BuildServiceProvider();
     }
 
-    private NamedPipeServer ConfigureGrpcServer() {
+    private NamedPipeServer ConfigureGrpcServer(IServiceProvider serviceProvider) {
         var server = new NamedPipeServer(Consts.CoreField.GrpcPipeServerName);
 
-        Grpc_UserSettingsService.BindService(server.ServiceBinder, _serviceProvider.GetRequiredService<UserSettingServer>());
-        Grpc_UpdateService.BindService(server.ServiceBinder, _serviceProvider.GetRequiredService<AppUpdateServer>());
-        Grpc_CommandsService.BindService(server.ServiceBinder, _serviceProvider.GetRequiredService<CommandsServer>());
+        Grpc_UserSettingsService.BindService(server.ServiceBinder, serviceProvider.GetRequiredService<UserSettingServer>());
+        Grpc_UpdateService.BindService(server.ServiceBinder, serviceProvider.GetRequiredService<AppUpdateServer>());
+        Grpc_CommandsService.BindService(server.ServiceBinder, serviceProvider.GetRequiredService<CommandsServer>());
+        _moduleCatalog.BindGrpcServices(server.ServiceBinder, serviceProvider);
         server.Start();
 
         return server;
@@ -187,6 +211,23 @@ public partial class App : Application {
 
     private static void LogUnhandledException(Exception exception, string source)
         => ArcLog.GetLogger<App>().Error(source, exception);
+
+    private static void ReportUpdateStartup() {
+        var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
+        var result = AppUpdateLifecycle.CompleteStartup(
+            Path.Combine(Consts.CommonPaths.CommonDataDir, "updates"),
+            currentVersion,
+            Path.Combine(Consts.CommonPaths.TempDir, "updates"));
+        if (result.Status == AppUpdateStartupStatus.Updated) {
+            ArcLog.GetLogger<App>().Info($"Application update to {currentVersion} completed successfully.");
+        }
+        else if (result.Status == AppUpdateStartupStatus.Pending) {
+            ArcLog.GetLogger<App>().Warn($"The installer for update {result.TargetVersion} did not update the application.");
+        }
+        else if (result.Status == AppUpdateStartupStatus.InvalidState) {
+            ArcLog.GetLogger<App>().Warn("An invalid or stale pending-update state was removed.");
+        }
+    }
 
     private void SetupUnhandledExceptionLogging() {
         // 当.NET应用程序域中的任何线程抛出了未捕获的异常时，会触发此事件。
@@ -228,6 +269,8 @@ public partial class App : Application {
     }
 
     public static void AppUpdateDialog(AppUpdaterEventArgs e) {
+        if (e.UpdateUri is null || e.UpdateSHAUri is null) return;
+
         _updateNotify = false;
         var windowService = Services.GetRequiredService<IWindowService>();
         var info = new AppUpdateInfo(e.UpdateUri, e.UpdateSHAUri, e.UpdateVersion.ToString(), e.ChangeLog);
@@ -237,7 +280,7 @@ public partial class App : Application {
 
     private static int _updateNotifyAmt = 1;
     private static bool _updateNotify = false;
-    private void AppUpdateChecked(object sender, AppUpdaterEventArgs e) {
+    private void AppUpdateChecked(object? sender, AppUpdaterEventArgs e) {
         _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new ThreadStart(delegate {
             if (e.UpdateStatus == AppUpdateStatus.Available) {
                 if (_updateNotifyAmt > 0) {
@@ -255,6 +298,10 @@ public partial class App : Application {
             }
             ArcLog.GetLogger<App>().Info($"AppUpdate status: {e.UpdateStatus}");
         }));
+    }
+
+    private static void AppUpdater_InstallerLaunched(object? sender, EventArgs e) {
+        _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(ShutDown));
     }
 
     public static void ShutDown() {
@@ -277,9 +324,10 @@ public partial class App : Application {
         Application.Current.Dispatcher.Invoke(Application.Current.Shutdown);
     }
 
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider? _serviceProvider;
+    private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();
     private readonly Mutex _mutex = new(false, Consts.CoreField.UniqueAppUid);
-    private readonly NamedPipeServer _grpcServer;
+    private readonly NamedPipeServer? _grpcServer;
     private static readonly CancellationTokenSource _ctsPlayback = new();
 }
 

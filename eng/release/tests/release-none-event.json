@@ -1,0 +1,13 @@
+{
+  "pull_request": {
+    "base": {
+      "sha": "unused-for-release-none"
+    },
+    "body": "",
+    "labels": [
+      {
+        "name": "release:none"
+      }
+    ]
+  }
+}

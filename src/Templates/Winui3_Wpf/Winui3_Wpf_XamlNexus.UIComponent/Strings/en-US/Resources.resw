@@ -130,7 +130,7 @@
     <value>Storage path</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppFileStorageExplain" xml:space="preserve">
-    <value>Modifying a directory will copy all the content to the new directory</value>
+    <value>Copy to an empty folder and keep originals. SQLite databases stay in place.</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppFileStorage_ModifyTooltip" xml:space="preserve">
     <value>Modify the directory</value>
@@ -142,13 +142,13 @@
     <value>Language settings</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppLanguageExplain" xml:space="preserve">
-    <value>The new language will take effect the next time it starts</value>
+    <value>The interface language changes immediately.</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop" xml:space="preserve">
     <value>UI texture</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdropExplain" xml:space="preserve">
-    <value>The new background texture will take effect the next time you restart</value>
+    <value>The new background texture will take effect the next time you restart.</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop_Acrylic_Hyperlink" xml:space="preserve">
     <value>Acrylic</value>
@@ -160,7 +160,7 @@
     <value>App Theme</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppThemeExplain" xml:space="preserve">
-    <value>Changing the theme requires a restart of the UI</value>
+    <value>Changing the theme requires a restart of the UI.</value>
   </data>
   <data name="Settings_General_AppearanceAndAction_AppThemeHyperlink" xml:space="preserve">
     <value>Windows Theme Settings</value>
@@ -250,13 +250,13 @@
     <value>Debuger</value>
   </data>
   <data name="Settings_System_Developer_DebugExplain" xml:space="preserve">
-    <value>Displays information about the specific operations when the program is executed</value>
+    <value>Displays information about the specific operations when the program is executed.</value>
   </data>
   <data name="Settings_System_Developer_Log" xml:space="preserve">
     <value>Log</value>
   </data>
   <data name="Settings_System_Developer_LogExplain" xml:space="preserve">
-    <value>Create a log protection report</value>
+    <value>Create a log protection report.</value>
   </data>
   <data name="Settings_System_Text_Debug" xml:space="preserve">
     <value>Open</value>
@@ -282,4 +282,37 @@
   <data name="Text_Welcome" xml:space="preserve">
     <value>Welcome</value>
   </data>
+  <data name="AppSettings_SelBarItem1_General.Text" xml:space="preserve"><value>General</value></data>
+  <data name="AppSettings_SelBarItem2_System.Text" xml:space="preserve"><value>System</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppFileStorage.Text" xml:space="preserve"><value>Storage path</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppFileStorageExplain.Text" xml:space="preserve"><value>Copy to an empty folder and keep originals. SQLite databases stay in place.</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppFileStorage_ModifyTooltip.Content" xml:space="preserve"><value>Modify the directory</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppFileStorage_OpenTooltip.Content" xml:space="preserve"><value>Browser the directory</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppLanguage.Text" xml:space="preserve"><value>Language settings</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppLanguageExplain.Text" xml:space="preserve"><value>The interface language changes immediately.</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop.Text" xml:space="preserve"><value>UI texture</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppSystemBackdropExplain.Text" xml:space="preserve"><value>The new background texture will take effect the next time you restart.</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop_Acrylic_Hyperlink.Content" xml:space="preserve"><value>Acrylic</value></data>
+  <data name="Settings_General_AppearanceAndAction_AppSystemBackdrop_Mica_Hyperlink.Content" xml:space="preserve"><value>Mica</value></data>
+  <data name="Settings_General_AppearanceAndAction_AutoStart.Text" xml:space="preserve"><value>Starts automatically when the device is turned on</value></data>
+  <data name="Settings_General_Text_AppearanceAndAction.Text" xml:space="preserve"><value>Appearance &amp; Behavior</value></data>
+  <data name="Settings_General_Text_Version.Text" xml:space="preserve"><value>Version</value></data>
+  <data name="Settings_General_Version_DownloadCancel.Content" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Settings_General_Version_DownloadFailedTitle.Message" xml:space="preserve"><value>Unable to download the update. Please check your internet connection and try again.</value></data>
+  <data name="Settings_General_Version_DownloadFailedTitle.Title" xml:space="preserve"><value>Download Failed</value></data>
+  <data name="Settings_General_Version_DownloadStart.Content" xml:space="preserve"><value>Download</value></data>
+  <data name="Settings_General_Version_DownloadingTitle.Title" xml:space="preserve"><value>Downloading…</value></data>
+  <data name="Settings_General_Version_FindNew.Title" xml:space="preserve"><value>Find the new version</value></data>
+  <data name="Settings_General_Version_SeeNews.Content" xml:space="preserve"><value>See what's new</value></data>
+  <data name="Settings_General_Version_UpdateCheck.Content" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="Settings_General_Version_UpdateErr.Title" xml:space="preserve"><value>Update failed, please check the network status.</value></data>
+  <data name="Settings_General_Version_UptoNewest.Title" xml:space="preserve"><value>It's the latest version!</value></data>
+  <data name="Settings_System_Developer_Log.Text" xml:space="preserve"><value>Log</value></data>
+  <data name="Settings_System_Developer_LogExplain.Text" xml:space="preserve"><value>Create a log protection report.</value></data>
+  <data name="Settings_System_Text_Developer.Text" xml:space="preserve"><value>Developers</value></data>
+  <data name="SidebarHomePage.Text" xml:space="preserve"><value>Home</value></data>
+  <data name="Text_Cancel.Content" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Text_Save.Content" xml:space="preserve"><value>Save</value></data>
+  <data name="Text_Welcome.Text" xml:space="preserve"><value>Welcome</value></data>
+  <data name="SidebarSettings" xml:space="preserve"><value>Settings</value></data>
 </root>

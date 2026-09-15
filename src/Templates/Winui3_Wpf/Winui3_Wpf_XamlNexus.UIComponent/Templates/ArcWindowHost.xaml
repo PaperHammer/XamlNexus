@@ -59,10 +59,8 @@
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"/>
 
-        <Image x:Name="PART_RootThemeTransitionImage"  
-            Grid.RowSpan="2"  
-            Stretch="Fill"  
-            Opacity="0"
-            Visibility="Collapsed"/>
+
+        <Image x:Name="PART_RootThemeTransitionImage" Grid.RowSpan="2"
+               Stretch="Fill" Opacity="0" Visibility="Collapsed" IsHitTestVisible="False"/>
     </Grid>
 </UserControl>

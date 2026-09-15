@@ -10,10 +10,12 @@ using Winui3_Wpf_XamlNexus.Models.Mvvm;
 namespace Winui3_Wpf_XamlNexus.Core {
     public partial class MonitorManager : ObservableObject, IMonitorManager {
         public event EventHandler? MonitorUpdated;
-        public event EventHandler? MonitorPropertyUpdated;
 
         public ObservableCollection<Models.Cores.Monitor> Monitors { get; } = [];
-        public Models.Cores.Monitor PrimaryMonitor => Monitors.FirstOrDefault(x => x.IsPrimary, null);
+        public Models.Cores.Monitor PrimaryMonitor =>
+            Monitors.FirstOrDefault(x => x.IsPrimary)
+            ?? Monitors.FirstOrDefault()
+            ?? GetMonitorByHMonitor((IntPtr)PRIMARY_MONITOR);
 
         private Rectangle _virtualScreenBounds = Rectangle.Empty;
         public Rectangle VirtualScreenBounds {
@@ -134,7 +136,7 @@ namespace Winui3_Wpf_XamlNexus.Core {
         }
 
         private Models.Cores.Monitor GetMonitorByHMonitor(IntPtr hMonitor) {
-            Models.Cores.Monitor? monitor;
+            Models.Cores.Monitor monitor;
 
             if (!_multiMonitorSupport || hMonitor == (IntPtr)PRIMARY_MONITOR) {
                 // 默认主屏（没有具体 DISPLAYx 名称时）

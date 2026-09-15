@@ -67,6 +67,7 @@ namespace Winui3_Wpf_XamlNexus.Services {
                 catch (Exception e) {
                     ArcLog.GetLogger<UIRunnerService>().Error(e);
                     _processUI = null;
+                    if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) throw;
                     _ = MessageBox.Show(
                         $"{LanguageManager.Instance["UIRunnerService_ExceptionGeneral"]}\nEXCEPTION:\n{e.Message}",
                         LanguageManager.Instance["Common_TextError"],
@@ -131,10 +132,18 @@ namespace Winui3_Wpf_XamlNexus.Services {
         private void Proc_UI_Exited(object? sender, EventArgs e) {
             if (_processUI == null) return;
 
+            int exitCode = _processUI.ExitCode;
+
             _processUI.Exited -= Proc_UI_Exited;
             _processUI.OutputDataReceived -= Proc_OutputDataReceived;
             _processUI.Dispose();
             _processUI = null;
+            if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
+                _ = Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                    App.ShutDown();
+                    Environment.Exit(exitCode);
+                }));
+            }
         }
 
         #region helpers

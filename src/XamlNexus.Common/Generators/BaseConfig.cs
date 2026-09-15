@@ -1,9 +1,9 @@
-using System.Reflection;
 using Spectre.Console;
 using XamlNexus.Common.Utils;
+using XamlNexus.Common.CommandLine;
 
 namespace XamlNexus.Common.Generators {
-    public abstract class BaseConfig : IConfig {
+    public static class BaseConfig {
         public static void ShowLogo(string version) {
             AnsiConsole.Write(new FigletText("XamlNexus").Color(Color.Cyan1));
             AnsiConsole.Write(new Rule($"[grey]v{version}[/]").RightJustified());
@@ -29,21 +29,13 @@ namespace XamlNexus.Common.Generators {
                             _ => type.ToString()
                         })),
 
-                SlnType = AnsiConsole.Prompt(
-                    new SelectionPrompt<SolutionType>()
-                        .Title(LanguageRegistry.GetI18n(LangKeys.SelectSolutionFormat))
-                        .AddChoices(Enum.GetValues<SolutionType>())
-                        .UseConverter(format => format switch {
-                            SolutionType.Sln => $"{LanguageRegistry.GetI18n(LangKeys.Text_Standard_Solution)} (.sln) [.NET 8]".EscapeMarkup(),
-                            //SolutionType.Slnx => $"{LanguageRegistry.GetI18n(LangKeys.Text_Modren_XML_Solution)} (.slnx) [.NET 10 with VS 2026+]".EscapeMarkup(),
-                            _ => format.ToString()
-                        })),
+                SlnType = AnsiConsole.Prompt(new SelectionPrompt<SolutionType>()
+                    .Title(LanguageRegistry.GetI18n("SelectSolutionFormat"))
+                    .AddChoices(SolutionType.Sln, SolutionType.Slnx)),
 
                 SlnName = AnsiConsole.Prompt(
-                    new TextPrompt<string>(LanguageRegistry.GetI18n(LangKeys.ProjectName))
-                        .DefaultValue(ProjectConfig.GetDefaultProjectName())
-                        .PromptStyle("gray")
-                        .Validate(name => {
+                    new WizardTextPrompt(LanguageRegistry.GetI18n(LangKeys.ProjectName),
+                        ProjectConfig.GetDefaultProjectName(), name => {
                             if (string.IsNullOrWhiteSpace(name))
                                 return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_ProjectNameEmpty)}[/]");
 
@@ -57,10 +49,8 @@ namespace XamlNexus.Common.Generators {
                         })),
 
                 OutputPath = AnsiConsole.Prompt(
-                    new TextPrompt<string>(LanguageRegistry.GetI18n(LangKeys.OutputPath))
-                        .DefaultValue(ProjectConfig.GetDefaultOutputPath())
-                        .PromptStyle("gray")
-                        .Validate(path => {
+                    new WizardTextPrompt(LanguageRegistry.GetI18n(LangKeys.OutputPath),
+                        ProjectConfig.GetDefaultOutputPath(), path => {
                             if (string.IsNullOrWhiteSpace(path))
                                 return ValidationResult.Error($"[red]{LanguageRegistry.GetI18n(LangKeys.Text_PathEmpty)}[/]");
 
@@ -82,43 +72,23 @@ namespace XamlNexus.Common.Generators {
             return config;
         }
 
-        public abstract ProjectConfig? ExtraComposeConfig();
     }
 
     public partial class ProjectConfig {
+        public string Profile { get; set; } = "standard";
         public string SlnName { get; set; } = GetDefaultProjectName();
         public string Language { get; set; } = "zh-CN";
         public FrameworkType Framework { get; set; }
         public SolutionType SlnType { get; set; }
-        public bool NeedTray { get; set; }
         public string OutputPath { get; set; } = GetDefaultOutputPath();
-
-        public void Merge(ProjectConfig? extra) {
-            if (extra == null) return;
-
-            var properties = typeof(ProjectConfig).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var prop in properties) {
-                if (!prop.CanWrite) continue;
-
-                var extraValue = prop.GetValue(extra);
-                var defaultValue = GetDefaultValue(prop.PropertyType);
-
-                if (extraValue != null && !extraValue.Equals(defaultValue)) {
-                    prop.SetValue(this, extraValue);
-                }
-            }
-        }
-
-        private static object? GetDefaultValue(Type type) {
-            return type.IsValueType ? Activator.CreateInstance(type) : null;
-        }
 
         public static string GetDefaultProjectName() => "MyXamlNexusApp";
         public static string GetDefaultOutputPath() {
 #if DEBUG
             return Path.Combine(Environment.CurrentDirectory, "debug");
 #else
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+            // 使用专用项目目录，降低生成或清理操作影响用户日常文件的风险。
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "XamlNexus", "Projects");
 #endif
         }
     }

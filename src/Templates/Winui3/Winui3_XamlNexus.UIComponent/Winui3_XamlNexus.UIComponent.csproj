@@ -7,6 +7,8 @@
 		<UseWinUI>true</UseWinUI>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- Windows App SDK generates obsolete formatter-serialization reflection checks in XamlTypeInfo.g.cs. -->
+		<NoWarn>$(NoWarn);SYSLIB0050</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 	  <PRIResource Remove="Strings\en-US\Resources.resw" />
@@ -22,7 +24,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
 		<PackageReference Include="WinUI3Localizer" Version="2.2.0" />
 		<PackageReference Include="WinUIEx" Version="2.4.2" />
 	</ItemGroup>

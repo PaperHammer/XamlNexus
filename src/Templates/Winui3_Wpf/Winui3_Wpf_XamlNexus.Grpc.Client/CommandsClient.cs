@@ -69,14 +69,13 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
                         _uiRecievedCmdTask?.ContinueWith(t => {
                             if (t.Exception != null)
                                 ArcLog.GetLogger<CommandsClient>().Error(t.Exception);
-                        }, TaskContinuationOptions.NotOnFaulted);
+                        }, TaskContinuationOptions.OnlyOnFaulted);
                     }
                     catch (AggregateException ex) { ArcLog.GetLogger<CommandsClient>().Error("Task cancelled during Dispose", ex); }
                     catch (OperationCanceledException) { }
 
                     _ctsUIRecievedCmd?.Dispose();
                     _recieveCmdLock?.Dispose();
-                    _client = null;
                 }
 
                 _isDisposed = true;
@@ -89,7 +88,7 @@ namespace Winui3_Wpf_XamlNexus.Grpc.Client {
         }
         #endregion
 
-        private Grpc_CommandsService.Grpc_CommandsServiceClient _client;
+        private readonly Grpc_CommandsService.Grpc_CommandsServiceClient _client;
         private readonly SemaphoreSlim _recieveCmdLock = new(1, 1);
         private readonly CancellationTokenSource _ctsUIRecievedCmd;
         private readonly Task _uiRecievedCmdTask;

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Both languages belong in the main assembly, not culture-specific satellite assemblies. -->
+    <EmbeddedResource Include="Assets/Readmes/Sqlite/*.md" WithCulture="false" LogicalName="Readmes/Sqlite/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets/Readmes/AppUpdate/*.md" WithCulture="false" LogicalName="Readmes/AppUpdate/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets/Readmes/Tray/*.md" WithCulture="false" LogicalName="Readmes/Tray/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets/Readmes/EditorConfig/*.md" WithCulture="false" LogicalName="Readmes/EditorConfig/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../Templates/Winui3/Winui3_XamlNexus.AppSettingsPanel/**/*" Exclude="../Templates/Winui3/Winui3_XamlNexus.AppSettingsPanel/bin/**;../Templates/Winui3/Winui3_XamlNexus.AppSettingsPanel/obj/**;**/*.user" WithCulture="false">
+      <LogicalName>Settings.winui/panel/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.AppSettingsPanel/**/*" Exclude="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.AppSettingsPanel/bin/**;../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.AppSettingsPanel/obj/**;**/*.user" WithCulture="false">
+      <LogicalName>Settings.hybrid/panel/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="../Templates/Winui3/Winui3_XamlNexus.UI/Modules/SettingsModule.cs" LogicalName="Settings.winui/module/SettingsModule.cs" WithCulture="false" />
+    <EmbeddedResource Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UI/Modules/SettingsModule.cs" LogicalName="Settings.hybrid/module/SettingsModule.cs" WithCulture="false" />
+    <EmbeddedResource Include="Assets/AppUpdate/*.txt" WithCulture="false">
+      <LogicalName>XamlNexus.Recipes.BuiltIn.Assets.AppUpdate.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
+  </ItemGroup>
+</Project>

@@ -12,7 +12,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Winui3_XamlNexus.UIComponent\Winui3_XamlNexus.UIComponent.csproj" />
@@ -23,4 +23,11 @@
 		</Page>
 	</ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Assets\XamlNexus.png">
+      <TargetPath>Winui3_XamlNexus.MainPanel\Assets\XamlNexus.png</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

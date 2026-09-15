@@ -21,6 +21,8 @@ mono_crash.*
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
+!eng/release/
+!eng/release/**
 [Rr]eleases/
 x64/
 x86/
@@ -73,6 +75,7 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+.artifacts/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -414,9 +417,18 @@ FodyWeavers.xsd
 *.cab
 *.msi
 *.msix
+*.msixbundle
+*.msixupload
 *.msm
 *.msp
 
 # XamlNexus
 Plugins/
 Build/
+
+# Local project notes (not version controlled)
+.local-docs/
+.release-notes.md
+
+# Project-local Codex skill (not distributed with this repository)
+/.agents/skills/shuorenhua/

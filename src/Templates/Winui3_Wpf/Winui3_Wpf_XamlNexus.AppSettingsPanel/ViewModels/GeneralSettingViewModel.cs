@@ -13,6 +13,7 @@ using Winui3_Wpf_XamlNexus.Common.Utils.Files;
 using Winui3_Wpf_XamlNexus.Common.Utils.Localization;
 using Winui3_Wpf_XamlNexus.Common.Utils.Storage;
 using Winui3_Wpf_XamlNexus.Common.Utils.ThreadContext;
+using Winui3_Wpf_XamlNexus.Common.Updates;
 using Winui3_Wpf_XamlNexus.Grpc.Client.Interfaces;
 using Winui3_Wpf_XamlNexus.Models.Cores.Interfaces;
 using Winui3_Wpf_XamlNexus.Models.Mvvm;
@@ -85,6 +86,12 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
             set { _downloadProgressText = value; OnPropertyChanged(); }
         }
 
+        private bool _isDownloadProgressIndeterminate = true;
+        public bool IsDownloadProgressIndeterminate {
+            get => _isDownloadProgressIndeterminate;
+            set { _isDownloadProgressIndeterminate = value; OnPropertyChanged(); }
+        }
+
         private bool _isAutoStart;
         public bool IsAutoStart {
             get => _isAutoStart;
@@ -103,12 +110,36 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
         public int SeletedSystemBackdropIndx {
             get => _seletedSystemBackdropIndx;
             set {
-                _seletedSystemBackdropIndx = value;
+                if (_isRefreshingLanguage || !IsBackdropChangeEnabled || value < 0 || value >= SystemBackdrops.Count) return;
                 if (_userSettingsClient.Settings.SystemBackdrop == (AppSystemBackdrop)value) return;
+                _ = ChangeBackdropAsync(value);
+            }
+        }
 
-                _userSettingsClient.Settings.SystemBackdrop = (AppSystemBackdrop)value;
-                UpdateSettingsConfigFile();
-                OnPropertyChanged();
+        private bool _isBackdropChangeEnabled = true;
+        public bool IsBackdropChangeEnabled {
+            get => _isBackdropChangeEnabled;
+            private set { _isBackdropChangeEnabled = value; OnPropertyChanged(); }
+        }
+
+        private async Task ChangeBackdropAsync(int index) {
+            AppSystemBackdrop previous = _userSettingsClient.Settings.SystemBackdrop;
+            IsBackdropChangeEnabled = false;
+            _seletedSystemBackdropIndx = index;
+            _userSettingsClient.Settings.SystemBackdrop = (AppSystemBackdrop)index;
+            try {
+                await Task.Yield();
+                await _userSettingsClient.SaveAsync<ISettings>();
+            }
+            catch (Exception exception) {
+                _userSettingsClient.Settings.SystemBackdrop = previous;
+                _seletedSystemBackdropIndx = (int)previous;
+                OnPropertyChanged(nameof(SeletedSystemBackdropIndx));
+                ArcLog.GetLogger<GeneralSettingViewModel>().Error(exception);
+                GlobalMessageUtil.ShowException(exception);
+            }
+            finally {
+                IsBackdropChangeEnabled = true;
             }
         }
 
@@ -116,15 +147,46 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
         public LanguagesModel SelectedLanguage {
             get => _selectedLanguage;
             set {
-                _selectedLanguage = value;
-                if (_userSettingsClient.Settings.Language == value.Language) return;
+                if (value is null || !IsLanguageChangeEnabled || value.Codes.Length == 0) return;
+                if (value.Codes.Contains(_userSettingsClient.Settings.Language, StringComparer.OrdinalIgnoreCase)) return;
+                _ = ChangeLanguageAsync(value);
+            }
+        }
 
-                if (value.Codes.FirstOrDefault(x => x == _userSettingsClient.Settings.Language) == null) {
-                    _userSettingsClient.Settings.Language = value.Codes[0];
-                    UpdateSettingsConfigFile();
-                    LanguageUtil.LanguageChanged(value.Codes[0]);
-                    OnPropertyChanged();
+        private bool _isLanguageChangeEnabled = true;
+        public bool IsLanguageChangeEnabled {
+            get => _isLanguageChangeEnabled;
+            private set { _isLanguageChangeEnabled = value; OnPropertyChanged(); }
+        }
+
+        private async Task ChangeLanguageAsync(LanguagesModel language) {
+            LanguagesModel previousSelection = _selectedLanguage;
+            string previousLanguage = _userSettingsClient.Settings.Language;
+            IsLanguageChangeEnabled = false;
+            _selectedLanguage = language;
+            _userSettingsClient.Settings.Language = language.Codes[0];
+            OnPropertyChanged(nameof(SelectedLanguage));
+            try {
+                // Let the two-way binding finish before a synchronous save failure can restore its selection.
+                await Task.Yield();
+                await LanguageUtil.SetLanguageAsync(language.Codes[0]);
+                await _userSettingsClient.SaveAsync<ISettings>();
+            }
+            catch (Exception exception) {
+                _selectedLanguage = previousSelection;
+                _userSettingsClient.Settings.Language = previousLanguage;
+                try {
+                    await LanguageUtil.SetLanguageAsync(previousLanguage);
                 }
+                catch (Exception rollbackException) {
+                    ArcLog.GetLogger<GeneralSettingViewModel>().Error("Language rollback failed", rollbackException);
+                }
+                OnPropertyChanged(nameof(SelectedLanguage));
+                ArcLog.GetLogger<GeneralSettingViewModel>().Error("Language settings could not be saved", exception);
+                GlobalMessageUtil.ShowException(exception);
+            }
+            finally {
+                IsLanguageChangeEnabled = true;
             }
         }
 
@@ -154,6 +216,7 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
         public ICommand? OpenFileStorageCommand { get; private set; }
         public ICommand? CheckUpdateCommand { get; private set; }
         public ICommand? StartDownloadComand { get; private set; }
+        public ICommand? CancelDownloadCommand { get; private set; }
 
         public GeneralSettingViewModel(
             IAppUpdaterClient appUpdater,
@@ -165,6 +228,7 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
             InitCollections();
             InitContent();
             InitCommand();
+            LanguageUtil.LanguageUpdated += OnLanguageUpdated;
         }
 
         private void InitCommand() {
@@ -180,10 +244,12 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
             StartDownloadComand = new RelayCommand(async () => {
                 await StartDownloadAsync();
             });
+            CancelDownloadCommand = new RelayCommand(() => _appUpdater.CancelDownload());
         }
 
         private void InitContent() {
             _appUpdater.UpdateChecked += AppUpdater_UpdateChecked;
+            _appUpdater.DownloadProgressChanged += AppUpdater_DownloadProgressChanged;
             _seletedSystemBackdropIndx = (int)_userSettingsClient.Settings.SystemBackdrop;
             _selectedLanguage = SupportedLanguages.GetLanguage(_userSettingsClient.Settings.Language);
 
@@ -193,10 +259,29 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
 
         private void InitText() {
             Version_LastCheckDate = LanguageUtil.GetI18n(nameof(Consts.I18n.Settings_General_Version_LastCheckDate));
+            if (_lastUpdateCheckDate is DateTime lastCheck) Version_LastCheckDate += $" {lastCheck}";
 
             _sysbdDefault = LanguageUtil.GetI18n(nameof(Consts.I18n.Settings_General_AppearanceAndAction__sysbdDefault));
             _sysbdMica = LanguageUtil.GetI18n(nameof(Consts.I18n.Settings_General_AppearanceAndAction__sysbdMica));
             _sysbdAcrylic = LanguageUtil.GetI18n(nameof(Consts.I18n.Settings_General_AppearanceAndAction__sysbdAcrylic));
+        }
+
+        private bool _isRefreshingLanguage;
+        private DateTime? _lastUpdateCheckDate;
+
+        private void OnLanguageUpdated(object? sender, EventArgs args) {
+            _isRefreshingLanguage = true;
+            try {
+                InitText();
+                SystemBackdrops = [_sysbdDefault, _sysbdMica, _sysbdAcrylic];
+                OnPropertyChanged(nameof(SystemBackdrops));
+                OnPropertyChanged(nameof(SeletedSystemBackdropIndx));
+                ChangeAutoShartStatu(_isAutoStart);
+                OnPropertyChanged(nameof(AppVersionText));
+            }
+            finally {
+                _isRefreshingLanguage = false;
+            }
         }
 
         private void InitCollections() {
@@ -218,10 +303,18 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
             IsUpdateRingActive = true;
             InfoBarVisibilityRestore();
 
-            await _appUpdater.CheckUpdateAsync();
-
-            IsUpdateBtnEnable = true;
-            IsUpdateRingActive = false;
+            try {
+                await _appUpdater.CheckUpdateAsync();
+            }
+            catch (Exception exception) {
+                CurrentVersionState = VersionState.UpdateErr;
+                ArcLog.GetLogger<GeneralSettingViewModel>().Error("Update check failed", exception);
+                GlobalMessageUtil.ShowException(exception);
+            }
+            finally {
+                IsUpdateBtnEnable = true;
+                IsUpdateRingActive = false;
+            }
         }
 
         private void InfoBarVisibilityRestore() {
@@ -251,46 +344,67 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
                     break;
             }
             Version_LastCheckDate = LanguageUtil.GetI18n(nameof(Consts.I18n.Settings_General_Version_LastCheckDate));
-            Version_LastCheckDate += status == AppUpdateStatus.Notchecked ? "" : $" {date}";
+            _lastUpdateCheckDate = status == AppUpdateStatus.Notchecked ? null : date;
+            Version_LastCheckDate += _lastUpdateCheckDate is null ? "" : $" {date}";
         }
 
         private async Task StartDownloadAsync() {
             IsUpdateBtnEnable = false;
+            DownloadProgress = 0;
+            DownloadProgressText = string.Empty;
+            IsDownloadProgressIndeterminate = true;
+            CurrentVersionState = VersionState.Downloading;
 
-            await _appUpdater.StartDownloadAsync();
+            try {
+                await _appUpdater.StartDownloadAsync();
+                CurrentVersionState = VersionState.None;
+            }
+            catch (OperationCanceledException) {
+                CurrentVersionState = VersionState.FindNew;
+            }
+            catch (Exception exception) {
+                CurrentVersionState = VersionState.DownloadFailed;
+                ArcLog.GetLogger<GeneralSettingViewModel>().Error("Update download failed", exception);
+            }
+            finally {
+                IsUpdateBtnEnable = true;
+            }
+        }
 
-            IsUpdateBtnEnable = true;
+        private void AppUpdater_DownloadProgressChanged(
+            object? sender,
+            AppUpdateDownloadProgressEventArgs e) {
+            CrossThreadInvoker.InvokeOnUIThread(() => {
+                IsDownloadProgressIndeterminate = !e.Percentage.HasValue;
+                DownloadProgress = (float)(e.Percentage ?? 0);
+                DownloadProgressText = e.TotalBytes is > 0
+                    ? $"{FormatBytes(e.BytesReceived)} / {FormatBytes(e.TotalBytes.Value)} ({e.Percentage:0}%)"
+                    : FormatBytes(e.BytesReceived);
+            });
+        }
+
+        private static string FormatBytes(long value) {
+            const double megabyte = 1024d * 1024d;
+            return $"{value / megabyte:0.0} MB";
         }
 
         private async void SaveDirectoryChange() {
-            string? destDir = null;
+            if (DirectoryChangeOngoing) return;
             DirectoryChangeOngoing = true;
-
+            string previousDirectory = _userSettingsClient.Settings.DataSaveDir;
             try {
-                destDir = (await WindowsStoragePickers.PickFolderAsync(WindowConsts.WindowHandle))?.Path;
-                if (string.IsNullOrEmpty(destDir)) return;
+                string? destination = (await WindowsStoragePickers.PickFolderAsync(WindowConsts.WindowHandle))?.Path;
+                if (string.IsNullOrEmpty(destination)) return;
+                if (Path.GetFullPath(destination).Equals(Path.GetFullPath(previousDirectory), StringComparison.OrdinalIgnoreCase)) return;
 
-                if (destDir == Consts.CommonPaths.AppDataDir) {
-                    GlobalMessageUtil.ShowError(nameof(Consts.I18n.Dialog_Content_WallpaperDirectoryChangePathInvalid), isNeedLocalizer: true);
-                    return;
-                }
-
-                var sourceDir = _userSettingsClient.Settings.DataSaveDir;
-                if (!string.Equals(destDir, _userSettingsClient.Settings.DataSaveDir, StringComparison.OrdinalIgnoreCase)) {
-                    if (Directory.Exists(sourceDir)) {
-                        FileUtil.CopyDirectory(sourceDir, destDir, true);
-                        Directory.Delete(sourceDir, true);
-                        _userSettingsClient.Settings.DataSaveDir = destDir;
-                        await _userSettingsClient.SaveAsync<ISettings>();
-                    }
-                }
+                await DataDirectoryCopy.CopyAsync(previousDirectory, destination);
+                _userSettingsClient.Settings.DataSaveDir = destination;
+                await _userSettingsClient.SaveAsync<ISettings>();
             }
-            catch (Exception ex) {
-                GlobalMessageUtil.ShowException(ex);
-                ArcLog.GetLogger<GeneralSettingViewModel>().Error(ex.Message);
-                if (!string.IsNullOrEmpty(destDir)) {
-                    FileUtil.EmptyDirectory(destDir);
-                }
+            catch (Exception exception) {
+                _userSettingsClient.Settings.DataSaveDir = previousDirectory;
+                ArcLog.GetLogger<GeneralSettingViewModel>().Error("The file storage directory could not be changed", exception);
+                GlobalMessageUtil.ShowException(exception);
             }
             finally {
                 SaveDir = _userSettingsClient.Settings.DataSaveDir;
@@ -299,8 +413,14 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
         }
 
         private async void OpenFolder() {
-            var folder = await StorageFolder.GetFolderFromPathAsync(SaveDir);
-            await Launcher.LaunchFolderAsync(folder);
+            try {
+                var folder = await StorageFolder.GetFolderFromPathAsync(SaveDir);
+                await Launcher.LaunchFolderAsync(folder);
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<GeneralSettingViewModel>().Error(exception);
+                GlobalMessageUtil.ShowException(exception);
+            }
         }
 
         private async void UpdateSettingsConfigFile() {
@@ -318,7 +438,10 @@ namespace Winui3_Wpf_XamlNexus.AppSettingsPanel.ViewModels {
             if (_disposed) return;
 
             if (disposing) {
+                LanguageUtil.LanguageUpdated -= OnLanguageUpdated;
                 _appUpdater.UpdateChecked -= AppUpdater_UpdateChecked;
+                _appUpdater.DownloadProgressChanged -= AppUpdater_DownloadProgressChanged;
+                _appUpdater.CancelDownload();
             }
 
             _disposed = true;

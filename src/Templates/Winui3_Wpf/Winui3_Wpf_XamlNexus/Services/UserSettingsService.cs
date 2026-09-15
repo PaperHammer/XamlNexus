@@ -9,15 +9,16 @@ using Winui3_Wpf_XamlNexus.Utils;
 
 namespace Winui3_Wpf_XamlNexus.Services {
     public class UserSettingsService : IUserSettingsService {
-        public ISettings Settings { get; private set; }
+        public ISettings Settings { get; private set; } = new Settings();
 
         public UserSettingsService() {
             Load<ISettings>();
 
             //previous installed appversion is different from current instance..    
-            if (!Settings.AppVersion.Equals(Assembly.GetExecutingAssembly().GetName().Version.ToString(), StringComparison.OrdinalIgnoreCase)) {
+            string currentVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+            if (!string.Equals(Settings.AppVersion, currentVersion, StringComparison.OrdinalIgnoreCase)) {
                 Settings.AppName = Consts.CoreField.AppName;
-                Settings.AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                Settings.AppVersion = currentVersion;
                 Settings.IsUpdated = true;
             }
 
@@ -36,14 +37,8 @@ namespace Winui3_Wpf_XamlNexus.Services {
 
         public void Load<T>() {
             if (typeof(T) == typeof(ISettings)) {
-                try {
-                    Settings = JsonSaver.Load<Settings>(_settingsPath, SettingsContext.Default);
-                }
-                catch (Exception e) {
-                    ArcLog.GetLogger<UserSettingsService>().Error(e);
-                    Settings = new Settings();
-                    Save<ISettings>();
-                }
+                Settings = JsonSaver.LoadOrCreateAsync(_settingsPath, SettingsContext.Default,
+                    () => new Settings()).GetAwaiter().GetResult();
             }
             else {
                 throw new InvalidCastException($"ValueType not found: {typeof(T)}");
@@ -60,6 +55,5 @@ namespace Winui3_Wpf_XamlNexus.Services {
         }
 
         private readonly string _settingsPath = Consts.CommonPaths.UserSettingsPath;
-        private readonly string _appRulesPath = Consts.CommonPaths.AppRulesPath;
     }
 }

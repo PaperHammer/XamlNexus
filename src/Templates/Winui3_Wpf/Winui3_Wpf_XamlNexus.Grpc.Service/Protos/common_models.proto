@@ -12,6 +12,14 @@ message Grpc_UpdateResponse {
 	google.protobuf.Timestamp time = 6;
 }
 
+message Grpc_UpdateDownloadProgress {
+	int64 bytes_received = 1;
+	int64 total_bytes = 2;
+	bool has_total_bytes = 3;
+	double percentage = 4;
+	bool completed = 5;
+}
+
 message Grpc_SettingsData {
     Grpc_AppTheme application_theme = 3;
     Grpc_AppSystemBackdrop system_backdrop = 7;

@@ -1,0 +1,50 @@
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Winui3_XamlNexus.Common;
+using Winui3_XamlNexus.Common.Logging;
+using Winui3_XamlNexus.Common.Updates;
+using Winui3_XamlNexus.Common.Utils.ThreadContext;
+using Winui3_XamlNexus.Models.Datas;
+using Winui3_XamlNexus.Models.Datas.Interfaces;
+
+namespace Winui3_XamlNexus.UI.Modules;
+
+internal sealed class AppUpdateModule : IXamlNexusModule {
+    [ModuleInitializer]
+    internal static void Register() => XamlNexusModuleCatalog.Register(static () => new AppUpdateModule());
+
+    public void ConfigureServices(IServiceCollection services) =>
+        services.AddSingleton<IAppUpdaterClient, AppUpdaterClient>();
+
+    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default) {
+        ReportUpdateStartup();
+        services.GetRequiredService<IAppUpdaterClient>().InstallerLaunched += AppUpdater_InstallerLaunched;
+        return Task.CompletedTask;
+    }
+        private static void ReportUpdateStartup() {
+            var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
+            var result = AppUpdateLifecycle.CompleteStartup(
+                Path.Combine(Consts.CommonPaths.CommonDataDir, "updates"),
+                currentVersion,
+                Path.Combine(Consts.CommonPaths.TempDir, "updates"));
+            if (result.Status == AppUpdateStartupStatus.Updated) {
+                ArcLog.GetLogger<App>().Info($"Application update to {currentVersion} completed successfully.");
+            }
+            else if (result.Status == AppUpdateStartupStatus.Pending) {
+                ArcLog.GetLogger<App>().Warn($"The installer for update {result.TargetVersion} did not update the application.");
+            }
+            else if (result.Status == AppUpdateStartupStatus.InvalidState) {
+                ArcLog.GetLogger<App>().Warn("An invalid or stale pending-update state was removed.");
+            }
+        }
+
+        private static void AppUpdater_InstallerLaunched(object? sender, EventArgs e) {
+            CrossThreadInvoker.InvokeOnUIThread(App.ShutDown);
+        }
+
+}

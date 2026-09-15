@@ -14,7 +14,7 @@ namespace Winui3_Wpf_XamlNexus.Services {
         /// </summary>
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        static extern IntPtr CreateJobObject(IntPtr a, string lpName);
+        static extern IntPtr CreateJobObject(IntPtr a, string? lpName);
         [DllImport("kernel32.dll")]
         static extern bool SetInformationJobObject(IntPtr hJob, JobObjectInfoType infoType, IntPtr lpJobObjectInfo, UInt32 cbJobObjectInfoLength);
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -25,6 +25,9 @@ namespace Winui3_Wpf_XamlNexus.Services {
 
         public JobService() {
             _handle = CreateJobObject(IntPtr.Zero, null);
+            if (_handle == IntPtr.Zero)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+
             var info = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
                 LimitFlags = 0x2000
             };
@@ -98,6 +101,9 @@ namespace Winui3_Wpf_XamlNexus.Services {
         /// 销毁作业对象，手动调用则其拥有的所有进程都会退出
         /// </summary>
         public void Close() {
+            if (_handle == IntPtr.Zero)
+                return;
+
             CloseHandle(_handle);
             _handle = IntPtr.Zero;
         }

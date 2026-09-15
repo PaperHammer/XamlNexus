@@ -40,7 +40,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         public TextBlock AppTitleTextBlock => this.PART_RootTitleTextBlock;
         public TextBlock AppSubTitleTextBlock => this.PART_RootSubTitleTextBlock;
         public ContentPresenter AppRootContent => this.PART_RootRootContent;
-        public Image AppThemeTransitionImage => this.PART_RootThemeTransitionImage;
+        public Image AppThemeTransitionImage => PART_RootThemeTransitionImage;
         public IReadOnlyList<FrameworkElement> TitleBarChildren => [AppTitleTextBlock, AppSubTitleTextBlock];
 
         public ArcWindowHost() {

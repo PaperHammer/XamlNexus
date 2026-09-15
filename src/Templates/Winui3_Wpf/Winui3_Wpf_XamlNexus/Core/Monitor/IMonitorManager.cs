@@ -8,7 +8,6 @@ namespace Winui3_Wpf_XamlNexus.Core.Monitor {
     /// </summary>
     public interface IMonitorManager {
         event EventHandler MonitorUpdated;
-        event EventHandler MonitorPropertyUpdated;
 
         ObservableCollection<Models.Cores.Monitor> Monitors { get; }
         Models.Cores.Monitor PrimaryMonitor { get; }

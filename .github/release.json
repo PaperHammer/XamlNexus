@@ -1,0 +1,6 @@
+{
+  "solution": "src/XamlNexus.sln",
+  "project": "src/XamlNexus/XamlNexus.csproj",
+  "packageId": "XamlNexus",
+  "tagPrefix": "v"
+}

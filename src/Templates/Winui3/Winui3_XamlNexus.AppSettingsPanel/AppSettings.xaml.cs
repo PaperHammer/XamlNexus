@@ -1,4 +1,6 @@
 using System;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using Winui3_XamlNexus.AppSettingsPanel.Views;
@@ -16,20 +18,40 @@ namespace Winui3_XamlNexus.AppSettingsPanel {
 
         public AppSettings() {
             this.InitializeComponent();
+            Loaded += (_, _) => {
+                // Build the selected settings content after the outer page has loaded.
+                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => {
+                    if (IsLoaded && ContentFrame.Content is null) NavigateSelectedPage();
+                });
+            };
         }
 
         private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs _) {
-            SelectorBarItem selectedItem = sender.SelectedItem;
+            if (!IsLoaded) return;
+            NavigateSelectedPage();
+        }
+
+        private void NavigateSelectedPage() {
+            var sender = SelBar;
+            if (sender.SelectedItem is not SelectorBarItem selectedItem)
+                return;
+
             int currentSelectedIndex = sender.Items.IndexOf(selectedItem);
 
-            Type pageType = currentSelectedIndex switch {
+            Type? pageType = currentSelectedIndex switch {
                 0 => typeof(GeneralSetting),
                 1 => typeof(SystemSetting),
-                _ => throw new NotImplementedException(),
+                _ => null,
             };
+            if (pageType is null)
+                return;
             var slideNavigationTransitionEffect = currentSelectedIndex - _previousSelectedIndex > 0 ? SlideNavigationTransitionEffect.FromRight : SlideNavigationTransitionEffect.FromLeft;
 
-            ContentFrame.Navigate(pageType, Payload, new SlideNavigationTransitionInfo() { Effect = slideNavigationTransitionEffect });
+            if (ContentFrame.SourcePageType == pageType) return;
+            NavigationTransitionInfo transition = ContentFrame.Content is null
+                ? new SuppressNavigationTransitionInfo()
+                : new SlideNavigationTransitionInfo { Effect = slideNavigationTransitionEffect };
+            ContentFrame.Navigate(pageType, Payload, transition);
 
             _previousSelectedIndex = currentSelectedIndex;
         }

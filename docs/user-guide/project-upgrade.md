@@ -1,0 +1,145 @@
+# Project scaffold upgrades
+
+[English](project-upgrade.md) | [简体中文](project-upgrade.zh-CN.md)
+
+`xamlnexus upgrade` updates XamlNexus-owned project infrastructure to the
+version shipped with the installed CLI:
+
+```powershell
+xamlnexus upgrade --project D:\Projects\MyApp
+```
+
+Newly generated projects record every file that came from the selected
+template, including:
+
+- `.github` PR validation workflow and template;
+- `eng/publishing` local release scripts and configuration;
+- `eng` publishing and release scripts;
+- `Directory.Build.props`, `RELEASING.md`, and the example update manifest;
+- generated update infrastructure under `<App>.Common/Updates`;
+- generated `IXamlNexusModule` lifecycle contracts.
+- solution and project files;
+- application source, XAML, resources, and template assets.
+
+All generated source and configuration files may be customized, including
+version properties, release workflows and publishing scripts. Content changes
+to tracked infrastructure produce warning `XN1302`, not a validation failure.
+The existing `userEditable` flag suppresses routine baseline diagnostics for
+application files; it is not an editing permission. Missing required files
+remain errors. Original baselines are retained for upgrade reconciliation;
+users do not need to edit the manifest or recalculate hashes to keep developing.
+
+## Three-way merge
+
+For each generated file, the manifest can retain the exact template baseline.
+Upgrade compares three inputs: the old template baseline, the local project,
+and the newly rendered target template.
+
+- If only the template changed, the target replaces the old file.
+- If only the user or a Recipe changed the file, local content is preserved.
+  Local bytes are also preserved when local and target content already agree.
+- Non-overlapping UTF-8 line edits in ordinary text files are merged automatically and shown with the
+  `textMerge` strategy in JSON plans.
+- When both sides change XML-based files (`.slnx`, `.csproj`, `.props`, `.targets`,
+  `.xaml`, `.xml`, `.config`, `.resw`, `.nuspec`, or `.appxmanifest`), a
+  conservative semantic pass checks node matching and child order even when
+  line edits do not overlap. It can merge independent attributes and child
+  additions. These changes use the `xmlMerge` strategy. A successful text merge
+  cannot override a structural conflict or an unsupported XML result.
+- For `.sln` files, a structural pass can combine independent project blocks,
+  `GlobalSection` blocks, and keyed configuration entries. These changes use
+  the `solutionMerge` strategy.
+- Overlapping edits, changed files removed by the target, binary files, and
+  unusually large text remain conflicts. The project is not modified.
+
+The semantic pass deliberately refuses comments, processing instructions,
+CDATA, DTDs, mixed text/element content, conflicting scalar values, and
+ambiguous structural replacements. In those cases XamlNexus preserves the
+existing conflict behavior rather than normalizing or dropping content.
+Cases requiring no merge still preserve local bytes, including comments and formatting.
+
+Newly generated `.sln` files also use deterministic project GUIDs derived from
+project-relative paths. Re-rendering the same scaffold therefore does not
+create a solution-only upgrade merely because `dotnet sln add` assigned new
+random GUIDs. The solution pass rejects malformed or unknown top-level Global
+content, duplicate structural keys, and delete-versus-modify or same-key
+conflicts. Existing project-block internals are treated atomically.
+
+Reviewable conflict documents are written only when an output directory is
+explicitly requested:
+
+```powershell
+xamlnexus upgrade --project D:\Projects\MyApp `
+  --conflict-output .\upgrade-conflicts
+```
+
+Artifacts mirror the project-relative path with a `.merge` suffix and contain
+`LOCAL`, `BASE`, and `TARGET` sections. Existing artifact files are never
+overwritten. `--conflict-output` cannot be combined with `--dry-run`, because
+conflict export intentionally writes files outside the project transaction.
+
+## Applying resolved conflicts
+
+For ordinary text conflicts, the `.merge` file retains independent edits from both sides and marks only overlapping regions with `<<<<<<< LOCAL`, `||||||| BASE`, `=======`, and `>>>>>>> TARGET`. Structural conflicts in XML or solution files may require whole-file review; their three inputs remain visible rather than hiding a structural disagreement behind a successful line merge.
+
+Edit the exported `.merge` files, resolve each marked region, and remove the markers. Keep the `.xamlnexus-upgrade` export record alongside them. Then preview and apply:
+
+```powershell
+xamlnexus upgrade --project D:\Projects\MyApp --resolve-from .\upgrade-conflicts --dry-run
+xamlnexus upgrade --project D:\Projects\MyApp --resolve-from .\upgrade-conflicts
+```
+
+All resolved files and automatic changes are applied together. The manifest advances only on success and records the target template as the new baseline, so your manual edits remain customizations. The original project stays unchanged while you edit the exports.
+
+`XU2020` means the export no longer matches the upgrade; export again into a new directory and review your resolutions against the new inputs. `XU2021` means a resolved file is missing, still contains conflict markers, contains invalid XML, or is not eligible for this flow. This entry supports text and structural conflicts (`XU2011`). Deleted-versus-modified files, missing baselines, unsupported content, and ownership conflicts still require explicit project changes before retrying. Deleting a `.merge` file does not request deletion of the original file.
+
+`--resolve-from` may be combined with `--dry-run`, but not with `--conflict-output`.
+
+## Safety model
+
+New projects record each scaffold-managed path and SHA-256 in
+`xamlnexus.json`. Upgrade first renders the target scaffold into an isolated
+temporary directory, then builds a complete create/replace/delete plan.
+
+Normal validation permits customization; automatic replacement and deletion
+still check their expected hashes.
+Upgrade may safely merge modified files when a verified baseline snapshot is
+available. The complete plan is checked again immediately before writing.
+File changes and the manifest version update are transactional and roll back
+together.
+
+Projects generated by the same XamlNexus version before scaffold baselines
+were introduced can adopt a baseline only when every candidate file exactly
+matches that same-version template. An older project without a baseline is
+refused because the CLI cannot distinguish an old template file from a user's
+changes. Generate or adopt a baseline with the matching historical CLI before
+moving to a newer version.
+
+Hash-only manifests created before baseline snapshots remain supported. A
+modified file from such a manifest receives `XU2002` and is never guessed or
+overwritten. Newly tracked paths already occupied by different content also
+remain conservative conflicts.
+
+Upgrade errors use stable `XU` codes:
+
+- `XU10xx`: incompatible project, target, or missing baseline;
+- `XU20xx`: conflicts or a stale plan;
+- `XU30xx`: transaction or rollback failure.
+
+Within `XU20xx`, `XU2010` means a locally modified file was removed by the
+target, `XU2011` means conflicting text or structural edits (including ambiguous
+XML node matches and child order), and `XU2012` means the content
+cannot be safely merged or its XML structure cannot be checked by the current merger.
+
+After upgrading, template modules follow the target template's module list and
+metadata; installed Recipe modules retain their versions and owned-file records.
+`XU2013` reports a path owned by both the scaffold and a Recipe, even if the
+contents match. `XU2014` reports a target template module ID already owned by an
+installed Recipe. These conflicts block both upgrade and baseline adoption;
+automatic ownership transfer is not supported. Resolve the ownership explicitly
+before planning the operation again.
+
+SLNX projects keep their solution format during upgrade target generation. The XML
+merge identifies Project elements by Path and can preserve independent project additions.
+Changing between SLN and SLNX is not an automatic scaffold upgrade; source and target
+formats must match.

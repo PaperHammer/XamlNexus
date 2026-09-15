@@ -1,4 +1,5 @@
 using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace Winui3_XamlNexus.UIComponent.Converters {
@@ -10,6 +11,6 @@ namespace Winui3_XamlNexus.UIComponent.Converters {
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
-            => throw new NotImplementedException();
+            => DependencyProperty.UnsetValue;
     }
 }
