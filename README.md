@@ -87,7 +87,7 @@ Both profiles retain theme, localization, configuration, and logging infrastruct
 | `updater` | Application updates; optional in WinUI and depends on settings, built into hybrid; requires an update source |
 | `editorconfig` | Editor formatting configuration |
 
-Use `xamlnexus add settings,sqlite` to install multiple components. Already installed components are skipped. Read the generated component READMEs for configuration details.
+Use `xamlnexus add settings,sqlite` to install multiple components. Already installed components are skipped. Read the generated component READMEs for configuration details; English and Simplified Chinese versions are included.
 
 ## Maintain a project
 
