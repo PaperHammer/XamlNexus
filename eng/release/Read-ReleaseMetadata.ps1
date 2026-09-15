@@ -103,11 +103,12 @@ if ($null -eq $event.pull_request) {
 $releaseLabels = @($event.pull_request.labels |
     ForEach-Object { [string]$_.name } |
     Where-Object { $_ -in @("release:stable", "release:preview", "release:none") })
-if ($releaseLabels.Count -ne 1) {
-    throw "Apply exactly one release label: release:stable, release:preview, or release:none."
+if ($releaseLabels.Count -gt 1) {
+    throw "Apply at most one release label: release:stable, release:preview, or release:none."
 }
 
-$releaseLabel = $releaseLabels[0]
+# 未选择发布标签时只校验、合并，不发布；其他普通 PR 标签不影响此规则。
+$releaseLabel = if ($releaseLabels.Count -eq 0) { "release:none" } else { $releaseLabels[0] }
 $shouldPublish = $releaseLabel -ne "release:none"
 $channel = if ($releaseLabel -eq "release:preview") { "preview" } elseif ($shouldPublish) { "stable" } else { "none" }
 $version = Get-ProjectVersion "" ([string]$config.project)

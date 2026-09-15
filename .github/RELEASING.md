@@ -19,12 +19,12 @@ Protect `main` and require:
 - resolved review conversations;
 - no force pushes or branch deletion.
 
-The optional GitHub `production` environment can be added later if releases should require a manual approval. The default workflow publishes automatically after merge.
+The optional GitHub `production` environment can be added later if releases should require a manual approval. Publishing-labeled PRs publish automatically after merge; PRs without a release label do not publish.
 
 ## Publishing pull requests
 
 1. Increase `Version`, `AssemblyVersion`, and `PackageVersion` in `src/XamlNexus/XamlNexus.csproj`.
-2. Apply exactly one release label.
+2. Apply `release:stable` or `release:preview`. Multiple release labels are rejected, including combinations with `release:none`.
 3. Write user-visible changes in the PR description. The entire description becomes the GitHub Release body; no special markers are required. Put review-only details in PR comments instead.
 4. Merge the pull request into `main` after validation succeeds.
 
@@ -34,4 +34,4 @@ The merged workflow checks out the exact merge commit, rebuilds and tests the so
 
 ## Non-publishing pull requests
 
-Use `release:none`. The project version does not need to change, and the merged workflow exits without accessing publishing secrets.
+Omit release labels or use `release:none`. Other labels (such as `bug`) do not trigger publishing. The project version does not need to change, and the merged workflow exits without accessing publishing secrets.
