@@ -8,21 +8,30 @@ internal static class TestDirectoryLink {
             Directory.CreateSymbolicLink(path, target);
             return;
         }
-        // Junctions exercise Windows path traversal without requiring symlink privileges.
-        var start = new ProcessStartInfo("powershell.exe") {
+        // 使用系统 mklink 创建 Junction，避免每次测试启动 Windows PowerShell。
+        // /d 禁用 cmd AutoRun；路径通过环境变量传入，保留空格等字符。
+        path = Path.GetFullPath(path);
+        target = Path.GetFullPath(target);
+        if (path.IndexOfAny(['"', '\r', '\n']) >= 0 || target.IndexOfAny(['"', '\r', '\n']) >= 0)
+            throw new ArgumentException("Junction paths must not contain quotes or newlines.");
+        var start = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe")) {
             UseShellExecute = false, CreateNoWindow = true,
+            RedirectStandardOutput = true, RedirectStandardError = true,
+            Arguments = "/d /v:off /c mklink /J \"%XAMLNEXUS_TEST_LINK%\" \"%XAMLNEXUS_TEST_TARGET%\"",
         };
-        start.ArgumentList.Add("-NoProfile");
-        start.ArgumentList.Add("-NonInteractive");
-        start.ArgumentList.Add("-Command");
-        start.ArgumentList.Add("New-Item -ItemType Junction -Path $env:XAMLNEXUS_TEST_LINK -Target $env:XAMLNEXUS_TEST_TARGET -ErrorAction Stop | Out-Null");
         start.Environment["XAMLNEXUS_TEST_LINK"] = path;
         start.Environment["XAMLNEXUS_TEST_TARGET"] = target;
         using var process = Process.Start(start)!;
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
         if (!process.WaitForExit(30000)) {
             process.Kill(entireProcessTree: true);
-            throw new TimeoutException("Junction creation timed out.");
+            process.WaitForExit();
+            throw new TimeoutException($"Junction creation timed out: '{path}' -> '{target}'.");
         }
-        if (process.ExitCode != 0) throw new IOException("Junction creation failed.");
+        if (process.ExitCode != 0)
+            throw new IOException($"Junction creation failed (exit {process.ExitCode}): {stdout.GetAwaiter().GetResult()} {stderr.GetAwaiter().GetResult()}");
+        if (!Directory.Exists(path) || (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0)
+            throw new IOException($"Junction was not created: '{path}'.");
     }
 }
