@@ -46,9 +46,12 @@ public class SlnxAndResourceTests {
         var chinese = manager.GetResourceSet(CultureInfo.GetCultureInfo("zh-CN"), true, false)!;
         var en = english.Cast<System.Collections.DictionaryEntry>().Select(e => (string)e.Key).Order().ToArray();
         var zh = chinese.Cast<System.Collections.DictionaryEntry>().Select(e => (string)e.Key).Order().ToArray();
-        Assert.Equal(en, zh);
+        // 帮助统一使用英文；中文资源省略该键，由 ResourceManager 回退到默认资源。
+        Assert.Equal(en.Where(key => key != "Cli_Help"), zh);
+        Assert.Equal(manager.GetString("Cli_Help", CultureInfo.GetCultureInfo("en")),
+            manager.GetString("Cli_Help", CultureInfo.GetCultureInfo("zh-CN")));
         Assert.Equal("Solution Name", manager.GetString("SlnName", CultureInfo.GetCultureInfo("en")));
-        Assert.Equal("解决方案名称", manager.GetString("SlnName", CultureInfo.GetCultureInfo("zh-CN")));
+        Assert.Equal("项目名称", manager.GetString("SlnName", CultureInfo.GetCultureInfo("zh-CN")));
         Assert.Contains("{0}", manager.GetString("Creation_Run", CultureInfo.GetCultureInfo("zh-CN"))!);
     }
 

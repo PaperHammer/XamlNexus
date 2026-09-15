@@ -23,7 +23,8 @@ public sealed class SolutionGuidTests {
     [Fact]
     public void NormalizeProjectGuids_SupportsWindowsLineEndings() {
         string projectGuid = "{11111111-1111-1111-1111-111111111111}";
-        string solution = Solution(projectGuid).Replace("\n", "\r\n", StringComparison.Ordinal);
+        // 原始字符串的换行随源码检出格式变化，避免把 CRLF 再转换成 CRCRLF。
+        string solution = Solution(projectGuid).ReplaceLineEndings("\r\n");
 
         string normalized = XamlNexusSolutionGuid.NormalizeProjectGuids(solution);
 

@@ -10,7 +10,7 @@ namespace XamlNexus.TemplateTests;
 public sealed class PageGeneratorTests : IDisposable {
     private readonly string root = Path.Combine(AppContext.BaseDirectory, "page-tests", Guid.NewGuid().ToString("N"));
     public PageGeneratorTests() {
-        Write("PageTest.sln", "");
+        Write("PageTest.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\r\nGlobal\r\nEndGlobal\r\n");
         Write("PageTest.UIComponent/Navigation/INavigationRegistry.cs", "public interface INavigationRegistry {}");
         Write("Directory.Build.props", "<Project />");
         Write("PageTest.UI/PageTest.UI.csproj", "<Project />");
@@ -34,7 +34,7 @@ public sealed class PageGeneratorTests : IDisposable {
 
     [Theory]
     [InlineData("Directory.Build.props", "<Project><PropertyGroup><Version>2.0.0</Version></PropertyGroup></Project>")]
-    [InlineData(".github/release.json", "{\"custom\":true}")]
+    [InlineData("eng/publishing/release.json", "{\"custom\":true}")]
     [InlineData("eng/custom.ps1", "Write-Output 'customized'")]
     public void InfrastructureCustomizationAllowsRunPagesAndBatchAddition(string relative, string customized) {
         Write(relative, "original");

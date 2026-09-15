@@ -20,8 +20,8 @@ public sealed class WizardInputTests {
         var input = new Keys(Key(ConsoleKey.Spacebar, ' '), Key(ConsoleKey.DownArrow),
             Key(ConsoleKey.Spacebar, ' '), Key(ConsoleKey.Spacebar, ' '), Key(ConsoleKey.Enter));
         input.BeforeRead = index => {
-            Assert.Contains(choices[0].Descriptor.Id, output.ToString());
-            Assert.Contains(choices[1].Descriptor.Id, output.ToString());
+            Assert.Contains(RecipeCommandNames.ToCommandName(choices[0].Descriptor.Id), output.ToString());
+            Assert.Contains(RecipeCommandNames.ToCommandName(choices[1].Descriptor.Id), output.ToString());
             if (index > 0) Assert.Contains("[●]", output.ToString());
             Assert.DoesNotContain("[X]", output.ToString());
         };
