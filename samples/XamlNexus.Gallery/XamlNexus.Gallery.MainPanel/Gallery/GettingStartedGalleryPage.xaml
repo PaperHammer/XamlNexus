@@ -1,0 +1,27 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.GettingStartedGalleryPage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Left">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="{Binding [GettingStarted], Source={StaticResource Strings}}" Description="{Binding [GettingStartedDescription], Source={StaticResource Strings}}"/>
+            <Expander Header="{Binding [CheckCreate], Source={StaticResource Strings}}" Style="{StaticResource Section}" IsExpanded="True">
+                <g:GalleryCodeView x:Name="CreateCode"/>
+            </Expander>
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding [EnvironmentChecks], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding [EnvironmentHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Opacity="0.75"/>
+            </StackPanel>
+            <Expander Header="{Binding [AddCapabilities], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <g:GalleryCodeView x:Name="AddCode"/>
+            </Expander>
+            <Expander Header="{Binding [MaintainProject], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <g:GalleryCodeView x:Name="MaintainCode"/>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

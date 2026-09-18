@@ -47,3 +47,5 @@ Run project commands inside the generated project, or supply `--project`. Develo
 - [Generated-project release instructions](../../src/Templates/Shared/RELEASING.md): prepare installers, signing, and update assets. Use your generated project's own `RELEASING.md` and `eng/publishing/release.json` when publishing.
 
 All generated source and configuration can be customized. Content differences produce warnings; automatic removal or upgrades stop with a conflict when they cannot protect user changes. See the [product model](../introduction/product-model.md).
+
+[List page template](list-page.md): search, asynchronous loading, cancellation and replacing the data source.

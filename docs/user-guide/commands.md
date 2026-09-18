@@ -74,7 +74,7 @@ xamlnexus page add Details --no-navigation
 
 Accepts `--project`, `--no-navigation`, `--dry-run`, and `--json`. Names start with an uppercase English letter and contain only English letters or digits, such as `Orders`.
 
-By default, it generates an ordinary Page and ViewModel and connects navigation. `--no-navigation` skips navigation integration for projects managing navigation themselves. There are no `--kind list` or `--kind form` options, and no business CRUD generation. Edit the generated source directly; see [page development](business-page.md) for file locations and integration details.
+By default, it generates an ordinary Page and ViewModel and connects navigation. `--no-navigation` skips navigation integration for projects managing navigation themselves. Supports `--kind blank|list` (default blank); the list template includes search, refresh and asynchronous state. See [list page template](list-page.md). Form and business CRUD generation are not provided. Edit the generated source directly; see [page development](business-page.md) for file locations and integration details.
 
 ## Inspect and manage components
 
@@ -107,7 +107,7 @@ xamlnexus validate --json
 xamlnexus doctor
 ```
 
-Both accept a project path and `--json`. `validate` checks the manifest and tracked files; content changes normally produce warnings, while missing files are errors. `doctor` also checks the development environment, project references, and component integration. Neither replaces builds or GUI checks. See [diagnostics](doctor.md).
+Both accept a project path and `--json`. Before creating a project, use `doctor --environment [--json]`; this mode rejects project paths. `validate` checks the manifest and tracked files; content changes normally produce warnings, while missing files are errors. `doctor` also checks the development environment, project references, and component integration. Neither replaces builds or GUI checks. See [diagnostics](doctor.md).
 
 ## Upgrade scaffold infrastructure: `upgrade`
 

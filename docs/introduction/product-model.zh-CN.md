@@ -31,7 +31,7 @@ XamlNexus 默认生成可以直接运行和修改页面的 Windows 标准客户�
 | 登录自启动 | 保留基础实现 | 设置界面可配置 | 无独立 Recipe，不默认开启系统注册 |
 | 编辑器配置 | 按需 | 按需 | `add editorconfig` |
 | 发布、安装器、签名 | 保留脚本 | 保留脚本 | 需维护者自行配置和执行，不属于开发运行 |
-| 普通页面生成 | `page add` | `page add` | 页面、ViewModel、导航注册；无列表或表单类型 |
+| 普通页面生成 | `page add` | `page add` | 页面、ViewModel、导航注册；支持 blank/list，无表单类型 |
 
 实际安装状态以 `xamlnexus list` 和 `xamlnexus.json` 中的 modules 为准。
 profile 记录创建意图，后续移除组件不会因初始预设被自动装回。

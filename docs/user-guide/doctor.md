@@ -37,3 +37,16 @@ Modified generated files are reported as customization warnings, not editing
 violations. Missing required files remain errors. SQLite WAL detection is only
 a source-text heuristic: finding WAL text does not verify the running database,
 and not finding it produces a warning rather than blocking custom initialization.
+
+## Check before creating a project
+
+```powershell
+xamlnexus doctor --environment
+xamlnexus doctor --environment --json
+```
+
+No xamlnexus.json is required. Run from the intended creation directory: SDK and NuGet configuration resolution still follows that directory and its ancestors. This mode rejects project arguments and `--project` and does not create or repair files.
+
+Standalone mode additionally reports OS/CLI architecture (XD1004), Windows SDK 10.0.19041+ x64 header/library discovery (XD1005), and verification limitations (XD1006). Discovery uses the registry or standard Windows Kits location; missing assets produce a warning, not proof that a custom toolchain is unusable. Each dotnet probe has a 15-second process timeout.
+
+This is not build acceptance: it does not check NuGet connectivity, compile XAML or prove Windows App SDK runtime availability. Create, build and launch an application afterward. Existing project doctor behavior remains available. Environment messages and report headings support English/Chinese; JSON codes and field names remain stable.

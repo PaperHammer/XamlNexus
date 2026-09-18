@@ -3,8 +3,9 @@ using XamlNexus.Common.Recipes;
 
 namespace XamlNexus.Common.Projects;
 
-public static class PageGenerator {
-    public static IReadOnlyList<string> Add(XamlNexusProjectContext project, string name, bool dryRun = false, bool skipNavigation = false) {
+public static partial class PageGenerator {
+    public static IReadOnlyList<string> Add(XamlNexusProjectContext project, string name, bool dryRun = false, bool skipNavigation = false, string kind = "blank") {
+        if (kind is not ("blank" or "list")) throw new ArgumentException("Page kind must be blank or list.", nameof(kind));
         if (project.Manifest.Project.Preset is not ("winui" or "hybrid"))
             throw new InvalidOperationException("Page generation supports WinUI and hybrid projects.");
         if (!Regex.IsMatch(name, "^[A-Z][A-Za-z0-9]*$", RegexOptions.CultureInvariant))
@@ -90,6 +91,7 @@ public static class PageGenerator {
                 """),
             .. navigationChanges,
         ] };
+        if (kind == "list") plan = new XamlNexusRecipePlan { Changes = [.. CreateListPage(app, name), .. navigationChanges] };
         foreach (var change in plan.Changes) SafePath(change.RelativePath);
         return XamlNexusRecipeTransaction.ApplyPageChanges(project, plan, dryRun);
     }

@@ -1,0 +1,55 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
+using __APP__.MainPanel.ViewModels;
+using __APP__.UIComponent.Templates;
+using __APP__.UIComponent.Utils;
+
+namespace __APP__.MainPanel;
+
+public sealed partial class __NAME__Page : ArcPage {
+    public override Type ArcType => typeof(__NAME__Page);
+    // Replace the sample through new __NAME__ViewModel(yourDataSource).
+    public __NAME__ViewModel ViewModel { get; } = new();
+    private bool subscribed;
+
+    public __NAME__Page() {
+        InitializeComponent();
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs args) => await ActivateAsync();
+
+    protected override async void OnEnter(FrameworkPayload? payload) {
+        base.OnEnter(payload);
+        await ActivateAsync();
+    }
+
+    private async Task ActivateAsync() {
+        if (!subscribed) {
+            LanguageUtil.LanguageUpdated += OnLanguageUpdated;
+            subscribed = true;
+        }
+        ViewModel.SetLanguage(LanguageUtil.CurrentLanguage);
+        await ViewModel.ActivateAsync();
+    }
+
+    protected override Task OnPreLeaveAsync() {
+        Deactivate(); // Also cancel when navigation keeps this page alive.
+        return base.OnPreLeaveAsync();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs args) => Deactivate();
+    protected override void OnDestroy() {
+        Deactivate();
+        base.OnDestroy();
+    }
+    private void Deactivate() {
+        LanguageUtil.LanguageUpdated -= OnLanguageUpdated;
+        subscribed = false;
+        ViewModel.Deactivate();
+    }
+    private void OnLanguageUpdated(object? sender, EventArgs args) => ViewModel.SetLanguage(LanguageUtil.CurrentLanguage);
+    public Visibility ToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+}

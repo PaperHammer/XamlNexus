@@ -33,6 +33,41 @@ public sealed class PageGeneratorTests : IDisposable {
     private XamlNexusProjectContext Project => XamlNexusProjectLocator.Locate(root);
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ListPageUsesTransactionalGeneration(bool skipNavigation) {
+        var before = Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order().ToArray();
+        Assert.Equal(skipNavigation ? 4 : 5, PageGenerator.Add(Project, "Orders", true, skipNavigation, "list").Count);
+        Assert.Equal(before, Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order().ToArray());
+        PageGenerator.Add(Project, "Orders", skipNavigation: skipNavigation, kind: "list");
+        Assert.Contains("IOrdersDataSource", Read("PageTest.MainPanel/Services/OrdersDataSource.cs"));
+        Assert.Contains("ViewModel.SearchText", Read("PageTest.MainPanel/OrdersPage.xaml"));
+        Assert.Contains("OnPreLeaveAsync", Read("PageTest.MainPanel/OrdersPage.xaml.cs"));
+        Assert.DoesNotContain("__APP__", Read("PageTest.MainPanel/ViewModels/OrdersViewModel.cs"));
+        Assert.Empty(Project.Manifest.Modules);
+    }
+
+    [Fact]
+    public void ListServiceCollisionPreventsAllPageWrites() {
+        Write("PageTest.MainPanel/Services/OrdersDataSource.cs", "user service");
+        Assert.ThrowsAny<Exception>(() => PageGenerator.Add(Project, "Orders", kind: "list"));
+        Assert.False(File.Exists(Path.Combine(root, "PageTest.MainPanel/OrdersPage.xaml")));
+        Assert.Equal("user service", Read("PageTest.MainPanel/Services/OrdersDataSource.cs"));
+    }
+
+    [Fact]
+    public void PageKindIsValidated() {
+        var parsed = CliParser.Parse(["page", "add", "Orders", "--kind", "list"], root);
+        Assert.True(parsed.Success);
+        Assert.Equal("list", parsed.Options!.PageKind);
+        Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind", "form"], root).Success);
+        Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind"], root).Success);
+        Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind", "list", "--kind", "blank"], root).Success);
+        Assert.False(CliParser.Parse(["add", "sqlite", "--kind", "list"], root).Success);
+        Assert.Throws<ArgumentException>(() => PageGenerator.Add(Project, "Orders", kind: "unknown"));
+    }
+
+    [Theory]
     [InlineData("Directory.Build.props", "<Project><PropertyGroup><Version>2.0.0</Version></PropertyGroup></Project>")]
     [InlineData("eng/publishing/release.json", "{\"custom\":true}")]
     [InlineData("eng/custom.ps1", "Write-Output 'customized'")]

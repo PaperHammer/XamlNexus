@@ -1,0 +1,25 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace __APP__.MainPanel.Services;
+
+public sealed record __NAME__Item(string Title, string Description);
+
+public interface I__NAME__DataSource {
+    Task<IReadOnlyList<__NAME__Item>> LoadAsync(CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Runnable sample data. Replace this implementation with an application service.
+/// For hybrid applications, call the host through a client instead of opening its database here.
+/// </summary>
+public sealed class __NAME__SampleDataSource : I__NAME__DataSource {
+    public Task<IReadOnlyList<__NAME__Item>> LoadAsync(CancellationToken cancellationToken) {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyList<__NAME__Item>>(new[] {
+            new __NAME__Item("XamlNexus", "WinUI desktop application"),
+            new __NAME__Item("__NAME__", "Replace the sample data source with your service"),
+        });
+    }
+}

@@ -1,0 +1,128 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using XamlNexus.Gallery.MainPanel.Services;
+
+namespace XamlNexus.Gallery.MainPanel.ViewModels;
+
+/// <summary>Page-owned state. Call lifecycle methods and commands on the UI thread.</summary>
+public sealed class GalleryItemsViewModel : INotifyPropertyChanged {
+    private readonly IGalleryItemsDataSource source;
+    private readonly RefreshAction refresh;
+    private IReadOnlyList<GalleryItemsItem> allItems = Array.Empty<GalleryItemsItem>();
+    private CancellationTokenSource? loading;
+    private bool active;
+    private bool busy;
+    private bool loaded;
+    private bool chinese;
+    private string query = string.Empty;
+    private string error = string.Empty;
+
+    public GalleryItemsViewModel() : this(new GalleryItemsSampleDataSource()) { }
+    public GalleryItemsViewModel(IGalleryItemsDataSource source) {
+        this.source = source ?? throw new ArgumentNullException(nameof(source));
+        refresh = new RefreshAction(this);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public ObservableCollection<GalleryItemsItem> Items { get; } = new();
+    public ICommand RefreshCommand => refresh;
+    public bool IsBusy => busy;
+    public bool IsEmpty => loaded && !busy && !HasError && Items.Count == 0;
+    public bool HasError => error.Length > 0;
+    public string ErrorMessage => error;
+    public string Title => "GalleryItems";
+    public string SearchPlaceholder => chinese ? "搜索名称或描述" : "Search title or description";
+    public string RefreshText => chinese ? "刷新" : "Refresh";
+    public string EmptyText => chinese ? "没有匹配的记录" : "No matching items";
+    public string LoadingText => chinese ? "正在加载…" : "Loading…";
+    public string ErrorTitle => chinese ? "加载失败，请重试" : "Could not load items. Try again.";
+
+    public string SearchText {
+        get => query;
+        set {
+            value ??= string.Empty;
+            if (query == value) return;
+            query = value;
+            Notify();
+            ApplyFilter();
+        }
+    }
+
+    public void SetLanguage(string? language) {
+        if (language is null) return;
+        chinese = language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
+        foreach (string property in new[] { nameof(SearchPlaceholder), nameof(RefreshText), nameof(EmptyText), nameof(LoadingText), nameof(ErrorTitle) })
+            Notify(property);
+    }
+
+    public Task ActivateAsync() {
+        active = true;
+        refresh.RaiseCanExecuteChanged();
+        return loaded ? Task.CompletedTask : RefreshAsync();
+    }
+
+    public void Deactivate() {
+        active = false;
+        var previous = loading;
+        loading = null; // Invalidate results even when a service ignores cancellation.
+        previous?.Cancel();
+        busy = false;
+        NotifyState();
+    }
+
+    public async Task RefreshAsync() {
+        if (!active || busy) return;
+        using var request = new CancellationTokenSource();
+        loading = request;
+        busy = true;
+        error = string.Empty;
+        NotifyState();
+        try {
+            var result = await source.LoadAsync(request.Token);
+            if (!ReferenceEquals(loading, request) || request.IsCancellationRequested) return;
+            allItems = result ?? throw new InvalidOperationException("The data source returned no collection.");
+            loaded = true;
+            ApplyFilter();
+        }
+        catch (OperationCanceledException) when (request.IsCancellationRequested) { }
+        catch (Exception exception) {
+            if (ReferenceEquals(loading, request)) error = exception.Message;
+        }
+        finally {
+            if (ReferenceEquals(loading, request)) {
+                loading = null;
+                busy = false;
+                NotifyState();
+            }
+        }
+    }
+
+    private void ApplyFilter() {
+        Items.Clear();
+        string text = query.Trim();
+        foreach (var item in allItems) {
+            if (item.Title.Contains(text, StringComparison.OrdinalIgnoreCase)
+                || item.Description.Contains(text, StringComparison.OrdinalIgnoreCase)) Items.Add(item);
+        }
+        Notify(nameof(IsEmpty));
+    }
+
+    private void NotifyState() {
+        foreach (string property in new[] { nameof(IsBusy), nameof(IsEmpty), nameof(HasError), nameof(ErrorMessage) }) Notify(property);
+        refresh.RaiseCanExecuteChanged();
+    }
+    private void Notify([CallerMemberName] string? property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+
+    private sealed class RefreshAction(GalleryItemsViewModel owner) : ICommand {
+        public event EventHandler? CanExecuteChanged;
+        public bool CanExecute(object? parameter) => owner.active && !owner.busy;
+        public async void Execute(object? parameter) => await owner.RefreshAsync();
+        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
+}

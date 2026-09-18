@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
+using XamlNexus.Common.Utils;
 using XamlNexus.Common.Projects;
 using XamlNexus.Recipes.BuiltIn;
 
@@ -9,12 +10,11 @@ namespace XamlNexus {
         /// <summary>
         /// 诊断项目健康状态并输出 JSON 或诊断表；存在错误或诊断失败时返回失败退出码。
         /// </summary>
-        private static int Doctor(string projectPath, bool jsonOutput) {
+        private static int Doctor(string projectPath, bool jsonOutput, bool environmentOnly = false) {
             try {
-                XamlNexusProjectContext context = XamlNexusProjectLocator.Locate(projectPath);
-                XamlNexusDoctorReport report = XamlNexusDoctor.Diagnose(
-                    context,
-                    BuiltInRecipeCatalog.Create());
+                XamlNexusDoctorReport report = environmentOnly
+                    ? XamlNexusDoctor.DiagnoseEnvironment(projectPath)
+                    : XamlNexusDoctor.Diagnose(XamlNexusProjectLocator.Locate(projectPath), BuiltInRecipeCatalog.Create());
                 if (jsonOutput) {
                     var jsonOptions = new JsonSerializerOptions {
                         WriteIndented = true,
@@ -24,12 +24,12 @@ namespace XamlNexus {
                     Console.WriteLine(JsonSerializer.Serialize(report, jsonOptions));
                 }
                 else {
-                    AnsiConsole.MarkupLine($"Project: [cyan]{Markup.Escape(report.RootDirectory)}[/]");
+                    AnsiConsole.MarkupLine($"{LanguageRegistry.GetText(environmentOnly ? "DoctorScopeEnvironment" : "DoctorScopeProject")}: [cyan]{Markup.Escape(report.RootDirectory)}[/]");
                     var table = new Table().Border(TableBorder.Rounded);
-                    table.AddColumn("Status");
-                    table.AddColumn("Code");
-                    table.AddColumn("Category");
-                    table.AddColumn("Diagnostic");
+                    table.AddColumn(LanguageRegistry.GetText("DoctorStatus"));
+                    table.AddColumn(LanguageRegistry.GetText("DoctorCode"));
+                    table.AddColumn(LanguageRegistry.GetText("DoctorCategory"));
+                    table.AddColumn(LanguageRegistry.GetText("DoctorDiagnostic"));
                     foreach (XamlNexusDoctorCheck check in report.Checks) {
                         (string label, string color) = check.Severity switch {
                             XamlNexusDoctorSeverity.Pass => ("PASS", "green"),
@@ -48,8 +48,8 @@ namespace XamlNexus {
                     AnsiConsole.Write(table);
                     AnsiConsole.MarkupLine(
                         report.IsHealthy
-                            ? $"[green]Healthy:[/] {report.WarningCount} warning(s), 0 errors."
-                            : $"[red]Unhealthy:[/] {report.WarningCount} warning(s), {report.ErrorCount} error(s).");
+                            ? "[green]" + Markup.Escape(string.Format(LanguageRegistry.GetText("DoctorHealthy"), report.WarningCount)) + "[/]"
+                            : "[red]" + Markup.Escape(string.Format(LanguageRegistry.GetText("DoctorUnhealthy"), report.WarningCount, report.ErrorCount)) + "[/]");
                 }
                 return report.IsHealthy ? SuccessExitCode : GenerationFailureExitCode;
             }

@@ -432,3 +432,6 @@ Build/
 
 # Project-local Codex skill (not distributed with this repository)
 /.agents/skills/shuorenhua/
+
+# Local standalone Wiki checkouts
+/.wiki-work/

@@ -1,0 +1,29 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.GallerySourceBrowser">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Expander x:Name="SourceExpander" Style="{StaticResource Section}" Header="{Binding [TemplateSource], Source={StaticResource Strings}}">
+        <StackPanel Spacing="12">
+            <TextBlock x:Name="Description" Style="{StaticResource BodyText}"/>
+            <ComboBox x:Name="picker" HorizontalAlignment="Stretch" SelectionChanged="SelectionChanged"/>
+            <StackPanel x:Name="Parameters" Spacing="12">
+                <ToggleSwitch x:Name="preview" Header="{Binding [ResolveParameters], Source={StaticResource Strings}}" IsOn="True" Toggled="PreviewChanged"/>
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="app" Header="{Binding [ProjectName], Source={StaticResource Strings}}" Text="MyApp" MaxLength="80" TextChanged="ParameterChanged"/>
+                    <TextBox x:Name="name" Grid.Column="1" Header="{Binding [PageName], Source={StaticResource Strings}}" Text="Projects" MaxLength="80" TextChanged="ParameterChanged"/>
+                </Grid>
+                <InfoBar x:Name="validation" IsClosable="False" Severity="Warning" Message="{Binding [InvalidNames], Source={StaticResource Strings}}"/>
+                <TextBlock x:Name="output" Style="{StaticResource BodyText}"/>
+            </StackPanel>
+            <g:GalleryCodeView x:Name="code"/>
+        </StackPanel>
+    </Expander>
+</UserControl>

@@ -8,6 +8,8 @@
 
 基于 .NET 的 Windows 桌面原型脚手架。通过命令行创建 WinUI 3 项目、添加页面和组件，快速开始应用开发。
 
+[XamlNexus Gallery](samples/XamlNexus.Gallery/README.md) 是独立的示例应用，提供功能体验、使用提示和真实源码模板的离线浏览；默认生成的用户项目不包含 Gallery。
+
 ## 功能
 
 - **两种架构**：纯 WinUI 3 应用，或 WinUI 3 前端搭配 WPF 后台宿主。
@@ -22,6 +24,7 @@
 ```powershell
 dotnet tool install --global XamlNexus
 xamlnexus --version
+xamlnexus doctor --environment
 ```
 
 更新或卸载工具：
@@ -48,6 +51,7 @@ xamlnexus run
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add Projects --kind list
 xamlnexus run
 ```
 

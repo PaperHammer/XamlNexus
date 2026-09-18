@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\XamlNexus.Common\Assets\ListPage\ViewModel.cs.txt" Link="TemplateSources\ListViewModel.cs" />
+    <Compile Include="..\XamlNexus.Common\Assets\ListPage\DataSource.cs.txt" Link="TemplateSources\ListDataSource.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppObjectFactory.cs" Link="TemplateSources\AppObjectFactory.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppServiceLocator.cs" Link="TemplateSources\AppServiceLocator.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.UIComponent\Navigation\INavigationRegistry.cs" Link="TemplateSources\INavigationRegistry.cs" />
@@ -21,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\samples\SqliteShowcase\SqliteShowcase.Data\SqliteShowcase.Data.csproj" />
+    <ProjectReference Include="..\..\samples\XamlNexus.Gallery\XamlNexus.Gallery.Data\XamlNexus.Gallery.Data.csproj" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\DataDirectoryCopy.cs" Link="TemplateSources\PureDataDirectoryCopy.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\JsonSaver.cs" Link="TemplateSources\PureJsonSaver.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\IntPtrJsonConverter.cs" Link="TemplateSources\PureIntPtrJsonConverter.cs" />

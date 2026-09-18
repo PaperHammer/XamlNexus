@@ -172,13 +172,14 @@ Quick start:
 Usage:
   xamlnexus                         Start interactive mode
   xamlnexus new &lt;name&gt; [options]    Create a project
-  xamlnexus page add &lt;name&gt; [--project &lt;directory&gt;] [--no-navigation] [--dry-run] [--json]
+  xamlnexus page add &lt;name&gt; [--project &lt;directory&gt;] [--kind blank|list] [--no-navigation] [--dry-run] [--json]
     Add a page; --no-navigation skips navigation registration.
   xamlnexus run [path] [--project &lt;directory&gt;] [--no-build] [--dry-run] [--json]
     Build and run Debug/x64 unpackaged; Ctrl+C stops this run.
     --no-build uses existing output; no watch or hot reload.
   xamlnexus list [path] [--json]    List project capabilities
   xamlnexus validate [path] [--json] Validate the manifest and managed files
+  xamlnexus doctor --environment [--json]
   xamlnexus doctor [path] [--json] Diagnose environment and project health
   xamlnexus upgrade [path] [options] Upgrade scaffold-managed infrastructure
   xamlnexus recipes [--json]        List built-in Recipes
@@ -472,4 +473,25 @@ Tip: Use "xn" as an alias in the current terminal session:
   </data>
   <data name="RecipeError_TransactionRolledBack" xml:space="preserve"><value>Recipe '{0}' failed. All file changes were rolled back.</value></data>
   <data name="RecipeError_TransactionRollbackFailed" xml:space="preserve"><value>Recipe '{0}' failed. Rollback encountered {1} additional error(s).</value></data>
+  <data name="DoctorArchitecture" xml:space="preserve"><value>OS architecture: {0}; CLI process: {1}. Generated run currently targets x64.</value></data>
+  <data name="DoctorSdkFound" xml:space="preserve"><value>Windows SDK {0} x64 headers/libraries found at {1}. Build and runtime compatibility are not verified.</value></data>
+  <data name="DoctorSdkUnknown" xml:space="preserve"><value>Could not confirm Windows SDK 10.0.19041+ x64 assets. Check Windows SDK components in Visual Studio Installer or your custom SDK location, then build a generated project.</value></data>
+  <data name="DoctorEnvironmentBoundary" xml:space="preserve"><value>Preflight only: enabled NuGet sources are not connectivity checks; XAML compiler, Windows App SDK runtime and application startup require a generated-project build/run. See https://github.com/PaperHammer/XamlNexus/wiki</value></data>
+  <data name="DoctorWindows" xml:space="preserve"><value>Windows {0} detected.</value></data>
+  <data name="DoctorRequiresWindows" xml:space="preserve"><value>Generated applications require Windows. Run this check on the Windows development machine.</value></data>
+  <data name="DoctorSdkResolveFailed" xml:space="preserve"><value>Unable to resolve the .NET SDK. Check global.json and dotnet --list-sdks: {0}</value></data>
+  <data name="DoctorSdkSelected" xml:space="preserve"><value>Selected .NET SDK: {0}.</value></data>
+  <data name="DoctorSdkUnsupported" xml:space="preserve"><value>Selected SDK '{0}' is unsupported. Install .NET SDK 8.0 or newer and check global.json.</value></data>
+  <data name="DoctorDotnetFailed" xml:space="preserve"><value>The dotnet command could not start. Install the SDK and check PATH: {0}</value></data>
+  <data name="DoctorNugetFailed" xml:space="preserve"><value>Unable to inspect NuGet sources. Check NuGet.Config: {0}</value></data>
+  <data name="DoctorNugetSources" xml:space="preserve"><value>{0} NuGet source(s) enabled; connectivity has not been tested.</value></data>
+  <data name="DoctorNugetMissing" xml:space="preserve"><value>No enabled NuGet source detected. Enable a source in NuGet.Config before restoring packages.</value></data>
+  <data name="DoctorScopeEnvironment" xml:space="preserve"><value>Environment</value></data>
+  <data name="DoctorScopeProject" xml:space="preserve"><value>Project</value></data>
+  <data name="DoctorStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="DoctorCode" xml:space="preserve"><value>Code</value></data>
+  <data name="DoctorCategory" xml:space="preserve"><value>Category</value></data>
+  <data name="DoctorDiagnostic" xml:space="preserve"><value>Diagnostic</value></data>
+  <data name="DoctorHealthy" xml:space="preserve"><value>No errors: {0} warning(s).</value></data>
+  <data name="DoctorUnhealthy" xml:space="preserve"><value>Found {0} warning(s) and {1} error(s).</value></data>
 </root>

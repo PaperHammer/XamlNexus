@@ -2,7 +2,7 @@
 
 [English](business-page.md) | [简体中文](business-page.zh-CN.md)
 
-The [SqliteShowcase home page](../../samples/SqliteShowcase/SqliteShowcase.MainPanel/MainPage.xaml.cs) combines settings, logging, and SQLite. Business code lives in MainPanel without modifying application startup.
+The [XamlNexus.Gallery home page](../../samples/XamlNexus.Gallery/XamlNexus.Gallery.MainPanel/MainPage.xaml.cs) combines settings, logging, and SQLite. Business code lives in MainPanel without modifying application startup.
 
 ## Generate a page with one command
 
@@ -120,7 +120,7 @@ Settings and database files are separate stores, without a cross-store transacti
 
 ## Logging, errors, and lifecycle
 
-Use `ArcLog.GetLogger<MainPage>()` for operation names and exceptions, without explicitly logging user-entered values. Logs are under `%LOCALAPPDATA%/SqliteShowcase/logs/UI`; exceptions may contain paths or other diagnostic information.
+Use `ArcLog.GetLogger<MainPage>()` for operation names and exceptions, without explicitly logging user-entered values. Logs are under `%LOCALAPPDATA%/XamlNexus.Gallery/logs/UI`; exceptions may contain paths or other diagnostic information.
 
 A shared RunAsync handler catches failures, shows messages, and restores controls in finally. Disable editors, list, buttons, and sorting during an operation; a busy flag also rejects duplicate work. Reload on Loaded. The page keeps no long-lived database context. Unsubscribe from shared-service events on page departure or destruction.
 

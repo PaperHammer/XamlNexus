@@ -1,0 +1,48 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.GalleryLifetimeView">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel Spacing="12">
+        <TextBlock Text="{Binding [LifetimeHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+        <Grid ColumnSpacing="12">
+            <Grid.Resources>
+                <DataTemplate x:Key="EventTemplate">
+                    <StackPanel Spacing="3" Padding="0,6">
+                        <TextBlock>
+                            <Run Text="{Binding Time}"/>
+                            <Run Text="  "/>
+                            <Run Text="{Binding Action}"/>
+                        </TextBlock>
+                        <TextBlock FontSize="12">
+                            <Run Text="{Binding [PageId], Source={StaticResource Strings}}"/>
+                            <Run Text="{Binding PageId}"/>
+                            <Run Text="  VM: "/>
+                            <Run Text="{Binding ViewModelId}"/>
+                        </TextBlock>
+                        <TextBlock FontSize="12" TextWrapping="Wrap">
+                            <Run Text="{Binding [Query], Source={StaticResource Strings}}"/>
+                            <Run Text="{Binding Query}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </Grid.Resources>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Spacing="8">
+                <Button Content="{Binding [OpenRegular], Source={StaticResource Strings}}" Tag="list" Click="Navigate_Click" HorizontalAlignment="Stretch"/>
+                <ListView ItemsSource="{x:Bind g:GalleryLifetime.Regular}" ItemTemplate="{StaticResource EventTemplate}" SelectionMode="None" Height="210"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="8">
+                <Button Content="{Binding [OpenCached], Source={StaticResource Strings}}" Tag="keepalive" Click="Navigate_Click" HorizontalAlignment="Stretch"/>
+                <ListView ItemsSource="{x:Bind g:GalleryLifetime.Cached}" ItemTemplate="{StaticResource EventTemplate}" SelectionMode="None" Height="210"/>
+            </StackPanel>
+        </Grid>
+        <Button Content="{Binding [ClearHistory], Source={StaticResource Strings}}" Click="Clear_Click"/>
+    </StackPanel>
+</UserControl>

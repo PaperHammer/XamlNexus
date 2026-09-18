@@ -31,7 +31,7 @@ XamlNexus 是用于 Windows 客户端开发的 .NET CLI 脚手架。它生成可
 | `src/XamlNexus.Recipes.BuiltIn` | 内置组件的安装定义及资源 |
 | `src/Templates` | 客户端源码模板及共享发布资产 |
 | `src/XamlNexus.TemplateTests` | 自动化测试 |
-| `samples/SqliteShowcase` | 可运行的组合示例 |
+| `samples/XamlNexus.Gallery` | 可运行的组合示例 |
 | `eng`、根目录 `.github` | 仓库构建验收与发布流程 |
 | `docs` | 项目介绍、技术说明和用户手册 |
 

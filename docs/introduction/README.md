@@ -31,7 +31,7 @@ See the [product model](product-model.md) for capabilities and constraints. The 
 | `src/XamlNexus.Recipes.BuiltIn` | Built-in component Recipes and assets |
 | `src/Templates` | Client source templates and shared publishing assets |
 | `src/XamlNexus.TemplateTests` | Automated tests |
-| `samples/SqliteShowcase` | Runnable composition example |
+| `samples/XamlNexus.Gallery` | Runnable composition example |
 | `eng`, root `.github` | Repository acceptance and release workflows |
 | `docs` | Introduction, technical documentation, and user guides |
 

@@ -100,6 +100,7 @@ try {
         Invoke-Checked "$name-new" @($cli, 'new', $name, '--preset', $architecture, '--profile', $Profile, '--solution-format', $SolutionFormat, '--output', $projects) | Out-Null
         Test-Build $name $root 'baseline'
         Invoke-Checked "$name-page" @($cli, 'page', 'add', 'Workspace', '--project', $root, '--json') | Out-Null
+        Invoke-Checked "$name-list-page" @($cli, 'page', 'add', 'Projects', '--kind', 'list', '--project', $root, '--json') | Out-Null
         $features = if ($Profile -eq 'basic') { 'settings,sqlite' } else { 'sqlite' }
         Invoke-Checked "$name-add" @($cli, 'add', $features, '--project', $root, '--json') | Out-Null
         Test-Build $name $root 'composed'

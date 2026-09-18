@@ -33,7 +33,9 @@ public sealed record CliOptions(
     string Profile = "standard",
     IReadOnlyList<string>? Features = null,
     bool NoBuild = false,
-    string? ResolveFromPath = null);
+    string? ResolveFromPath = null,
+    bool EnvironmentOnly = false,
+    string PageKind = "blank");
 
 public sealed record CliParseResult(CliOptions? Options, string? Error) {
     public bool Success => Options is not null;
@@ -53,7 +55,7 @@ public static class CliParser {
         if (args[0].Equals("page", StringComparison.OrdinalIgnoreCase)) {
             if (args.Skip(1).Any(IsHelp)) return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
             if (args.Length < 2 || !args[1].Equals("add", StringComparison.OrdinalIgnoreCase))
-                return CliParseResult.Failed("Usage: xamlnexus page add Orders [--project <directory>] [--no-navigation] [--dry-run] [--json]");
+                return CliParseResult.Failed("Usage: xamlnexus page add Orders [--project <directory>] [--kind blank|list] [--no-navigation] [--dry-run] [--json]");
             var parsed = ParseRecipeCommand(CliCommand.PageAdd, ["page", .. args.Skip(2)], currentDirectory);
             return parsed.Success
                 ? CliParseResult.Parsed(parsed.Options! with { PageName = parsed.Options.RecipeId, RecipeId = null })
@@ -312,6 +314,7 @@ public static class CliParser {
         bool jsonOutput = false;
         bool dryRun = false;
         bool skipNavigation = false;
+        string? pageKind = null;
         for (int index = 1; index < args.Length; index++) {
             string argument = args[index];
             if (argument is "--project" or "-p") {
@@ -327,6 +330,13 @@ public static class CliParser {
             else if (argument.Equals("--dry-run", StringComparison.OrdinalIgnoreCase)) {
                 if (dryRun) return CliParseResult.Failed("The --dry-run option can only be specified once.");
                 dryRun = true;
+            }
+            else if (command == CliCommand.PageAdd && argument.Equals("--kind", StringComparison.OrdinalIgnoreCase)) {
+                if (pageKind is not null) return CliParseResult.Failed("The --kind option can only be specified once.");
+                if (!TryReadValue(args, ref index, argument, out pageKind, out string? kindError))
+                    return CliParseResult.Failed(kindError!);
+                if (pageKind is not ("blank" or "list"))
+                    return CliParseResult.Failed("Page kind must be blank or list.");
             }
             else if (command == CliCommand.PageAdd && argument.Equals("--no-navigation", StringComparison.OrdinalIgnoreCase)) {
                 if (skipNavigation) return CliParseResult.Failed("The --no-navigation option can only be specified once.");
@@ -367,7 +377,7 @@ public static class CliParser {
                 : string.Join(",", recipeId.Split(',').Select(RecipeCommandNames.ToRecipeId)),
             JsonOutput: jsonOutput,
             DryRun: dryRun,
-            SkipNavigation: skipNavigation));
+            SkipNavigation: skipNavigation, PageKind: pageKind ?? "blank"));
     }
 
     private static CliParseResult ParseUpgradeCommand(string[] args, string currentDirectory) {
@@ -440,46 +450,25 @@ public static class CliParser {
     }
 
     private static CliParseResult ParseDoctorCommand(string[] args, string currentDirectory) {
-        if (args.Skip(1).Any(IsHelp))
-            return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
-
-        string? projectPath = null;
-        bool jsonOutput = false;
+        if (args.Skip(1).Any(IsHelp)) return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
+        bool environmentOnly = false;
+        var remaining = new List<string> { "doctor" };
         for (int index = 1; index < args.Length; index++) {
-            string argument = args[index];
-            if (argument is "--project" or "-p") {
-                if (projectPath is not null)
-                    return CliParseResult.Failed("The project path can only be specified once.");
-                if (!TryReadValue(args, ref index, argument, out projectPath, out string? error))
-                    return CliParseResult.Failed(error!);
-            }
-            else if (argument.Equals("--json", StringComparison.OrdinalIgnoreCase)) {
-                if (jsonOutput)
-                    return CliParseResult.Failed("The --json option can only be specified once.");
-                jsonOutput = true;
-            }
-            else if (argument.StartsWith('-')) {
-                return CliParseResult.Failed($"Unknown option '{argument}'.");
-            }
-            else if (projectPath is not null) {
-                return CliParseResult.Failed("The project path can only be specified once.");
+            if (args[index].Equals("--environment", StringComparison.OrdinalIgnoreCase)) {
+                if (environmentOnly) return CliParseResult.Failed("The --environment option can only be specified once.");
+                environmentOnly = true;
             }
             else {
-                projectPath = argument;
+                remaining.Add(args[index]);
+                if (args[index] is "--project" or "-p" && index + 1 < args.Length)
+                    remaining.Add(args[++index]);
             }
         }
-
-        try {
-            projectPath = Path.GetFullPath(projectPath ?? currentDirectory, currentDirectory);
-        }
-        catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException) {
-            return CliParseResult.Failed($"Invalid project path: {exception.Message}");
-        }
-
-        return CliParseResult.Parsed(new CliOptions(
-            CliCommand.Doctor,
-            ProjectPath: projectPath,
-            JsonOutput: jsonOutput));
+        // 环境模式以当前目录选择 SDK（包括祖先 global.json），不接受项目路径。
+        if (environmentOnly && remaining.Skip(1).Any(arg => !arg.Equals("--json", StringComparison.OrdinalIgnoreCase)))
+            return CliParseResult.Failed("Use doctor --environment from the directory to inspect; do not specify a project path.");
+        var parsed = ParseProjectCommand(CliCommand.Doctor, remaining.ToArray(), currentDirectory);
+        return parsed.Success ? CliParseResult.Parsed(parsed.Options! with { EnvironmentOnly = environmentOnly }) : parsed;
     }
 
     private static bool TryReadValue(

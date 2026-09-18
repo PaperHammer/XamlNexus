@@ -47,3 +47,5 @@
 - [生成项目发布说明](../../src/Templates/Shared/RELEASING.md)：安装器、签名和更新资产的准备。实际使用时以生成项目自己的 `RELEASING.md` 与 `eng/publishing/release.json` 为准。
 
 生成的源码和配置都可以修改。内容差异会产生提示；自动移除或升级可能覆盖用户修改时，会报告冲突并停止写入。详情见[产品模型](../introduction/product-model.zh-CN.md)。
+
+[列表页面模板](list-page.zh-CN.md)：搜索、异步加载、取消与替换数据源。

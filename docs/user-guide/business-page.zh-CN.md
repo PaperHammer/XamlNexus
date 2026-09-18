@@ -2,7 +2,7 @@
 
 [English](business-page.md) | [简体中文](business-page.zh-CN.md)
 
-[SqliteShowcase 主页](../../samples/SqliteShowcase/SqliteShowcase.MainPanel/MainPage.xaml.cs)
+[XamlNexus.Gallery 主页](../../samples/XamlNexus.Gallery/XamlNexus.Gallery.MainPanel/MainPage.xaml.cs)
 演示同一页面使用设置、日志和 SQLite。业务代码位于 MainPanel，未修改 App 启动流程。
 
 ## 一条命令生成页面
@@ -130,7 +130,7 @@ internal static class OrdersNavigation {
 这些共享服务由应用容器管理，页面不要 Dispose 它们。每次操作创建的 DbContext
 使用 `await using` 释放，避免把跟踪状态或长期数据库上下文放进页面。
 
-本例直接扩展现有主页。若新增独立页面，使用 `page add` 或上述注册方式。旧版 SqliteShowcase 的窗口仍使用手工导航映射；
+本例直接扩展现有主页。若新增独立页面，使用 `page add` 或上述注册方式。旧版 XamlNexus.Gallery 的窗口仍使用手工导航映射；
 其现有主页示例不受影响。无需在 App.xaml.cs 增加业务初始化代码。
 
 ## 设置与数据
@@ -153,7 +153,7 @@ internal static class OrdersNavigation {
 ## 日志、错误与页面生命周期
 
 通过 `ArcLog.GetLogger<MainPage>()` 记录操作名称及异常，不主动记录用户输入值。
-日志位于 `%LOCALAPPDATA%\SqliteShowcase\logs\UI`。异常本身可能包含路径等诊断信息。
+日志位于 `%LOCALAPPDATA%\XamlNexus.Gallery\logs\UI`。异常本身可能包含路径等诊断信息。
 
 页面使用统一 RunAsync 捕获操作异常、显示提示，并在 finally 恢复控件。
 执行期间禁用编辑、列表、按钮和排序选择，同时用忙碌标志拒绝重复操作。
@@ -201,7 +201,7 @@ public async Task<int> CountAsync() {
 ```
 
 混合架构改为注入已有 `IAppStateClient`，通过 RPC 操作后台持有的数据库；前端不引用 Data。
-现有 SqliteShowcase 保留原有写法，新生成项目使用工厂。旧项目缺少 AppObjectFactory 时，
+现有 XamlNexus.Gallery 保留原有写法，新生成项目使用工厂。旧项目缺少 AppObjectFactory 时，
 page add 保留 `new()`，不会生成无法编译的工厂调用。
 
 工厂通过 ActivatorUtilities 创建新的业务对象，构造参数必须是已注册的服务；它不会递归

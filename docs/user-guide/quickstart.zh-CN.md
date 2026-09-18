@@ -184,4 +184,4 @@ xamlnexus upgrade --dry-run
 `update sqlite` 用于已安装 SQLite 的项目；升级行为见[项目升级](project-upgrade.zh-CN.md)。
 
 开发运行与发布分开。需要分发时使用生成项目中的发布工作流和脚本，并配置自己的版本、签名与更新源。
-[SqliteShowcase](../../samples/SqliteShowcase/README.md)提供组合示例和分发目录构建示例。
+[XamlNexus.Gallery](../../samples/XamlNexus.Gallery/README.md)提供组合示例和分发目录构建示例。

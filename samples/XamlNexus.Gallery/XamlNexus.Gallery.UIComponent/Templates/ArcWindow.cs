@@ -1,0 +1,173 @@
+using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using XamlNexus.Gallery.Common;
+using XamlNexus.Gallery.UIComponent.Utils;
+using XamlNexus.Gallery.UIComponent.Utils.Extensions;
+using WinUIEx;
+
+namespace XamlNexus.Gallery.UIComponent.Templates {
+    public abstract partial class ArcWindow : WindowEx {
+        public virtual NavigationView? AppNavView { get; }
+        public virtual bool IsMainWindow => false;
+        protected virtual bool IsNeedTrack => true;
+        public abstract IWindowSurface ContentHost { get; }
+        public abstract ArcWindowManagerKey Key { get; }
+        protected PropertyHost PropertyHost => _propertyHost;
+        public ObservableCollection<GlobalMsgInfo> InfobarMessages { get; } = [];
+        public bool IsActive => _isActive ?? false;
+
+        public ArcWindow(AppTheme appTheme = AppTheme.Auto, AppSystemBackdrop systemBackdrop = default) {
+            _propertyHost = new();
+            if (IsMainWindow) {
+                ArcThemeUtil.SetMainWindowAppTheme(appTheme);
+                ArcThemeUtil.SetMainWindowBackdrop(systemBackdrop);
+            }
+
+            this.Activated += ArcWindow_Activated;
+            this.AppWindow.Closing += AppWindow_Closing;
+        }
+
+        private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
+            bool isActive = args.WindowActivationState != WindowActivationState.Deactivated;
+            if (_isActive == isActive) return;
+            _isActive = isActive;
+
+            ArcWindowTitleBarUtil.UpdateTitleBar(this, ArcThemeUtil.GetFormatMainWindowTheme(), isActive);
+        }
+
+        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+            this.Activated -= ArcWindow_Activated;
+
+            if (IsMainWindow) {
+                ArcWindowManager.Cleanup();
+                ArcThemeUtil.Cleanup();
+            }
+        }
+
+        private async void AppRoot_Loaded(object sender, RoutedEventArgs e) {
+            _compositor = ElementCompositionPreview.GetElementVisual(this.ContentHost.AppRoot).Compositor;
+            _isLoaded = true;
+            await SetThemeAsync();
+        }
+
+        protected void InitializeWindow() {
+            this.ContentHost.AppRoot.Loaded += AppRoot_Loaded;
+
+            if (IsNeedTrack) {
+                ArcWindowManager.TrackWindow(Key, this);
+            }
+            SetWindowStartupPosition();
+            SetWindowStyle();
+            SetWindowTitleBar();
+        }
+
+        #region theme
+        protected void UpdateThemeFromThemeBtnClick(AppTheme theme) {
+            if (!IsMainWindow) return;
+            ArcThemeUtil.UpdateThemeGlobal(theme);
+        }
+
+        private void UpdateThemeIcon() {
+            if (!IsMainWindow) return;
+
+            _propertyHost.ThemeIconKey = ArcThemeUtil.MainWindowAppTheme switch {
+                AppTheme.Light => "NaviIcon_ThemeLight",
+                AppTheme.Dark => "NaviIcon_ThemeDark",
+                _ => "NaviIcon_ThemeAuto"
+            };
+        }
+
+        public async Task SetThemeAsync() {
+            if (!_isLoaded || _compositor == null || this.ContentHost.AppRoot == null || this.ContentHost.AppRoot.ActualWidth <= 0 || this.ContentHost.AppRoot.ActualHeight <= 0)
+                return;
+
+            UpdateThemeIcon();
+
+            // 捕获当前界面图像
+            var bitmap = new RenderTargetBitmap();
+            await bitmap.RenderAsync(this.ContentHost.AppRoot);
+            this.ContentHost.AppThemeTransitionImage.Source = bitmap;
+            this.ContentHost.AppThemeTransitionImage.Visibility = Visibility.Visible;
+            this.ContentHost.AppThemeTransitionImage.Opacity = 1.0;
+
+            UpdateTheme();
+
+            // 动画
+            var imageVisual = ElementCompositionPreview.GetElementVisual(this.ContentHost.AppThemeTransitionImage);
+            var fadeAnim = _compositor.CreateScalarKeyFrameAnimation();
+            fadeAnim.InsertKeyFrame(0f, 1f);
+            fadeAnim.InsertKeyFrame(1f, 0f);
+            fadeAnim.Duration = TimeSpan.FromMilliseconds(600);
+            imageVisual.StartAnimation(nameof(imageVisual.Opacity), fadeAnim);
+
+            await Task.Delay(600);
+
+            this.ContentHost.AppThemeTransitionImage.Visibility = Visibility.Collapsed;
+            this.ContentHost.AppThemeTransitionImage.Source = null;
+        }
+
+        private void UpdateTheme() {
+            ArcThemeUtil.ApplyTheme(this.ContentHost.AppRoot);
+            // 系统材质监听窗口根元素的主题，必须与内部内容同步。
+            this.ContentHost.RequestedTheme = this.ContentHost.AppRoot.RequestedTheme;
+            ArcWindowManager.UpdateWindowVisualState(this);
+        }
+        #endregion
+
+        #region window property
+        protected virtual void SetWindowStartupPosition() {
+            DisplayArea displayArea = SystemUtil.GetDisplayArea(this, DisplayAreaFallback.Nearest);
+            if (displayArea is not null) {
+                var centeredPosition = this.AppWindow.Position;
+                centeredPosition.X = (displayArea.WorkArea.Width - this.AppWindow.Size.Width) / 2;
+                centeredPosition.Y = (displayArea.WorkArea.Height - this.AppWindow.Size.Height) / 2;
+                this.AppWindow.Move(centeredPosition);
+            }
+        }
+
+        private void SetWindowTitleBar() {
+            if (AppWindowTitleBar.IsCustomizationSupported()) {
+                this.ExtendsContentIntoTitleBar = true;
+                this.SetTitleBar(this.ContentHost.AppTitleBar);
+                this.AppWindow.SetIcon("Assets/xamlnexus.ico");
+                this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+            }
+            else {
+                this.ContentHost.AppTitleBar.Visibility = Visibility.Collapsed;
+                this.UseImmersiveDarkModeEx(ArcThemeUtil.MainWindowAppTheme == AppTheme.Dark);
+            }
+        }
+
+        private void SetWindowStyle() {
+            this.SystemBackdrop = ArcThemeUtil.MainWindowBackdrop switch {
+                AppSystemBackdrop.Mica => new MicaBackdrop(),
+                AppSystemBackdrop.Acrylic => new DesktopAcrylicBackdrop(),
+                _ => new MicaBackdrop(),
+            };
+        }
+        #endregion
+
+        private bool _isLoaded;
+        private Compositor _compositor = null!;
+        private bool? _isActive = null;
+        private readonly PropertyHost _propertyHost;
+    }
+
+    public partial class PropertyHost : FrameworkElement {
+        public string ThemeIconKey {
+            get => (string)GetValue(ThemeIconKeyProperty);
+            set => SetValue(ThemeIconKeyProperty, value);
+        }
+        public static readonly DependencyProperty ThemeIconKeyProperty =
+            DependencyProperty.Register(nameof(ThemeIconKey), typeof(string),
+                typeof(PropertyHost), new PropertyMetadata(null));
+    }
+}

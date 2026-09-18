@@ -157,4 +157,4 @@ xamlnexus upgrade --dry-run
 
 From outside, add `--project <project-directory>`, for example `xamlnexus run --project ./MyApp`. `update sqlite` requires an installed SQLite component; see [upgrades](project-upgrade.md).
 
-Development running and publishing are separate. To distribute, configure your own versions, signing, and update source in the generated workflows and scripts. [SqliteShowcase](../../samples/SqliteShowcase/README.md) demonstrates composition and distribution-directory builds.
+Development running and publishing are separate. To distribute, configure your own versions, signing, and update source in the generated workflows and scripts. [XamlNexus.Gallery](../../samples/XamlNexus.Gallery/README.md) demonstrates composition and distribution-directory builds.

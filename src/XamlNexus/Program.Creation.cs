@@ -14,7 +14,7 @@ namespace XamlNexus {
         private static int AddPage(CliOptions options) {
             try {
                 var changed = PageGenerator.Add(XamlNexusProjectLocator.Locate(options.ProjectPath!),
-                    options.PageName!, options.DryRun, options.SkipNavigation);
+                    options.PageName!, options.DryRun, options.SkipNavigation, options.PageKind);
                 bool navigationAdded = changed.Any(path => path.EndsWith($".UI/Navigation/{options.PageName}Navigation.cs", StringComparison.Ordinal));
                 string? notice = navigationAdded ? null
                     : "Navigation was not changed. Register the generated page in your navigation system manually.";

@@ -395,4 +395,25 @@
   </data>
   <data name="RecipeError_TransactionRolledBack" xml:space="preserve"><value>Recipe“{0}”执行失败，所有文件变更已回滚</value></data>
   <data name="RecipeError_TransactionRollbackFailed" xml:space="preserve"><value>Recipe“{0}”执行失败，回滚时发生 {1} 个额外错误</value></data>
+  <data name="DoctorArchitecture" xml:space="preserve"><value>操作系统架构：{0}；CLI 进程架构：{1}。当前生成项目的 run 默认使用 x64。</value></data>
+  <data name="DoctorSdkFound" xml:space="preserve"><value>在 {1} 找到 Windows SDK {0} 的 x64 头文件和库；尚未验证构建与运行兼容性。</value></data>
+  <data name="DoctorSdkUnknown" xml:space="preserve"><value>无法确认 Windows SDK 10.0.19041+ 的 x64 资产。请检查 Visual Studio Installer 中的 Windows SDK 组件或自定义安装位置，再构建生成项目。</value></data>
+  <data name="DoctorEnvironmentBoundary" xml:space="preserve"><value>仅作环境预检：启用的 NuGet 源不代表网络可达；XAML 编译器、Windows App SDK 运行时及应用启动需通过生成项目的构建与运行确认。参考 https://github.com/PaperHammer/XamlNexus/wiki</value></data>
+  <data name="DoctorWindows" xml:space="preserve"><value>检测到 Windows {0}。</value></data>
+  <data name="DoctorRequiresWindows" xml:space="preserve"><value>生成的应用需要 Windows，请在 Windows 开发机器上运行此检查。</value></data>
+  <data name="DoctorSdkResolveFailed" xml:space="preserve"><value>无法解析 .NET SDK。请检查 global.json 并运行 dotnet --list-sdks：{0}</value></data>
+  <data name="DoctorSdkSelected" xml:space="preserve"><value>当前目录选用的 .NET SDK：{0}。</value></data>
+  <data name="DoctorSdkUnsupported" xml:space="preserve"><value>当前 SDK '{0}' 不受支持。请安装 .NET SDK 8.0 或更高版本，并检查 global.json。</value></data>
+  <data name="DoctorDotnetFailed" xml:space="preserve"><value>无法启动 dotnet 命令，请安装 SDK 并检查 PATH：{0}</value></data>
+  <data name="DoctorNugetFailed" xml:space="preserve"><value>无法检查 NuGet 源，请检查 NuGet.Config：{0}</value></data>
+  <data name="DoctorNugetSources" xml:space="preserve"><value>已启用 {0} 个 NuGet 源；尚未验证网络连通性。</value></data>
+  <data name="DoctorNugetMissing" xml:space="preserve"><value>未检测到已启用的 NuGet 源。请在还原包前于 NuGet.Config 中启用源。</value></data>
+  <data name="DoctorScopeEnvironment" xml:space="preserve"><value>环境</value></data>
+  <data name="DoctorScopeProject" xml:space="preserve"><value>项目</value></data>
+  <data name="DoctorStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="DoctorCode" xml:space="preserve"><value>编号</value></data>
+  <data name="DoctorCategory" xml:space="preserve"><value>分类</value></data>
+  <data name="DoctorDiagnostic" xml:space="preserve"><value>诊断</value></data>
+  <data name="DoctorHealthy" xml:space="preserve"><value>未发现错误：{0} 项警告。</value></data>
+  <data name="DoctorUnhealthy" xml:space="preserve"><value>发现 {0} 项警告、{1} 项错误。</value></data>
 </root>

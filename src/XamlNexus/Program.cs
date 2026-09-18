@@ -65,7 +65,7 @@ namespace XamlNexus {
                     case CliCommand.Update:
                         return UpdateRecipe(options.RecipeId!, options.ProjectPath!, options.DryRun, options.JsonOutput);
                     case CliCommand.Doctor:
-                        return Doctor(options.ProjectPath!, options.JsonOutput);
+                        return Doctor(options.ProjectPath!, options.JsonOutput, options.EnvironmentOnly);
                     case CliCommand.Upgrade:
                         return UpgradeProject(
                             options.ProjectPath!,

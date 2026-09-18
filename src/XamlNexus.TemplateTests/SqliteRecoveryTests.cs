@@ -1,8 +1,8 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SqliteShowcase.Data.Models;
-using SqliteShowcase.Data.Persistence;
+using XamlNexus.Gallery.Data.Models;
+using XamlNexus.Gallery.Data.Persistence;
 using Xunit;
 
 namespace XamlNexus.TemplateTests;

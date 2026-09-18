@@ -29,7 +29,7 @@ Basic removes the full settings panel while retaining startup, navigation, MVVM,
 | Logon startup | Core implementation retained | Configurable in settings | No standalone Recipe; registration is not enabled by default |
 | Editor configuration | Optional | Optional | `add editorconfig` |
 | Publishing, installers, signing | Scripts included | Scripts included | Maintainer configuration and execution; separate from development running |
-| Ordinary page generation | `page add` | `page add` | Page, ViewModel, navigation registration; no list/form kinds |
+| Ordinary page generation | `page add` | `page add` | Page, ViewModel, navigation registration; blank/list kinds, no form kind |
 
 Actual installation state is shown by `xamlnexus list` and `xamlnexus.json` modules. Profile records creation intent; later removals are not undone merely because of the initial profile. Legacy manifests without a profile are treated as standard; preset retains its architecture meaning.
 

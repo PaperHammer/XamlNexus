@@ -20,7 +20,8 @@ namespace XamlNexus.Common.Utils {
     }
 
     public static class ShellExecutor {
-        public static ShellExecutionResult Run(string fileName, string args, string workingDir) {
+        public static ShellExecutionResult Run(string fileName, string args, string workingDir, int? timeoutMilliseconds = null) {
+            if (timeoutMilliseconds is <= 0) throw new ArgumentOutOfRangeException(nameof(timeoutMilliseconds));
             var startInfo = new ProcessStartInfo {
                 FileName = fileName,
                 Arguments = args,
@@ -40,7 +41,15 @@ namespace XamlNexus.Common.Utils {
             Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
             Task<string> errorTask = process.StandardError.ReadToEndAsync();
 
-            process.WaitForExit();
+            if (timeoutMilliseconds is int timeout) {
+                if (!process.WaitForExit(timeout)) {
+                    process.Kill(entireProcessTree: true);
+                    process.WaitForExit();
+                    Task.WaitAll(outputTask, errorTask);
+                    return new ShellExecutionResult(-1, outputTask.Result, $"Process timed out after {timeout} ms: {fileName}");
+                }
+            }
+            else process.WaitForExit();
 
             return new ShellExecutionResult(
                 process.ExitCode,

@@ -11,6 +11,7 @@ Windows and a .NET 8 / WinUI build environment are required.
 ```powershell
 dotnet tool install --global XamlNexus
 xamlnexus --version
+xamlnexus doctor --environment
 ```
 
 This guide describes the current source. Public packages gain new commands when the corresponding version is published.
@@ -43,6 +44,7 @@ Edit `MyApp.MainPanel/MainPage.xaml` for the home layout and
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add Projects --kind list
 xamlnexus run
 ```
 

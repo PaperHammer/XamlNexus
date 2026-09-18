@@ -61,7 +61,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNexus.Recipes.BuiltIn",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{5D20AA90-6969-D8BD-9DCD-8634F4692FDA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteShowcase.Data", "..\samples\SqliteShowcase\SqliteShowcase.Data\SqliteShowcase.Data.csproj", "{167007FB-36C7-4B55-9C95-856B34525543}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNexus.Gallery.Data", "..\samples\XamlNexus.Gallery\XamlNexus.Gallery.Data\XamlNexus.Gallery.Data.csproj", "{167007FB-36C7-4B55-9C95-856B34525543}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

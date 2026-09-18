@@ -74,7 +74,7 @@ xamlnexus page add Details --no-navigation
 
 支持 `--project`、`--no-navigation`、`--dry-run` 和 `--json`。名称以英文大写字母开头，其余为英文字母或数字，例如 `Orders`。
 
-默认生成普通 Page、ViewModel 并接入导航。`--no-navigation` 跳过导航接入，适合自行组织导航的项目。仅支持普通页面，没有 `--kind list` 或 `--kind form`，也不生成业务 CRUD。页面源码可直接修改；详细位置和接入方式见[页面开发](business-page.zh-CN.md)。
+默认生成普通 Page、ViewModel 并接入导航。`--no-navigation` 跳过导航接入，适合自行组织导航的项目。支持 `--kind blank|list`（默认 blank）；列表模板包含搜索、刷新与异步状态，见[列表页面模板](list-page.zh-CN.md)。不生成表单或业务 CRUD。页面源码可直接修改；详细位置和接入方式见[页面开发](business-page.zh-CN.md)。
 
 ## 查看与管理组件
 
@@ -107,7 +107,7 @@ xamlnexus validate --json
 xamlnexus doctor
 ```
 
-两者支持项目路径和 `--json`。`validate` 检查清单及所记录文件；内容变化通常是警告，缺失文件是错误。`doctor` 进一步检查开发环境、工程引用与组件接入。它们不代替实际构建或 GUI 验证，详见[诊断说明](doctor.zh-CN.md)。
+两者支持项目路径和 `--json`。创建项目前可使用 `doctor --environment [--json]`，该模式不接受项目路径。`validate` 检查清单及所记录文件；内容变化通常是警告，缺失文件是错误。`doctor` 进一步检查开发环境、工程引用与组件接入。它们不代替实际构建或 GUI 验证，详见[诊断说明](doctor.zh-CN.md)。
 
 ## 升级脚手架：`upgrade`
 

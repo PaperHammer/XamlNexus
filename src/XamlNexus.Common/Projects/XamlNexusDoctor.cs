@@ -26,7 +26,7 @@ public sealed record XamlNexusDoctorReport(string RootDirectory, DateTimeOffset 
     public int WarningCount => Checks.Count(check => check.Severity == XamlNexusDoctorSeverity.Warning);
 }
 
-public static class XamlNexusDoctor {
+public static partial class XamlNexusDoctor {
     public static XamlNexusDoctorReport Diagnose(XamlNexusProjectContext context, IXamlNexusRecipeCatalog recipeCatalog, bool probeEnvironment = true) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(recipeCatalog);
@@ -45,51 +45,51 @@ public static class XamlNexusDoctor {
 
     private static void DiagnoseEnvironment(string rootDirectory, List<XamlNexusDoctorCheck> checks) {
         checks.Add(OperatingSystem.IsWindows()
-            ? Pass("XD1001", "Environment", $"Windows {Environment.OSVersion.Version} detected.")
-            : Error("XD1001", "Environment", "XamlNexus generated applications require Windows."));
+            ? Pass("XD1001", "Environment", string.Format(LanguageRegistry.GetText("DoctorWindows"), Environment.OSVersion.Version))
+            : Error("XD1001", "Environment", LanguageRegistry.GetText("DoctorRequiresWindows")));
 
         try {
             // Resolve from the project directory so global.json and SDK roll-forward apply.
-            ShellExecutionResult sdkResult = ShellExecutor.Run("dotnet", "--version", rootDirectory);
+            ShellExecutionResult sdkResult = ShellExecutor.Run("dotnet", "--version", rootDirectory, timeoutMilliseconds: 15000);
             if (!sdkResult.Success) {
                 checks.Add(Error("XD1002", "Environment",
-                    $"Unable to resolve the .NET SDK for this project. Check global.json and the installed SDKs: {sdkResult.DiagnosticOutput}"));
+                    string.Format(LanguageRegistry.GetText("DoctorSdkResolveFailed"), sdkResult.DiagnosticOutput)));
             }
             else {
                 string selected = sdkResult.StandardOutput.Trim();
                 checks.Add(Version.TryParse(selected.Split('-')[0], out Version? version) && version.Major >= 8
-                    ? Pass("XD1002", "Environment", $"Project-selected .NET SDK: {selected}.")
-                    : Error("XD1002", "Environment", $"Project-selected SDK '{selected}' is unsupported. .NET SDK 8.0 or newer is required; check global.json."));
+                    ? Pass("XD1002", "Environment", string.Format(LanguageRegistry.GetText("DoctorSdkSelected"), selected))
+                    : Error("XD1002", "Environment", string.Format(LanguageRegistry.GetText("DoctorSdkUnsupported"), selected)));
             }
         }
         catch (Exception exception) when (
             exception is System.ComponentModel.Win32Exception or InvalidOperationException) {
-            checks.Add(Error("XD1002", "Environment", $"The dotnet SDK command could not start: {exception.Message}"));
+            checks.Add(Error("XD1002", "Environment", string.Format(LanguageRegistry.GetText("DoctorDotnetFailed"), exception.Message)));
         }
 
         try {
             ShellExecutionResult nugetResult = ShellExecutor.Run(
                 "dotnet",
                 "nuget list source --format Short",
-                rootDirectory);
+                rootDirectory, timeoutMilliseconds: 15000);
             if (!nugetResult.Success) {
                 checks.Add(Warning(
                     "XD1003",
                     "Environment",
-                    $"Unable to inspect NuGet sources: {nugetResult.DiagnosticOutput}"));
+                    string.Format(LanguageRegistry.GetText("DoctorNugetFailed"), nugetResult.DiagnosticOutput)));
             }
             else {
                 int enabledSources = nugetResult.StandardOutput
                     .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
                     .Count(line => line.TrimStart().StartsWith("E ", StringComparison.OrdinalIgnoreCase));
                 checks.Add(enabledSources > 0
-                    ? Pass("XD1003", "Environment", $"{enabledSources} NuGet source(s) enabled.")
-                    : Warning("XD1003", "Environment", "No enabled NuGet source was detected."));
+                    ? Pass("XD1003", "Environment", string.Format(LanguageRegistry.GetText("DoctorNugetSources"), enabledSources))
+                    : Warning("XD1003", "Environment", LanguageRegistry.GetText("DoctorNugetMissing")));
             }
         }
         catch (Exception exception) when (
             exception is System.ComponentModel.Win32Exception or InvalidOperationException) {
-            checks.Add(Warning("XD1003", "Environment", $"NuGet sources could not be inspected: {exception.Message}"));
+            checks.Add(Warning("XD1003", "Environment", string.Format(LanguageRegistry.GetText("DoctorNugetFailed"), exception.Message)));
         }
     }
 

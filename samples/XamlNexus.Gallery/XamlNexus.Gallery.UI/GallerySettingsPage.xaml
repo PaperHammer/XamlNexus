@@ -1,0 +1,42 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.UI.GallerySettingsPage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Left">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <TextBlock Text="{Binding [Settings], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="28" FontWeight="SemiBold"/>
+            <StackPanel Spacing="6" Margin="0,8,0,0">
+                <TextBlock Margin="0,0,0,6" Text="{Binding [Appearance], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="14" FontWeight="SemiBold"/>
+                <g:GallerySettingRow Glyph="" Title="{Binding [AppTheme], Source={StaticResource Strings}}" Description="{Binding [ThemeHelp], Source={StaticResource Strings}}">
+                    <ComboBox x:Name="theme" Width="200" AutomationProperties.Name="{Binding [AppTheme], Source={StaticResource Strings}}" SelectionChanged="ThemeChanged"/>
+                </g:GallerySettingRow>
+                <g:GallerySettingRow Glyph="" Title="{Binding [Backdrop], Source={StaticResource Strings}}" Description="{Binding [RestartGallery], Source={StaticResource Strings}}">
+                    <ComboBox x:Name="material" Width="200" AutomationProperties.Name="{Binding [Backdrop], Source={StaticResource Strings}}" SelectionChanged="MaterialChanged">
+                        <ComboBoxItem Content="Mica"/>
+                        <ComboBoxItem Content="Acrylic"/>
+                    </ComboBox>
+                </g:GallerySettingRow>
+            </StackPanel>
+            <StackPanel Spacing="6" Margin="0,8,0,0">
+                <TextBlock Text="{Binding [Preferences], Source={StaticResource Strings}}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <g:GallerySettingRow Glyph="" Title="{Binding [Language], Source={StaticResource Strings}}" Description="{Binding [LanguageHelp], Source={StaticResource Strings}}">
+                    <ComboBox x:Name="language" Width="200" AutomationProperties.Name="{Binding [Language], Source={StaticResource Strings}}" SelectionChanged="LanguageChanged">
+                        <ComboBoxItem Content="简体中文"/>
+                        <ComboBoxItem Content="English"/>
+                    </ComboBox>
+                </g:GallerySettingRow>
+            </StackPanel>
+            <StackPanel Spacing="6" Margin="0,8,0,0">
+                <TextBlock Margin="0,0,0,6" Text="{Binding [About], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="14" FontWeight="SemiBold"/>
+                <g:GallerySettingRow Glyph="" Title="XamlNexus Gallery" Description="{Binding [AboutDescription], Source={StaticResource Strings}}">
+                    <TextBlock x:Name="Version" VerticalAlignment="Center"/>
+                </g:GallerySettingRow>
+                <HyperlinkButton Content="{Binding [GitHubFeedback], Source={StaticResource Strings}}" NavigateUri="https://github.com/PaperHammer/XamlNexus"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

@@ -8,6 +8,8 @@
 
 A .NET command-line tool for creating Windows desktop prototypes with WinUI 3. Generate a project, add pages and components, and start building your application.
 
+Explore [XamlNexus Gallery](samples/XamlNexus.Gallery/README.md), a standalone app with interactive examples, tips, and offline browsing of the actual source templates. Gallery is maintained separately from the default generated application.
+
 ## Features
 
 - **Two architectures:** a WinUI 3 application, or a WinUI 3 frontend with a WPF background host.
@@ -22,6 +24,7 @@ Prepare Windows, the .NET 8 SDK, and the WinUI build environment.
 ```powershell
 dotnet tool install --global XamlNexus
 xamlnexus --version
+xamlnexus doctor --environment
 ```
 
 Update or uninstall the tool:
@@ -48,6 +51,7 @@ Add a page, then run the application:
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add Projects --kind list
 xamlnexus run
 ```
 
