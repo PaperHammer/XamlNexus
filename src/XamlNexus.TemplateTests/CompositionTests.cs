@@ -1,5 +1,4 @@
 using XamlNexus.Tooling.CommandLine;
-using XamlNexus.Common.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Recipes;
@@ -181,8 +180,8 @@ public sealed class CompositionTests : IDisposable {
 
     private sealed class Generator(bool fail = false, Action<ProjectConfig>? beforeReturn = null, string[]? included = null) : IGenerator {
         public IReadOnlyList<string> GetIncludedModuleIds(string profile) => included ?? [];
-        public bool Generate(ProjectConfig config) => Generate(config, true);
-        public bool Generate(ProjectConfig config, bool reportSuccess) {
+        public bool Generate(ProjectConfig config) => GenerateProject(config).Success;
+        public GenerationResult GenerateProject(ProjectConfig config, Action<GenerationProgress>? progress = null) {
             string target = Path.Combine(config.OutputPath, config.SlnName);
             foreach (string file in new[] { "Demo.sln", "Directory.Build.props", "Demo.UI/Demo.UI.csproj", "Demo.Common/Demo.Common.csproj" }) {
                 string full = Path.Combine(target, file);
@@ -195,7 +194,7 @@ public sealed class CompositionTests : IDisposable {
                 Project = new() { Name = "Demo", Preset = "winui", Profile = config.Profile, Language = "en-US", SolutionFormat = "sln" },
             });
             beforeReturn?.Invoke(config);
-            return !fail;
+            return fail ? new(null, new InvalidOperationException("Simulated generation failure.")) : new(target, null);
         }
     }
 

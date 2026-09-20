@@ -1,5 +1,4 @@
 using XamlNexus.Tooling.CommandLine;
-using XamlNexus.Common.CommandLine;
 using Spectre.Console;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Recipes;

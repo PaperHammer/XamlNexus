@@ -1,8 +1,7 @@
 using XamlNexus.Tooling.Development;
 using XamlNexus.Tooling.Diagnostics;
-using XamlNexus.Tooling.CommandLine;
 using System.Text;
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Projects;
 using Xunit;
 using XamlNexus.Common.Recipes;

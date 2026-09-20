@@ -515,11 +515,9 @@ public sealed class GeneratorRootAssetsTests {
 
     private sealed class PureGenerator(string templateRoot) : Winui3Generator {
         protected override string TemplateRoot => templateRoot;
-        protected override void OnError(ProjectConfig config, Exception ex) => throw ex;
     }
 
     private sealed class HybridGenerator(string templateRoot) : Winui3_WpfGenerator {
         protected override string TemplateRoot => templateRoot;
-        protected override void OnError(ProjectConfig config, Exception ex) => throw ex;
     }
 }

@@ -2,7 +2,7 @@ using System.Globalization;
 using Spectre.Console;
 using XamlNexus.Common.Utils;
 
-namespace XamlNexus.Common.CommandLine;
+namespace XamlNexus.Tooling.CommandLine;
 
 // A cursor-aware editor for the two wizard fields. Spectre handles rendering,
 // including wide characters; edits use text-element boundaries rather than screen columns.

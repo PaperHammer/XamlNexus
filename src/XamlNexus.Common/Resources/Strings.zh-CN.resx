@@ -504,4 +504,11 @@
   <data name="ProjectUpgrade_UpgradeRolledBack" xml:space="preserve"><value>项目升级失败。已回滚所有脚手架变更。</value></data>
   <data name="ProjectUpgrade_UpgradeRollbackFailed" xml:space="preserve"><value>项目升级失败。回滚时发生 {0} 个额外错误。</value></data>
   <data name="Cli_InvalidArguments" xml:space="preserve"><value>{0}</value></data>
+  <data name="Generation_InvalidProfile" xml:space="preserve"><value>配置档必须为 standard 或 basic。</value></data>
+  <data name="Generation_InvalidFrameworkOrSolution" xml:space="preserve"><value>不支持的框架或解决方案格式。</value></data>
+  <data name="Generation_InvalidLanguage" xml:space="preserve"><value>语言必须为 zh-CN 或 en-US。</value></data>
+  <data name="Generation_ApplyRecipes" xml:space="preserve"><value>正在添加所选功能</value></data>
+  <data name="Generation_ValidateProject" xml:space="preserve"><value>正在校验项目</value></data>
+  <data name="Generation_PublishProject" xml:space="preserve"><value>正在写入完整项目</value></data>
+  <data name="Generation_Failed" xml:space="preserve"><value>项目创建失败：{0}</value></data>
 </root>

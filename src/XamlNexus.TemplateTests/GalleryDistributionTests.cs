@@ -1,8 +1,7 @@
-using XamlNexus.Tooling.CommandLine;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Tooling.Gallery;
 using Xunit;
 

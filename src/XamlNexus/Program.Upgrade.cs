@@ -1,4 +1,5 @@
 using Spectre.Console;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Utils;
@@ -71,13 +72,10 @@ namespace XamlNexus {
                     SlnType = current.Manifest.Project.SolutionFormat == "slnx" ? SolutionType.Slnx : SolutionType.Sln,
                 };
                 IGenerator generator = GeneratorFactory.GetGenerator(framework);
-                if (!GenerateUpgradeTarget(generator, config)) {
-                    ShowCommandError(
-                        "upgrade",
-                        "Failed to generate the target scaffold for upgrade planning.",
-                        jsonOutput);
-                    return GenerationFailureExitCode;
-                }
+                var generation = jsonOutput
+                    ? generator.GenerateProject(config)
+                    : GenerationConsole.Run(config, progress => generator.GenerateProject(config, progress));
+                generation.GetOutputOrThrow();
 
                 XamlNexusProjectContext target = XamlNexusProjectLocator.Locate(
                     Path.Combine(temporaryParent, current.Manifest.Project.Name));
@@ -147,21 +145,6 @@ namespace XamlNexus {
                         // Temporary scaffold cleanup must not hide the upgrade result.
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// 临时捕获生成器的标准输出以生成升级目标，并在结束时恢复原输出流
-        /// </summary>
-        private static bool GenerateUpgradeTarget(IGenerator generator, ProjectConfig config) {
-            TextWriter originalOutput = Console.Out;
-            using var suppressedOutput = new StringWriter();
-            try {
-                Console.SetOut(suppressedOutput);
-                return generator.Generate(config);
-            }
-            finally {
-                Console.SetOut(originalOutput);
             }
         }
 

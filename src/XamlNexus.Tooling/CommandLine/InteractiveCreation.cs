@@ -4,11 +4,11 @@ using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Recipes;
 
-namespace XamlNexus.Common.CommandLine;
+namespace XamlNexus.Tooling.CommandLine;
 
 public static class InteractiveCreation {
     public static IReadOnlyList<IXamlNexusRecipe> GetChoices(ProjectConfig config, IGenerator generator, IXamlNexusRecipeCatalog catalog) {
-        string preset = config.Framework == Utils.FrameworkType.Winui3_Wpf ? "hybrid" : "winui";
+        string preset = config.Framework == FrameworkType.Winui3_Wpf ? "hybrid" : "winui";
         var included = generator.GetIncludedModuleIds(config.Profile).ToHashSet(StringComparer.OrdinalIgnoreCase);
         return catalog.Recipes.Where(recipe => !included.Contains(recipe.Descriptor.Id)
             && recipe.Descriptor.SupportedPresets.Contains(preset, StringComparer.OrdinalIgnoreCase))
@@ -23,7 +23,7 @@ public static class InteractiveCreation {
             .UseConverter(profile => profile == "standard"
                 ? LanguageRegistry.GetText("Wizard_StandardProfile")
                 : LanguageRegistry.GetText("Wizard_BasicProfile")));
-        string preset = config.Framework == Utils.FrameworkType.Winui3_Wpf ? "hybrid" : "winui";
+        string preset = config.Framework == FrameworkType.Winui3_Wpf ? "hybrid" : "winui";
         var choices = GetChoices(config, generator, catalog);
         while (true) {
             var selected = SelectCapabilities(AnsiConsole.Console, choices);

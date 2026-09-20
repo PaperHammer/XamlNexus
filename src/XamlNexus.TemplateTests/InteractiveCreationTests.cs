@@ -1,4 +1,4 @@
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Utils;

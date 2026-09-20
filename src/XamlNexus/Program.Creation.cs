@@ -1,7 +1,6 @@
 using XamlNexus.Tooling.Development;
-using XamlNexus.Tooling.CommandLine;
 using Spectre.Console;
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Utils;
@@ -86,8 +85,8 @@ namespace XamlNexus {
                 AnsiConsole.WriteLine("Interactive creation needs a terminal. Use: xamlnexus new MyApp --profile standard --features sqlite");
                 return UsageErrorExitCode;
             }
-            BaseConfig.ShowLogo(version);
-            var config = BaseConfig.BaseComposeConfig();
+            ProjectWizard.ShowLogo(version);
+            var config = ProjectWizard.CollectConfiguration();
             var request = InteractiveCreation.Compose(config, GeneratorFactory.GetGenerator(config.Framework), BuiltInRecipeCatalog.Create());
             return Generate(request.Project, request.Profile, request.Features);
         }
@@ -102,16 +101,15 @@ namespace XamlNexus {
                 : LanguageType.Chinese;
 
             var generator = GeneratorFactory.GetGenerator(config.Framework);
-            if (features is not { Count: > 0 })
-                return generator.Generate(config) ? SuccessExitCode : GenerationFailureExitCode;
-
             try {
-                string output = ProjectComposer.Create(new CompositionRequest(config, profile, features), generator, BuiltInRecipeCatalog.Create());
-                CreationReport.Write(config, output, hasAddedCapabilities: true);
+                string output = GenerationConsole.Run(config, progress => features is { Count: > 0 }
+                    ? ProjectComposer.Create(new CompositionRequest(config, profile, features), generator, BuiltInRecipeCatalog.Create(), progress)
+                    : generator.GenerateProject(config, progress).GetOutputOrThrow());
+                CreationReport.Write(config, output, hasAddedCapabilities: features is { Count: > 0 });
                 return SuccessExitCode;
             }
             catch (Exception exception) {
-                AnsiConsole.WriteLine($"Project creation failed: {XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception)}");
+                AnsiConsole.WriteLine(string.Format(LanguageRegistry.GetText("Generation_Failed"), LanguageRegistry.GetExceptionMessage(exception)));
                 if (exception.Data["CleanupError"] is string cleanupError) AnsiConsole.WriteLine(cleanupError);
                 return GenerationFailureExitCode;
             }

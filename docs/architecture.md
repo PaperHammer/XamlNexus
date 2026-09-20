@@ -5,17 +5,22 @@
 依赖方向：`XamlNexus CLI → XamlNexus.Tooling → XamlNexus.Common`。
 CLI 同时引用框架生成器和内置配方，后二者只依赖 Common，不依赖 Tooling。
 
-- **Common**：项目生成、项目清单、页面模板、配方协议与事务、检查与升级合并，以及生成器共用的交互向导和本地化。
-- **Tooling**：命令参数解析、环境与项目诊断、开发进程运行、Gallery 下载与缓存。
+- **Common**：配置校验、项目生成、项目清单、页面模板、配方协议与事务、检查与升级合并，以及本地化资源。
+- **Tooling**：命令参数解析、交互向导、进度与结果展示、环境与项目诊断、开发进程运行、Gallery 下载与缓存。
 - **CLI**：命令分发、输出、具体生成器与配方的组装，以及 Gallery 进程启动。
 
 Common 不引用 Tooling。新增下载、进程管理和命令宿主功能放入 Tooling，避免重新进入生成引擎。
-现有生成向导与生成器仍有直接调用关系，本次保留；Common 尚不是完全无控制台依赖的引擎。
+Common 不依赖 Spectre.Console，不读取终端或输出进度。`ProjectWizard` 收集完整的 `ProjectConfig`；
+`GenerateProject(config, progress)` 返回 `GenerationResult`，成功时包含输出目录，失败时保留原异常和清理诊断。
+同步进度回调只包含阶段、计数和当前条目；`GenerationConsole` 决定如何显示，`CreationReport` 仅在最终创建成功后展示结果。
+组合创建沿用同一进度回调；普通升级通过 Tooling 展示目标项目生成进度，`--json` 模式只输出 JSON，无需重定向标准输出。原 `Generate(config)` 布尔便捷入口也不再输出。
 
 Dependencies flow from CLI to Tooling to Common. Generators and built-in recipes depend only on Common.
-Common owns project generation, manifests, page templates, recipe transactions and upgrade merging; it still contains the shared generation wizard and localization.
-Tooling owns command parsing, diagnostics, development processes and Gallery distribution. CLI composes these services and launches Gallery.
-Do not add a reverse reference from Common to Tooling. The generation wizard remains coupled to the generators and is not a console-free engine yet.
+Common owns configuration validation, generation, manifests, page templates, recipe transactions, upgrade merging and localization resources. It has no Spectre.Console dependency or terminal interaction.
+Tooling owns the wizard, progress and result presentation, command parsing, diagnostics, development processes and Gallery distribution. CLI composes these services and launches Gallery.
+`GenerateProject(config, progress)` returns the output path or original exception in a `GenerationResult`. Its synchronous callback carries structured stages, counts and items, without presentation markup.
+`GenerationConsole` renders progress and `CreationReport` reports final success. Composition forwards the same progress contract; normal upgrades display target generation progress through Tooling, while `--json` emits only JSON without redirecting stdout. The boolean `Generate(config)` convenience entry is also silent.
+Do not add a reverse reference from Common to Tooling.
 
 ## Gallery 公共 UI / Shared Gallery UI
 

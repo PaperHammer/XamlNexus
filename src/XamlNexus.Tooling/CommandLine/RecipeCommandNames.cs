@@ -1,4 +1,4 @@
-namespace XamlNexus.Common.CommandLine;
+namespace XamlNexus.Tooling.CommandLine;
 
 /// <summary>命令行名称与持久化 Recipe ID 的映射，避免改名破坏旧清单或与模板 updater 能力冲突。</summary>
 public static class RecipeCommandNames {

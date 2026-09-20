@@ -1,4 +1,3 @@
-using Spectre.Console;
 using System.Reflection;
 using System.Xml.Linq;
 using XamlNexus.Common.Projects;
@@ -14,40 +13,26 @@ namespace XamlNexus.Common.Generators {
             return [.. GetManagedModuleIds().Where(id => !(profile == "basic" && id == "settings")).Distinct(StringComparer.OrdinalIgnoreCase)];
         }
 
-        public bool Generate(ProjectConfig config) => Generate(config, reportSuccess: true);
+        public bool Generate(ProjectConfig config) => GenerateProject(config).Success;
 
-        public bool Generate(ProjectConfig config, bool reportSuccess) {
+        public GenerationResult GenerateProject(ProjectConfig config, Action<GenerationProgress>? progress = null) {
             string? outputRoot = null;
-
             try {
-                if (config.Profile is not ("standard" or "basic"))
-                    throw new ArgumentException("Profile must be standard or basic.");
-
+                ArgumentNullException.ThrowIfNull(config);
+                config.Validate();
                 OnBeforeGenerate(config);
-
-                AnsiConsole.MarkupLine($"\n[bold blue]{LanguageRegistry.GetI18n(LangKeys.Text_Start)} - {config.SlnName}[/]");
-
                 outputRoot = PrepareOutput(config);
-
-                AnsiConsole.Progress()
-                    .AutoRefresh(true)
-                    .Columns(GetProgressColumns())
-                    .Start(ctx => {
-                        var projects = CopyModulesInternal(config, outputRoot, ctx);
-                        CreateSlnInternal(config, outputRoot, projects, ctx);
-                    });
-
-                CommandLine.CreationReport.RunFinishing(() => WriteProjectManifest(config, outputRoot));
-                if (reportSuccess) ShowSuccessReport(config, outputRoot);
-
+                var projects = CopyModulesInternal(config, outputRoot, progress);
+                CreateSlnInternal(config, outputRoot, projects, progress);
+                progress?.Invoke(new(GenerationStage.WriteManifest, 0, 1));
+                WriteProjectManifest(config, outputRoot);
+                progress?.Invoke(new(GenerationStage.WriteManifest, 1, 1));
                 OnAfterGenerate(config, outputRoot);
-
-                return true;
+                return new(outputRoot, null);
             }
             catch (Exception ex) {
-                CleanupGeneratedOutput(config.OutputPath, outputRoot, ex);
-                OnError(config, ex);
-                return false;
+                if (config is not null) CleanupGeneratedOutput(config.OutputPath, outputRoot, ex);
+                return new(null, ex);
             }
         }
 
@@ -57,14 +42,9 @@ namespace XamlNexus.Common.Generators {
 
         #region Hooks
 
-        protected virtual void OnBeforeGenerate(ProjectConfig config, bool reportSuccess = true) { }
+        protected virtual void OnBeforeGenerate(ProjectConfig config) { }
 
         protected virtual void OnAfterGenerate(ProjectConfig config, string outputRoot) { }
-
-        protected virtual void OnError(ProjectConfig config, Exception ex) {
-            AnsiConsole.MarkupLine($"\n[bold red]{LanguageRegistry.GetI18n(LangKeys.Text_Error)}[/]");
-            AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
-        }
 
         private static void CleanupGeneratedOutput(string outputPath, string? outputRoot, Exception generationException) {
             if (string.IsNullOrWhiteSpace(outputRoot) || !Directory.Exists(outputRoot))
@@ -105,7 +85,7 @@ namespace XamlNexus.Common.Generators {
         private List<(string Path, string? Folder)> CopyModulesInternal(
             ProjectConfig config,
             string outputRoot,
-            ProgressContext ctx) {
+            Action<GenerationProgress>? progress) {
             var result = new List<(string Path, string? Folder)>();
             var tokens = GetTemplateTokens(config);
             var projects = GetProjects().Where(project => config.Profile != "basic"
@@ -117,17 +97,18 @@ namespace XamlNexus.Common.Generators {
                 tokens);
             CopyTemplateRootAssets(TemplateRoot, outputRoot, tokens);
 
-            var task = ctx.AddTask($"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Generating_Module)}[/]", maxValue: projects.Count);
+            int completed = 0;
+            progress?.Invoke(new(GenerationStage.CopyModules, completed, projects.Count));
 
             foreach (var (Name, Folder) in projects) {
                 string destName = TransformProjectName(Name, config);
 
-                task.Description = $"  [yellow]> {LanguageRegistry.GetI18n(LangKeys.Text_Generating)}:[/] [cyan]{destName}[/]";
+                progress?.Invoke(new(GenerationStage.CopyModules, completed, projects.Count, destName));
 
                 string sourcePath = Path.Combine(TemplateRoot, Name);
                 if (!Directory.Exists(sourcePath))
                     throw new DirectoryNotFoundException(
-                        $"{LanguageRegistry.GetI18n(LangKeys.Text_Internal_Error)}" +
+                        $"{LanguageRegistry.GetText(LangKeys.Text_Internal_Error)}" +
                         $"{Environment.NewLine}Template directory: {sourcePath}");
 
                 string destPath = Path.Combine(outputRoot, destName);
@@ -151,10 +132,9 @@ namespace XamlNexus.Common.Generators {
                 result.Add((csprojPath, Path.GetFileNameWithoutExtension(csprojPath)
                     .EndsWith("Panel", StringComparison.OrdinalIgnoreCase) ? "Panels" : Folder));
 
-                task.Increment(1);
+                progress?.Invoke(new(GenerationStage.CopyModules, ++completed, projects.Count, destName));
             }
 
-            task.Description = $"[bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Modules_Generated)}[/]";
 
             return result;
         }
@@ -181,8 +161,9 @@ namespace XamlNexus.Common.Generators {
             ProjectConfig config,
             string outputRoot,
             List<(string Path, string? Folder)> projects,
-            ProgressContext ctx) {
-            var slnTask = ctx.AddTask($"[yellow]{LanguageRegistry.GetI18n(LangKeys.Text_Generating_Solution)}[/]", maxValue: 100);
+            Action<GenerationProgress>? progress) {
+            int completed = 0;
+            progress?.Invoke(new(GenerationStage.CreateSolution, completed, projects.Count + 1));
 
             string slnName = config.SlnName;
             string slnType = config.SlnType.ToString().ToLower();
@@ -202,12 +183,12 @@ namespace XamlNexus.Common.Generators {
 
             if (!createResult.Success || !File.Exists(slnPath))
                 throw new Exception(
-                    $"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Create_Sln)}: {slnPath}" +
+                    $"{LanguageRegistry.GetText(LangKeys.Text_Fail_To_Create_Sln)}: {slnPath}" +
                     $"{Environment.NewLine}dotnet {cmd}" +
                     $"{Environment.NewLine}Exit code: {createResult.ExitCode}" +
                     $"{Environment.NewLine}{createResult.DiagnosticOutput}");
 
-            slnTask.Value = 20;
+            progress?.Invoke(new(GenerationStage.CreateSolution, ++completed, projects.Count + 1));
 
             // Newer SDKs recursively add referenced projects by default, placing
             // panels at the root before their explicit folder assignment runs.
@@ -215,12 +196,11 @@ namespace XamlNexus.Common.Generators {
             var addHelp = ShellExecutor.Run("dotnet", "sln add --help", outputRoot);
             bool supportsReferenceOption = addHelp.Success &&
                 addHelp.StandardOutput.Contains("--include-references", StringComparison.Ordinal);
-            double step = 80.0 / projects.Count;
 
             foreach (var project in projects) {
                 string relativePath = Path.GetRelativePath(outputRoot, project.Path);
 
-                slnTask.Description = $"  [yellow]> {LanguageRegistry.GetI18n(LangKeys.Text_Linking)}:[/] [cyan]{Path.GetFileName(relativePath)}[/]";
+                progress?.Invoke(new(GenerationStage.CreateSolution, completed, projects.Count + 1, Path.GetFileName(relativePath)));
 
                 string addCmd = $"sln \"{slnPath}\" add \"{relativePath}\"";
 
@@ -234,12 +214,12 @@ namespace XamlNexus.Common.Generators {
 
                 if (!addResult.Success)
                     throw new Exception(
-                        $"{LanguageRegistry.GetI18n(LangKeys.Text_Fail_To_Link_Project)}: {relativePath}" +
+                        $"{LanguageRegistry.GetText(LangKeys.Text_Fail_To_Link_Project)}: {relativePath}" +
                         $"{Environment.NewLine}dotnet {addCmd}" +
                         $"{Environment.NewLine}Exit code: {addResult.ExitCode}" +
                         $"{Environment.NewLine}{addResult.DiagnosticOutput}");
 
-                slnTask.Increment(step);
+                progress?.Invoke(new(GenerationStage.CreateSolution, ++completed, projects.Count + 1, Path.GetFileName(relativePath)));
             }
 
             string solutionText = File.ReadAllText(slnPath);
@@ -291,8 +271,6 @@ namespace XamlNexus.Common.Generators {
             if (!normalizedSolution.Equals(solutionText, StringComparison.Ordinal))
                 File.WriteAllText(slnPath, normalizedSolution, new System.Text.UTF8Encoding(false));
 
-            slnTask.Value = 100;
-            slnTask.Description = $"[bold green]{LanguageRegistry.GetI18n(LangKeys.Text_Soluton_Created)}[/]";
         }
 
         #endregion
@@ -545,19 +523,6 @@ namespace XamlNexus.Common.Generators {
 
         protected virtual Dictionary<string, string> GetCustomTokens(ProjectConfig config) {
             return [];
-        }
-
-        protected virtual ProgressColumn[] GetProgressColumns() {
-            return [
-                new TaskDescriptionColumn(),
-                new ProgressBarColumn(),
-                new PercentageColumn(),
-                new SpinnerColumn(Spinner.Known.Aesthetic)
-            ];
-        }
-
-        protected virtual void ShowSuccessReport(ProjectConfig config, string outputRoot) {
-            CommandLine.CreationReport.Write(config, outputRoot);
         }
 
         #endregion

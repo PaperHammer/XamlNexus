@@ -583,4 +583,11 @@ Tip: Use "xn" as an alias in the current terminal session:
   <data name="ProjectUpgrade_UpgradeRolledBack" xml:space="preserve"><value>Project upgrade failed. All scaffold changes were rolled back.</value></data>
   <data name="ProjectUpgrade_UpgradeRollbackFailed" xml:space="preserve"><value>Project upgrade failed. Rollback encountered {0} additional error(s).</value></data>
   <data name="Cli_InvalidArguments" xml:space="preserve"><value>{0}</value></data>
+  <data name="Generation_InvalidProfile" xml:space="preserve"><value>Profile must be standard or basic.</value></data>
+  <data name="Generation_InvalidFrameworkOrSolution" xml:space="preserve"><value>Unsupported framework or solution format.</value></data>
+  <data name="Generation_InvalidLanguage" xml:space="preserve"><value>Language must be zh-CN or en-US.</value></data>
+  <data name="Generation_ApplyRecipes" xml:space="preserve"><value>Adding selected capabilities</value></data>
+  <data name="Generation_ValidateProject" xml:space="preserve"><value>Validating the project</value></data>
+  <data name="Generation_PublishProject" xml:space="preserve"><value>Writing the completed project</value></data>
+  <data name="Generation_Failed" xml:space="preserve"><value>Project creation failed: {0}</value></data>
 </root>

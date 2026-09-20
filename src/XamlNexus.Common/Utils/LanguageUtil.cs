@@ -1,5 +1,4 @@
 using System.Globalization;
-using Spectre.Console;
 
 namespace XamlNexus.Common.Utils {
     public static class LangKeys {
@@ -53,7 +52,6 @@ namespace XamlNexus.Common.Utils {
         public static string GetText(string key) => Resources.GetString(key,
             CultureInfo.GetCultureInfo(CurrentLanguage == LanguageType.Chinese ? "zh-CN" : "en")) ?? key;
 
-        public static string GetI18n(string key) => GetText(key).EscapeMarkup();
 
         /// <summary>在展示边界本地化 Recipe 错误；普通异常及旧式自定义消息保持原样。</summary>
         public static string GetExceptionMessage(Exception exception) => exception is Recipes.XamlNexusRecipeException recipe

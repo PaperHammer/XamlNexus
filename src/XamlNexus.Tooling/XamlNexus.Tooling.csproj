@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Spectre.Console" Version="0.54.0" />
     <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
     <InternalsVisibleTo Include="XamlNexus.TemplateTests" />
   </ItemGroup>

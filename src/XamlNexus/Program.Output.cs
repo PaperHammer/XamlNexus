@@ -1,4 +1,4 @@
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;

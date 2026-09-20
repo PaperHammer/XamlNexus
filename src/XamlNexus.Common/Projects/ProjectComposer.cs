@@ -82,8 +82,9 @@ public static class CompositionPlanner {
 }
 
 public static class ProjectComposer {
-    public static string Create(CompositionRequest request, IGenerator generator, IXamlNexusRecipeCatalog catalog) {
+    public static string Create(CompositionRequest request, IGenerator generator, IXamlNexusRecipeCatalog catalog, Action<GenerationProgress>? progress = null) {
         var config = request.Project;
+        config.Validate();
         string preset = config.Framework switch {
             FrameworkType.Winui3 => "winui",
             FrameworkType.Winui3_Wpf => "hybrid",
@@ -107,36 +108,40 @@ public static class ProjectComposer {
                 SlnName = config.SlnName, OutputPath = staging, Language = config.Language,
                 Framework = config.Framework, SlnType = config.SlnType,
             };
-            if (!generator.Generate(stagedConfig, reportSuccess: false))
-                throw new InvalidOperationException("Application scaffold generation failed.");
-            CommandLine.CreationReport.RunFinishing(() => {
-                string projectRoot = Path.Combine(stagedConfig.OutputPath, config.SlnName);
-                foreach (var recipe in recipes) {
-                    // Reload after each installation so dependencies and expected hashes reflect prior changes.
-                    var project = XamlNexusProjectLocator.Locate(projectRoot);
-                    XamlNexusRecipeTransaction.Apply(project, recipe);
-                }
-                var report = XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(projectRoot));
-                if (!report.IsValid) throw new InvalidOperationException("The composed project failed validation.");
-                // Reserve a new destination atomically; never copy into a directory
-                // another process created after the initial existence check.
-                destination = ProjectOutputReservation.Create(parent, config.SlnName);
-                ownsDestination = true;
-                // Staging may live on another volume. Copy source files first and solution
-                // discovery files last so IDEs only load the completed composition.
-                var files = Directory.EnumerateFiles(projectRoot, "*", SearchOption.AllDirectories)
-                    .Select(path => (Source: path, Relative: Path.GetRelativePath(projectRoot, path)))
-                    .Where(file => !file.Relative.Split(Path.DirectorySeparatorChar).Any(part => part is "bin" or "obj" or ".vs"))
-                    .OrderBy(file => Path.GetExtension(file.Source) is ".sln" or ".slnx" ? 2 : Path.GetExtension(file.Source) == ".csproj" ? 1 : 0)
-                    .ThenBy(file => file.Relative, StringComparer.Ordinal).ToArray();
-                foreach (var (Source, Relative) in files) {
-                    string target = Path.Combine(destination, Relative);
-                    Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                    File.Copy(Source, target, overwrite: false);
-                }
-                if (!XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(destination)).IsValid)
-                    throw new InvalidOperationException("The published project failed validation.");
-            });
+            var generation = generator.GenerateProject(stagedConfig, progress);
+            string projectRoot = generation.GetOutputOrThrow();
+            int completedRecipes = 0;
+            foreach (var recipe in recipes) {
+                progress?.Invoke(new(GenerationStage.ApplyRecipes, completedRecipes, recipes.Count, recipe.Descriptor.Id));
+                // Reload after each installation so dependencies and expected hashes reflect prior changes.
+                var project = XamlNexusProjectLocator.Locate(projectRoot);
+                XamlNexusRecipeTransaction.Apply(project, recipe);
+                progress?.Invoke(new(GenerationStage.ApplyRecipes, ++completedRecipes, recipes.Count, recipe.Descriptor.Id));
+            }
+            progress?.Invoke(new(GenerationStage.ValidateProject, 0, 1));
+            var report = XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(projectRoot));
+            if (!report.IsValid) throw new InvalidOperationException("The composed project failed validation.");
+            // Reserve a new destination atomically; never copy into a directory
+            // another process created after the initial existence check.
+            progress?.Invoke(new(GenerationStage.ValidateProject, 1, 1));
+            destination = ProjectOutputReservation.Create(parent, config.SlnName);
+            ownsDestination = true;
+            // Staging may live on another volume. Copy source files first and solution
+            // discovery files last so IDEs only load the completed composition.
+            var files = Directory.EnumerateFiles(projectRoot, "*", SearchOption.AllDirectories)
+                .Select(path => (Source: path, Relative: Path.GetRelativePath(projectRoot, path)))
+                .Where(file => !file.Relative.Split(Path.DirectorySeparatorChar).Any(part => part is "bin" or "obj" or ".vs"))
+                .OrderBy(file => Path.GetExtension(file.Source) is ".sln" or ".slnx" ? 2 : Path.GetExtension(file.Source) == ".csproj" ? 1 : 0)
+                .ThenBy(file => file.Relative, StringComparer.Ordinal).ToArray();
+            int copied = 0;
+            foreach (var (Source, Relative) in files) {
+                string target = Path.Combine(destination, Relative);
+                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                File.Copy(Source, target, overwrite: false);
+                progress?.Invoke(new(GenerationStage.PublishProject, ++copied, files.Length, Relative));
+            }
+            if (!XamlNexusProjectValidator.Validate(XamlNexusProjectLocator.Locate(destination)).IsValid)
+                throw new InvalidOperationException("The published project failed validation.");
             return destination;
         }
         catch (Exception exception) {
