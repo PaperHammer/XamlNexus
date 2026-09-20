@@ -1,3 +1,4 @@
+using XamlNexus.Tooling.CommandLine;
 using Spectre.Console;
 using XamlNexus.Common.Projects;
 
@@ -48,7 +49,7 @@ namespace XamlNexus {
                 return SuccessExitCode;
             }
             catch (Exception exception) {
-                ShowCommandError("list", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), jsonOutput, "XL1001");
+                ShowCommandError("list", CliErrors.ListFailed.GetMessage(XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception)), jsonOutput, CliErrors.ListFailed.Code);
                 return GenerationFailureExitCode;
             }
         }
@@ -96,7 +97,7 @@ namespace XamlNexus {
                 return GenerationFailureExitCode;
             }
             catch (Exception exception) {
-                ShowCommandError("validate", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), jsonOutput, "XV1001");
+                ShowCommandError("validate", CliErrors.ValidationFailed.GetMessage(XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception)), jsonOutput, CliErrors.ValidationFailed.Code);
                 return GenerationFailureExitCode;
             }
         }

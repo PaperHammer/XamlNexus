@@ -63,6 +63,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{5D20
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNexus.Gallery.Data", "..\samples\XamlNexus.Gallery\XamlNexus.Gallery.Data\XamlNexus.Gallery.Data.csproj", "{167007FB-36C7-4B55-9C95-856B34525543}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNexus.Tooling", "XamlNexus.Tooling\XamlNexus.Tooling.csproj", "{713C02A3-D633-4B61-AF17-FF96D04B34F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -353,6 +355,18 @@ Global
 		{167007FB-36C7-4B55-9C95-856B34525543}.Release|x64.Build.0 = Release|Any CPU
 		{167007FB-36C7-4B55-9C95-856B34525543}.Release|x86.ActiveCfg = Release|Any CPU
 		{167007FB-36C7-4B55-9C95-856B34525543}.Release|x86.Build.0 = Release|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Debug|x64.Build.0 = Debug|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Debug|x86.Build.0 = Debug|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Release|x64.ActiveCfg = Release|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Release|x64.Build.0 = Release|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Release|x86.ActiveCfg = Release|Any CPU
+		{713C02A3-D633-4B61-AF17-FF96D04B34F7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

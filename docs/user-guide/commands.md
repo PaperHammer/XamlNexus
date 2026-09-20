@@ -17,6 +17,17 @@ The alias lasts for the current session. Add the `Set-Alias` line to `$PROFILE` 
 
 `<name>` denotes a value to replace; `[...]` denotes optional arguments. Do not type the brackets. Separate options and values with spaces, and quote paths containing spaces. Help accepts `--help`, `-h`, `-?`, or `help`; version accepts `--version`, `-v`, or `version`.
 
+## Open matching examples: `gallery`
+
+```powershell
+dotnet tool update --global XamlNexus
+xamlnexus gallery
+```
+
+No project directory is required. Official tool packages contain a manifest pinning the matching Gallery version, Windows x64/ARM64 downloads and SHA-256 hashes. First launch requires internet access; subsequent launches use the verified cache under `%LOCALAPPDATA%/XamlNexus/Gallery`. Updating the tool selects its matching Gallery on the next launch. Close an existing Gallery first; this command does not terminate it.
+
+Gallery settings and database remain in `%LOCALAPPDATA%/XamlNexus.Gallery`. Old program caches are retained for rollback and can be removed manually after closing Gallery. Cancelled or failed downloads are not installed; retry the command. Source builds without a release manifest explain how to build Gallery locally. Requires Windows 10 1809 or later, x64 or ARM64.
+
 ## Create a project: `new`
 
 ```powershell

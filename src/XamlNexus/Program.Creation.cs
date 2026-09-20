@@ -1,3 +1,5 @@
+using XamlNexus.Tooling.Development;
+using XamlNexus.Tooling.CommandLine;
 using Spectre.Console;
 using XamlNexus.Common.CommandLine;
 using XamlNexus.Common.Generators;
@@ -70,7 +72,7 @@ namespace XamlNexus {
                 return 130;
             }
             catch (Exception exception) {
-                ShowCommandError("run", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), options.JsonOutput, "XC1201");
+                ShowCommandError("run", CliErrors.RunFailed.GetMessage(XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception)), options.JsonOutput, CliErrors.RunFailed.Code);
                 return GenerationFailureExitCode;
             }
             finally { Console.CancelKeyPress -= cancel; }

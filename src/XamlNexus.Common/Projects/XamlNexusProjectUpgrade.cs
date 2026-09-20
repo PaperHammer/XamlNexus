@@ -59,6 +59,18 @@ public sealed record XamlNexusProjectUpgradeResult(
     IReadOnlyList<string> ChangedFiles);
 
 public sealed class XamlNexusProjectUpgradeException : Exception {
+    public XamlNexusProjectUpgradeException(Resources.ErrorDefinition definition, object?[] arguments, Exception? innerException = null)
+        : base($"{definition.Code}: {definition.Format(System.Globalization.CultureInfo.InvariantCulture, arguments)}", innerException) {
+        Code = definition.Code;
+        Definition = definition;
+        Arguments = Array.AsReadOnly((object?[])arguments.Clone());
+    }
+
+    public Resources.ErrorDefinition? Definition { get; }
+    public IReadOnlyList<object?> Arguments { get; } = Array.Empty<object?>();
+    public string GetLocalizedMessage(System.Globalization.CultureInfo culture) => Definition is null
+        ? Message : $"{Code}: {Definition.Format(culture, Arguments)}";
+
     public XamlNexusProjectUpgradeException(string code, string message)
         : base($"{code}: {message}") => Code = code;
 
@@ -137,18 +149,18 @@ public static class XamlNexusProjectUpgrade {
         string root = Path.GetFullPath(resolutionDirectory);
         string stamp = ResolvePath(root, ".xamlnexus-upgrade");
         if (!File.Exists(stamp) || File.ReadAllText(stamp) != ResolutionFingerprint(plan))
-            throw new XamlNexusProjectUpgradeException("XU2020",
-                "The conflict export is missing or stale. Export conflicts again from the current project and target version.");
+            throw new XamlNexusProjectUpgradeException(ProjectUpgradeErrors.ConflictExportStale,
+                []);
 
         var changes = plan.Changes.ToList();
         foreach (var conflict in plan.Conflicts) {
-            if (conflict.Code != "XU2011" || conflict.ExpectedSha256 is null)
-                throw new XamlNexusProjectUpgradeException("XU2021",
-                    $"This conflict requires manual project changes before retrying upgrade: {conflict.RelativePath} ({conflict.Code}).");
+            if (conflict.Code != ProjectUpgradeCodes.MergeConflict || conflict.ExpectedSha256 is null)
+                throw new XamlNexusProjectUpgradeException(ProjectUpgradeErrors.ManualResolutionRequired,
+                    [conflict.RelativePath, conflict.Code]);
 
             string path = ResolvePath(root, NormalizePath(conflict.RelativePath) + ".merge");
             if (!File.Exists(path))
-                throw new XamlNexusProjectUpgradeException("XU2021", $"Missing resolved file: {conflict.RelativePath}.merge");
+                throw new XamlNexusProjectUpgradeException(ProjectUpgradeErrors.ResolvedFileMissing, [conflict.RelativePath]);
 
             byte[] content = File.ReadAllBytes(path);
             string text = new System.Text.UTF8Encoding(false, true).GetString(content);
@@ -159,12 +171,12 @@ public static class XamlNexusProjectUpgrade {
                     value.StartsWith("=======", StringComparison.Ordinal) ||
                     value.StartsWith(">>>>>>>", StringComparison.Ordinal);
             }))
-                throw new XamlNexusProjectUpgradeException("XU2021", $"Unresolved conflict markers or invalid text: {conflict.RelativePath}");
+                throw new XamlNexusProjectUpgradeException(ProjectUpgradeErrors.ConflictMarkersRemain, [conflict.RelativePath]);
 
             if (IsSemanticXmlPath(conflict.RelativePath)) {
                 try { System.Xml.Linq.XDocument.Parse(text.TrimStart('\uFEFF')); }
                 catch (System.Xml.XmlException exception) {
-                    throw new XamlNexusProjectUpgradeException("XU2021", $"Resolved XML is invalid: {conflict.RelativePath}", exception);
+                    throw new XamlNexusProjectUpgradeException(ProjectUpgradeErrors.ResolvedXmlInvalid, [conflict.RelativePath], exception);
                 }
             }
 
@@ -183,19 +195,19 @@ public static class XamlNexusProjectUpgrade {
                 target.Manifest.GeneratorVersion,
                 StringComparison.OrdinalIgnoreCase)) {
             throw new XamlNexusProjectUpgradeException(
-                "XU1006",
-                "A missing scaffold baseline can only be adopted from the same generator version.");
+                ProjectUpgradeErrors.BaselineVersionMismatch,
+                []);
         }
         if (current.Manifest.ScaffoldFiles is not null) {
             throw new XamlNexusProjectUpgradeException(
-                "XU1007",
-                "This project already has a scaffold file baseline.");
+                ProjectUpgradeErrors.BaselineAlreadyPresent,
+                []);
         }
 
         IReadOnlyList<XamlNexusManagedFile> desired = target.Manifest.ScaffoldFiles
             ?? throw new XamlNexusProjectUpgradeException(
-                "XU1002",
-                "The target template has no scaffold file baseline.");
+                ProjectUpgradeErrors.TargetBaselineMissing,
+                []);
 
         var conflicts = FindOwnershipConflicts(current.Manifest, target.Manifest);
         if (conflicts.Count > 0)
@@ -207,15 +219,15 @@ public static class XamlNexusProjectUpgrade {
             string currentPath = ResolvePath(current.RootDirectory, file.Path);
             if (!File.Exists(currentPath)) {
                 conflicts.Add(new XamlNexusUpgradeConflict(
-                    "XU2001",
+                    ProjectUpgradeErrors.AdoptionFileMissing.Code,
                     file.Path,
-                    "A scaffold file required for baseline adoption is missing."));
+                    ProjectUpgradeErrors.AdoptionFileMissing.GetMessage()));
             }
             else if (!ComputeSha256(currentPath).Equals(file.Sha256, StringComparison.OrdinalIgnoreCase)) {
                 conflicts.Add(new XamlNexusUpgradeConflict(
-                    "XU2002",
+                    ProjectUpgradeErrors.AdoptionFileChanged.Code,
                     file.Path,
-                    "A scaffold file differs from the same-version template."));
+                    ProjectUpgradeErrors.AdoptionFileChanged.GetMessage()));
             }
         }
 
@@ -233,12 +245,12 @@ public static class XamlNexusProjectUpgrade {
 
         IReadOnlyList<XamlNexusManagedFile> baseline = current.Manifest.ScaffoldFiles
             ?? throw new XamlNexusProjectUpgradeException(
-                "XU1001",
-                "This project has no scaffold file baseline and cannot be upgraded safely.");
+                ProjectUpgradeErrors.BaselineMissing,
+                []);
         IReadOnlyList<XamlNexusManagedFile> desired = target.Manifest.ScaffoldFiles
             ?? throw new XamlNexusProjectUpgradeException(
-                "XU1002",
-                "The target template has no scaffold file baseline.");
+                ProjectUpgradeErrors.TargetBaselineMissing,
+                []);
 
         var baselineByPath = baseline.ToDictionary(
             file => NormalizePath(file.Path),
@@ -260,9 +272,9 @@ public static class XamlNexusProjectUpgrade {
             if (targetFile is not null) ValidateTargetFile(targetFile, targetPath!);
             if (!File.Exists(currentPath)) {
                 conflicts.Add(new XamlNexusUpgradeConflict(
-                    "XU2001",
+                    ProjectUpgradeErrors.ManagedFileMissing.Code,
                     installed.Path,
-                    "A scaffold-managed file is missing.",
+                    ProjectUpgradeErrors.ManagedFileMissing.GetMessage(),
                     CreateMergeDocument(
                         installed,
                         installed.Path,
@@ -313,9 +325,9 @@ public static class XamlNexusProjectUpgrade {
             if (File.Exists(destination)) {
                 if (!ComputeSha256(destination).Equals(targetFile.Sha256, StringComparison.OrdinalIgnoreCase)) {
                     conflicts.Add(new XamlNexusUpgradeConflict(
-                        "XU2003",
+                        ProjectUpgradeErrors.DestinationOccupied.Code,
                         targetFile.Path,
-                        "A new scaffold path is already occupied by different content."));
+                        ProjectUpgradeErrors.DestinationOccupied.GetMessage()));
                 }
                 continue;
             }
@@ -347,18 +359,18 @@ public static class XamlNexusProjectUpgrade {
         byte[] targetContent = targetPath is null ? [] : File.ReadAllBytes(targetPath);
         if (installed.BaselineContentGzipBase64 is null) {
             conflicts.Add(new XamlNexusUpgradeConflict(
-                "XU2002",
+                ProjectUpgradeErrors.MergeBaselineMissing.Code,
                 installed.Path,
-                "A scaffold-managed file was modified, but its older manifest has no merge baseline."));
+                ProjectUpgradeErrors.MergeBaselineMissing.GetMessage()));
             return;
         }
 
         byte[] baselineContent = XamlNexusBaselineContent.Decode(installed.BaselineContentGzipBase64);
         if (targetFile is null) {
             conflicts.Add(new XamlNexusUpgradeConflict(
-                "XU2010",
+                ProjectUpgradeErrors.ModifiedFileRemoved.Code,
                 installed.Path,
-                "The user modified a scaffold file that the target version removes.",
+                ProjectUpgradeErrors.ModifiedFileRemoved.GetMessage(),
                 XamlNexusThreeWayTextMerge.CreateConflictDocument(
                     installed.Path,
                     fromVersion,
@@ -428,19 +440,19 @@ public static class XamlNexusProjectUpgrade {
             return;
         }
 
-        string reason = mergeStatus == XamlNexusMergeStatus.Unsupported
+        var reason = mergeStatus == XamlNexusMergeStatus.Unsupported
             ? IsSemanticXmlPath(installed.Path)
-                ? "XML structure could not be checked safely (unsupported content, encoding, or size). Review the conflict document and merge manually."
-                : "The modified scaffold file is binary, too large, or not supported UTF-8 text."
+                ? ProjectUpgradeErrors.UnsupportedXml
+                : ProjectUpgradeErrors.UnsupportedText
             : semanticConflict
                 ? Path.GetExtension(installed.Path).Equals(".sln", StringComparison.OrdinalIgnoreCase)
-                    ? "The user and target version changed the same solution project, section, or configuration."
-                    : "XML changes have conflicting values or child order, or nodes cannot be matched reliably. Review the conflict document and merge manually."
-                : "The user and target version changed overlapping lines.";
+                    ? ProjectUpgradeErrors.SolutionMergeConflict
+                    : ProjectUpgradeErrors.XmlMergeConflict
+                : ProjectUpgradeErrors.TextMergeConflict;
         conflicts.Add(new XamlNexusUpgradeConflict(
-            mergeStatus == XamlNexusMergeStatus.Unsupported ? "XU2012" : "XU2011",
+            reason.Code,
             installed.Path,
-            reason,
+            reason.GetMessage(),
             XamlNexusThreeWayTextMerge.CreateConflictDocument(
                 installed.Path,
                 fromVersion,
@@ -494,14 +506,14 @@ public static class XamlNexusProjectUpgrade {
         ArgumentNullException.ThrowIfNull(plan);
         if (!plan.CanApply) {
             throw new XamlNexusProjectUpgradeException(
-                "XU2004",
-                $"Upgrade has {plan.Conflicts.Count} conflict(s); no files were changed.");
+                ProjectUpgradeErrors.ConflictsPreventApply,
+                [plan.Conflicts.Count]);
         }
         if (!current.Manifest.GeneratorVersion.Equals(plan.FromVersion, StringComparison.OrdinalIgnoreCase) ||
             !target.Manifest.GeneratorVersion.Equals(plan.ToVersion, StringComparison.OrdinalIgnoreCase)) {
             throw new XamlNexusProjectUpgradeException(
-                "XU2007",
-                "The upgrade plan versions do not match the supplied projects.");
+                ProjectUpgradeErrors.PlanVersionMismatch,
+                []);
         }
 
         using var lease = ProjectWriteLease.Acquire(current.RootDirectory);
@@ -511,8 +523,8 @@ public static class XamlNexusProjectUpgrade {
                 ManifestFingerprint(current.Manifest),
                 StringComparison.Ordinal)) {
             throw new XamlNexusProjectUpgradeException(
-                "XU2008",
-                "The project manifest changed after the upgrade context was loaded.");
+                ProjectUpgradeErrors.ManifestChanged,
+                []);
         }
 
         var ownershipConflicts = FindOwnershipConflicts(freshManifest, target.Manifest);
@@ -527,8 +539,8 @@ public static class XamlNexusProjectUpgrade {
             bool exists = File.Exists(item.FullPath);
             if (item.Change.Kind == XamlNexusUpgradeChangeKind.Create && exists) {
                 throw new XamlNexusProjectUpgradeException(
-                    "XU2005",
-                    $"Upgrade plan is stale because a create path now exists: {item.Change.RelativePath}");
+                    ProjectUpgradeErrors.CreatePathAppeared,
+                    [item.Change.RelativePath]);
             }
             if (item.Change.Kind is XamlNexusUpgradeChangeKind.Replace or XamlNexusUpgradeChangeKind.Delete) {
                 if (!exists ||
@@ -536,8 +548,8 @@ public static class XamlNexusProjectUpgrade {
                         item.Change.ExpectedSha256,
                         StringComparison.OrdinalIgnoreCase)) {
                     throw new XamlNexusProjectUpgradeException(
-                        "XU2006",
-                        $"Upgrade plan is stale because a managed file changed: {item.Change.RelativePath}");
+                        ProjectUpgradeErrors.ManagedFileChanged,
+                        [item.Change.RelativePath]);
                 }
             }
         }
@@ -609,13 +621,9 @@ public static class XamlNexusProjectUpgrade {
                     rollbackErrors.Add(rollbackException);
                 }
             }
-            string rollback = rollbackErrors.Count == 0
-                ? "All scaffold changes were rolled back."
-                : $"Rollback encountered {rollbackErrors.Count} additional error(s).";
-            throw new XamlNexusProjectUpgradeException(
-                "XU3001",
-                $"Project upgrade failed. {rollback}",
-                exception);
+            throw rollbackErrors.Count == 0
+                ? new XamlNexusProjectUpgradeException(ProjectUpgradeErrors.UpgradeRolledBack, [], exception)
+                : new XamlNexusProjectUpgradeException(ProjectUpgradeErrors.UpgradeRollbackFailed, [rollbackErrors.Count], exception);
         }
     }
 
@@ -640,12 +648,12 @@ public static class XamlNexusProjectUpgrade {
             .Select(module => module.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var recipe in current.Modules.Where(module => module.Source == "recipe")) {
             if (templateIds.Contains(recipe.Id))
-                conflicts.Add(new("XU2014", "xamlnexus.json",
-                    $"Target template module '{recipe.Id}' conflicts with an installed Recipe. Automatic ownership transfer is not supported."));
+                conflicts.Add(new(ProjectUpgradeErrors.ModuleOwnershipConflict.Code, "xamlnexus.json",
+                    ProjectUpgradeErrors.ModuleOwnershipConflict.GetMessage(recipe.Id)));
             foreach (var file in recipe.Files ?? []) {
                 if (scaffoldPaths.Contains(NormalizePath(file.Path)))
-                    conflicts.Add(new("XU2013", file.Path,
-                        $"Scaffold path '{file.Path}' is owned by Recipe '{recipe.Id}'. Automatic ownership transfer is not supported, even when the contents match."));
+                    conflicts.Add(new(ProjectUpgradeErrors.FileOwnershipConflict.Code, file.Path,
+                        ProjectUpgradeErrors.FileOwnershipConflict.GetMessage(file.Path, recipe.Id)));
             }
         }
         return conflicts;
@@ -660,8 +668,8 @@ public static class XamlNexusProjectUpgrade {
             !current.Project.Language.Equals(target.Project.Language, StringComparison.OrdinalIgnoreCase) ||
             !current.Project.SolutionFormat.Equals(target.Project.SolutionFormat, StringComparison.OrdinalIgnoreCase)) {
             throw new XamlNexusProjectUpgradeException(
-                "XU1003",
-                "The target scaffold identity does not match the current project.");
+                ProjectUpgradeErrors.ProjectIdentityMismatch,
+                []);
         }
     }
 
@@ -669,8 +677,8 @@ public static class XamlNexusProjectUpgrade {
         if (!File.Exists(fullPath) ||
             !ComputeSha256(fullPath).Equals(file.Sha256, StringComparison.OrdinalIgnoreCase)) {
             throw new XamlNexusProjectUpgradeException(
-                "XU1004",
-                $"Target scaffold file is missing or stale: {file.Path}");
+                ProjectUpgradeErrors.TargetFileStale,
+                [file.Path]);
         }
     }
 
@@ -679,8 +687,8 @@ public static class XamlNexusProjectUpgrade {
         string fullPath = Path.GetFullPath(Path.Combine(root, relativePath));
         if (!fullPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) {
             throw new XamlNexusProjectUpgradeException(
-                "XU1005",
-                $"Scaffold path escapes the project: {relativePath}");
+                ProjectUpgradeErrors.PathEscapesProject,
+                [relativePath]);
         }
         ProjectPathSafety.EnsureNoLinks(fullPath);
         return fullPath;

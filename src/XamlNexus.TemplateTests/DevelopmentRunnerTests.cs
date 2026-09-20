@@ -1,3 +1,5 @@
+using XamlNexus.Tooling.Development;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.CommandLine;
 using System.Diagnostics;
 using XamlNexus.Common.Projects;

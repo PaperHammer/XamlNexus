@@ -1,8 +1,8 @@
 # Gallery 便携包发布 / Portable Gallery builds
 
-Gallery 在本仓库独立维护，版本来自 `Directory.Build.props`。它不使用生成项目的安装器、更新 feed 或 PR 发布标签流程。
+Gallery 在本仓库独立维护。正式发布使用 CLI 的版本和同一提交；独立调试构建默认使用 `Directory.Build.props` 的版本。
 
-Gallery is maintained in this repository. Its version comes from `Directory.Build.props`; generated-project installer and update-feed workflows do not apply.
+Official Gallery builds use the CLI version and the same source revision. Standalone development builds default to `Directory.Build.props`.
 
 ## 本地构建 / Local build
 
@@ -23,6 +23,12 @@ Output is written to a timestamped directory under `.artifacts/gallery/`. Extrac
 仓库根目录的 `.github/workflows/gallery.yml` 在相关 PR 或手动触发时生成并上传便携包 artifact，不自动创建 GitHub Release。
 
 The root `.github/workflows/gallery.yml` builds and uploads a portable artifact for relevant pull requests or manual runs. It does not automatically publish a GitHub Release.
+
+正式发布由 `.github/workflows/release-merged-pull-request.yml` 统一完成：构建 x64/ARM64 Gallery，生成固定版本、下载地址和 SHA-256 清单，将清单放入 NuGet 工具包。包检查同时核对清单和两个 ZIP 的哈希。先上传 GitHub Release 资源，再发布 NuGet，使新安装的工具可以立即下载 Gallery。
+
+发布重试会复用相同提交已发布的 ZIP 和 NuGet 包，不重新构建或覆盖固定哈希的资源。若已有发布不完整或不匹配，流程失败并要求修复或递增版本。
+
+The production workflow builds both architectures, packs their pinned URLs and SHA-256 values into the tool, validates the package against the archives, publishes GitHub assets, then publishes NuGet. Retries reuse existing assets from the same source revision; existing pinned assets are never replaced with different bytes.
 
 发布前更新版本，使用新目录解压验证启动、中文/英文切换、示例页、源码浏览及复制。构建脚本检查必要资源，但这些检查不能替代启动验证。ARM64 包需要在对应设备上验证。
 

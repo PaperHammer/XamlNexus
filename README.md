@@ -10,6 +10,8 @@ A .NET command-line tool for creating Windows desktop prototypes with WinUI 3. G
 
 Explore [XamlNexus Gallery](samples/XamlNexus.Gallery/README.md), a standalone app with interactive examples, tips, and offline browsing of the actual source templates. Gallery is maintained separately from the default generated application.
 
+Run `xamlnexus gallery` with an official tool package to download, verify and launch its matching Gallery. After `dotnet tool update -g XamlNexus`, the next launch obtains the matching version; cached versions work offline. This command becomes available when the corresponding package is released.
+
 ## Features
 
 - **Two architectures:** a WinUI 3 application, or a WinUI 3 frontend with a WPF background host.

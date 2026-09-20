@@ -12,7 +12,7 @@ public static partial class PageGenerator {
             throw new ArgumentException("Use a page name such as Orders: start with A-Z, followed by letters or digits.");
         // A custom shell may replace MainWindow entirely; page-only generation still works.
         if (XamlNexusProjectValidator.Validate(project).Issues.Any(issue =>
-            issue.Severity == ProjectValidationSeverity.Error && issue.Code != "XN1101"))
+            issue.Severity == ProjectValidationSeverity.Error && issue.Code != ProjectValidationCodes.ShellMissing))
             throw new InvalidOperationException("Fix project validation errors before adding a page.");
         string app = project.Manifest.Project.Name;
         string page = name + "Page";

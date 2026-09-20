@@ -58,7 +58,9 @@ namespace XamlNexus.Common.Utils {
         /// <summary>在展示边界本地化 Recipe 错误；普通异常及旧式自定义消息保持原样。</summary>
         public static string GetExceptionMessage(Exception exception) => exception is Recipes.XamlNexusRecipeException recipe
             ? recipe.GetLocalizedMessage(CultureInfo.GetCultureInfo(CurrentLanguage == LanguageType.Chinese ? "zh-CN" : "en"))
-            : exception.Message;
+            : exception is Projects.XamlNexusProjectUpgradeException upgrade
+                ? upgrade.GetLocalizedMessage(CultureInfo.GetCultureInfo(CurrentLanguage == LanguageType.Chinese ? "zh-CN" : "en"))
+                : exception.Message;
 
         private static LanguageType AutoDetectLanguage() {
             var culture = CultureInfo.CurrentUICulture.Name;

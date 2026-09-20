@@ -25,9 +25,9 @@ namespace XamlNexus {
                 if (versionComparison < 0) {
                     ShowCommandError(
                         "upgrade",
-                        $"Project downgrade from {current.Manifest.GeneratorVersion} to {targetVersion} is not supported.",
+                        ProjectUpgradeErrors.DowngradeUnsupported.GetMessage(current.Manifest.GeneratorVersion, targetVersion),
                         jsonOutput,
-                        "XU1008");
+                        ProjectUpgradeErrors.DowngradeUnsupported.Code);
                     return GenerationFailureExitCode;
                 }
                 if (versionComparison == 0 && current.Manifest.ScaffoldFiles is not null && !dryRun) {
@@ -48,9 +48,9 @@ namespace XamlNexus {
                 if (versionComparison > 0 && current.Manifest.ScaffoldFiles is null) {
                     ShowCommandError(
                         "upgrade",
-                        "This older project has no scaffold baseline. Upgrade it first with the matching XamlNexus version.",
+                        ProjectUpgradeErrors.LegacyBaselineMissing.GetMessage(),
                         jsonOutput,
-                        "XU1001");
+                        ProjectUpgradeErrors.LegacyBaselineMissing.Code);
                     return GenerationFailureExitCode;
                 }
 

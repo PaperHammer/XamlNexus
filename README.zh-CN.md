@@ -10,6 +10,8 @@
 
 [XamlNexus Gallery](samples/XamlNexus.Gallery/README.md) 是独立的示例应用，提供功能体验、使用提示和真实源码模板的离线浏览；默认生成的用户项目不包含 Gallery。
 
+正式工具包通过 `xamlnexus gallery` 下载、校验并启动匹配版本。执行 `dotnet tool update -g XamlNexus` 后，下次启动自动获取对应新版；缓存完成后可离线使用。此命令随包含该功能的新包发布后可用。
+
 ## 功能
 
 - **两种架构**：纯 WinUI 3 应用，或 WinUI 3 前端搭配 WPF 后台宿主。

@@ -1,11 +1,30 @@
 # XamlNexus Gallery
 
+公共 UI 维护方式见 [项目架构](../../docs/architecture.md)。Gallery 从 WinUI 模板复用公共源码，专用页面和窗口独立维护。
+
+See [Architecture](../../docs/architecture.md) for shared UI maintenance. Gallery reuses common WinUI template sources while keeping its own pages and window behavior.
+
 这是独立的 XamlNexus Gallery 应用，提供可交互示例、Tips 和源码模板浏览。
 Gallery 与 CLI 默认项目模板分开维护，不会随 `xamlnexus new` 生成到用户项目。包含纯 WinUI 3、SQLite Recipe、
 EF Core Migration、WAL、数据增删改查、托盘及用户触发通知。
 默认运行路径为 x64 非打包应用。
 
 ## 运行
+
+安装正式工具包后，可直接执行以下命令，不需要克隆源码或安装 WinUI 构建环境：
+
+```powershell
+dotnet tool update --global XamlNexus
+xamlnexus gallery
+```
+
+首次使用工具时，将 `update` 改为 `install`。Gallery 版本由已安装工具包中的清单固定，首次启动下载对应 x64/ARM64 ZIP 并验证 SHA-256，随后可离线启动。升级 tool 后，下次执行 `gallery` 获取对应新版；请先关闭正在运行的 Gallery。
+
+程序缓存位于 `%LOCALAPPDATA%/XamlNexus/Gallery`，与下文的 Gallery 用户数据目录分开。旧版缓存保留，关闭应用后可手动清理无需保留的缓存版本。失败下载不会作为可用版本启动。
+
+Official tool packages provide `xamlnexus gallery`. The first launch downloads and verifies the pinned x64/ARM64 release; cached launches work offline. Updating the tool selects its matching Gallery on the next launch. Close the running Gallery first. Executables are cached under `%LOCALAPPDATA%/XamlNexus/Gallery`, separately from user data. Source-only tool builds without a release manifest report this explicitly.
+
+以下为源码运行方式：
 
 ```powershell
 dotnet restore XamlNexus.Gallery.sln -p:NuGetAudit=false

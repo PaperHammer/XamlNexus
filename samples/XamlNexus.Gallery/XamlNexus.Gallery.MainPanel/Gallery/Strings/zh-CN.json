@@ -54,7 +54,7 @@
   "TryRegular": "搜索 WinUI，开启慢请求或模拟失败后刷新。需要了解切页后的状态保留时，请查看“页面保活”。",
   "TryCached": "搜索 WinUI，切换到首页后再返回：查询、结果和页面编号保持不变。",
   "DesktopDevelopment": "Windows 桌面开发",
-  "HomeDescription": "体验示例，理解用法，再接入你的应用。",
+  "HomeDescription": "探索 XamlNexus 的功能与用法，从这里开始构建你的应用。",
   "ExploreSamples": "探索示例",
   "StartHere": "建议从这里开始",
   "HomeTip": "“列表与异步加载”演示数据交互；“页面保活”演示切页后的状态保留；“数据与恢复”演示重启后的持久化。",

@@ -1,3 +1,4 @@
+using XamlNexus.Tooling.CommandLine;
 using System.Reflection;
 using Spectre.Console;
 using XamlNexus.Common.CommandLine;
@@ -24,8 +25,8 @@ namespace XamlNexus {
                             operation = args.FirstOrDefault()?.ToLowerInvariant() ?? "cli",
                             status = "error",
                             error = new {
-                                code = "XC1001",
-                                message = parseResult.Error,
+                                code = CliErrors.InvalidArguments.Code,
+                                message = CliErrors.InvalidArguments.GetMessage(parseResult.Error),
                             },
                         });
                         return UsageErrorExitCode;
@@ -52,6 +53,8 @@ namespace XamlNexus {
                         return Generate(options.Project!, options.Profile, options.Features);
                     case CliCommand.Run:
                         return RunProject(options);
+                    case CliCommand.Gallery:
+                        return RunGalleryAsync().GetAwaiter().GetResult();
                     case CliCommand.List:
                         return ListProject(options.ProjectPath!, options.JsonOutput);
                     case CliCommand.Validate:

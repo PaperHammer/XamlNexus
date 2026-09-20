@@ -177,6 +177,7 @@ Usage:
   xamlnexus run [path] [--project &lt;directory&gt;] [--no-build] [--dry-run] [--json]
     Build and run Debug/x64 unpackaged; Ctrl+C stops this run.
     --no-build uses existing output; no watch or hot reload.
+  xamlnexus gallery                Download/cache and open the matching Gallery
   xamlnexus list [path] [--json]    List project capabilities
   xamlnexus validate [path] [--json] Validate the manifest and managed files
   xamlnexus doctor --environment [--json]
@@ -494,4 +495,92 @@ Tip: Use "xn" as an alias in the current terminal session:
   <data name="DoctorDiagnostic" xml:space="preserve"><value>Diagnostic</value></data>
   <data name="DoctorHealthy" xml:space="preserve"><value>No errors: {0} warning(s).</value></data>
   <data name="DoctorUnhealthy" xml:space="preserve"><value>Found {0} warning(s) and {1} error(s).</value></data>
+  <data name="Doctor_ProjectConsistent" xml:space="preserve"><value>Manifest and managed project structure are consistent.</value></data>
+  <data name="Doctor_ProjectXmlUnreadable" xml:space="preserve"><value>Could not inspect project XML: {0}</value></data>
+  <data name="Doctor_WindowsProjectsFound" xml:space="preserve"><value>{0} Windows-targeted project(s) detected.</value></data>
+  <data name="Doctor_WindowsProjectsMissing" xml:space="preserve"><value>No Windows-targeted project was detected.</value></data>
+  <data name="Doctor_AppSdkMissing" xml:space="preserve"><value>Microsoft.WindowsAppSDK is not referenced.</value></data>
+  <data name="Doctor_AppSdkReferenced" xml:space="preserve"><value>Microsoft.WindowsAppSDK {0} is referenced.</value></data>
+  <data name="Doctor_AppSdkVersionsDiffer" xml:space="preserve"><value>Multiple Microsoft.WindowsAppSDK versions are referenced: {0}.</value></data>
+  <data name="Doctor_RecipesEmpty" xml:space="preserve"><value>No Recipe modules are installed.</value></data>
+  <data name="Doctor_RecipeUnavailable" xml:space="preserve"><value>Installed Recipe '{0}' is not available in the active Catalog.</value></data>
+  <data name="Doctor_RecipeVersionMatches" xml:space="preserve"><value>Recipe '{0}' is at Catalog version {1}.</value></data>
+  <data name="Doctor_RecipeVersionDiffers" xml:space="preserve"><value>Recipe '{0}' is installed at {1}; Catalog provides {2}.</value></data>
+  <data name="Doctor_DataReferencePresent" xml:space="preserve"><value>The database-owning process references the Data project.</value></data>
+  <data name="Doctor_DataReferenceMissing" xml:space="preserve"><value>The database-owning process does not reference the Data project.</value></data>
+  <data name="Doctor_WalTextFound" xml:space="preserve"><value>WAL-related text was found in the database service source; the runtime journal mode has not been verified.</value></data>
+  <data name="Doctor_WalTextMissing" xml:space="preserve"><value>WAL initialization could not be confirmed from the database service source. Custom initialization or another journal mode is allowed; verify the runtime configuration if needed.</value></data>
+  <data name="Doctor_ProtobufPresent" xml:space="preserve"><value>Hybrid app-state Protobuf integration is present.</value></data>
+  <data name="Doctor_ProtobufMissing" xml:space="preserve"><value>Hybrid app-state Protobuf integration is missing.</value></data>
+  <data name="Doctor_ReleaseModuleMissing" xml:space="preserve"><value>The GitHub release module is not declared.</value></data>
+  <data name="Doctor_ReleaseMetadataComplete" xml:space="preserve"><value>Release metadata contains all required fields.</value></data>
+  <data name="Doctor_ReleaseMetadataMissing" xml:space="preserve"><value>Release metadata is missing: {0}.</value></data>
+  <data name="Doctor_ReleaseMetadataInvalid" xml:space="preserve"><value>Release metadata is invalid: {0}</value></data>
+  <data name="DoctorSdkInspectionFailed" xml:space="preserve"><value>Unable to inspect Windows SDK assets: {0}</value></data>
+  <data name="ProjectValidation_SolutionMissing" xml:space="preserve"><value>Solution file is missing.</value></data>
+  <data name="ProjectValidation_VersionPropertiesMissing" xml:space="preserve"><value>Shared version properties are missing.</value></data>
+  <data name="ProjectValidation_WinuiProjectMissing" xml:space="preserve"><value>WinUI application project is missing.</value></data>
+  <data name="ProjectValidation_CommonProjectMissing" xml:space="preserve"><value>Common project is missing.</value></data>
+  <data name="ProjectValidation_HybridHostMissing" xml:space="preserve"><value>Hybrid background host project is missing.</value></data>
+  <data name="ProjectValidation_ShellMissing" xml:space="preserve"><value>Application shell is missing.</value></data>
+  <data name="ProjectValidation_UiComponentsMissing" xml:space="preserve"><value>ArcXaml UI component project is missing.</value></data>
+  <data name="ProjectValidation_EnglishResourcesMissing" xml:space="preserve"><value>English localization resources are missing.</value></data>
+  <data name="ProjectValidation_ChineseResourcesMissing" xml:space="preserve"><value>Chinese localization resources are missing.</value></data>
+  <data name="ProjectValidation_LoggingMissing" xml:space="preserve"><value>Logging infrastructure is missing.</value></data>
+  <data name="ProjectValidation_SettingsMissing" xml:space="preserve"><value>Settings panel project is missing.</value></data>
+  <data name="ProjectValidation_SingleInstanceMissing" xml:space="preserve"><value>Single-instance application entry point is missing.</value></data>
+  <data name="ProjectValidation_UpdateLifecycleMissing" xml:space="preserve"><value>Update lifecycle is missing.</value></data>
+  <data name="ProjectValidation_UpdateDownloaderMissing" xml:space="preserve"><value>Verified update downloader is missing.</value></data>
+  <data name="ProjectValidation_ReleaseConfigMissing" xml:space="preserve"><value>Release configuration is missing (eng/publishing/release.json).</value></data>
+  <data name="ProjectValidation_InstallerScriptMissing" xml:space="preserve"><value>Installer build script is missing.</value></data>
+  <data name="ProjectValidation_AutostartMissing" xml:space="preserve"><value>Autostart integration is missing.</value></data>
+  <data name="ProjectValidation_BackgroundHostMissing" xml:space="preserve"><value>Background host project is missing.</value></data>
+  <data name="ProjectValidation_GrpcClientMissing" xml:space="preserve"><value>Named Pipe gRPC client project is missing.</value></data>
+  <data name="ProjectValidation_GrpcServiceMissing" xml:space="preserve"><value>Named Pipe gRPC service project is missing.</value></data>
+  <data name="ProjectValidation_TrayWindowMissing" xml:space="preserve"><value>System tray host window is missing.</value></data>
+  <data name="ProjectValidation_TrayWindowCodeMissing" xml:space="preserve"><value>System tray host window code is missing.</value></data>
+  <data name="ProjectValidation_ValidatorUnavailable" xml:space="preserve"><value>No structural validator is registered for module '{0}'.</value></data>
+  <data name="ProjectValidation_ScaffoldFileMissing" xml:space="preserve"><value>A scaffold-managed file is missing.</value></data>
+  <data name="ProjectValidation_ScaffoldFileChanged" xml:space="preserve"><value>Template file differs from its generated baseline. Customization is allowed; automatic upgrade may require resolving these changes.</value></data>
+  <data name="ProjectValidation_RecipeFileMissing" xml:space="preserve"><value>Recipe module '{0}' owns a file that is missing.</value></data>
+  <data name="ProjectValidation_RecipeFileChanged" xml:space="preserve"><value>Recipe '{0}' file differs from its generated baseline. Customization is allowed; automatic update or removal may require resolving these changes.</value></data>
+  <data name="ProjectUpgrade_ConflictExportStale" xml:space="preserve"><value>The conflict export is missing or stale. Export conflicts again from the current project and target version.</value></data>
+  <data name="ProjectUpgrade_ManualResolutionRequired" xml:space="preserve"><value>This conflict requires manual project changes before retrying upgrade: {0} ({1}).</value></data>
+  <data name="ProjectUpgrade_ResolvedFileMissing" xml:space="preserve"><value>Missing resolved file: {0}.merge</value></data>
+  <data name="ProjectUpgrade_ConflictMarkersRemain" xml:space="preserve"><value>Unresolved conflict markers or invalid text: {0}</value></data>
+  <data name="ProjectUpgrade_ResolvedXmlInvalid" xml:space="preserve"><value>Resolved XML is invalid: {0}</value></data>
+  <data name="ProjectUpgrade_BaselineVersionMismatch" xml:space="preserve"><value>A missing scaffold baseline can only be adopted from the same generator version.</value></data>
+  <data name="ProjectUpgrade_BaselineAlreadyPresent" xml:space="preserve"><value>This project already has a scaffold file baseline.</value></data>
+  <data name="ProjectUpgrade_TargetBaselineMissing" xml:space="preserve"><value>The target template has no scaffold file baseline.</value></data>
+  <data name="ProjectUpgrade_AdoptionFileMissing" xml:space="preserve"><value>A scaffold file required for baseline adoption is missing.</value></data>
+  <data name="ProjectUpgrade_AdoptionFileChanged" xml:space="preserve"><value>A scaffold file differs from the same-version template.</value></data>
+  <data name="ProjectUpgrade_BaselineMissing" xml:space="preserve"><value>This project has no scaffold file baseline and cannot be upgraded safely.</value></data>
+  <data name="ProjectUpgrade_ManagedFileMissing" xml:space="preserve"><value>A scaffold-managed file is missing.</value></data>
+  <data name="ProjectUpgrade_DestinationOccupied" xml:space="preserve"><value>A new scaffold path is already occupied by different content.</value></data>
+  <data name="ProjectUpgrade_MergeBaselineMissing" xml:space="preserve"><value>A scaffold-managed file was modified, but its older manifest has no merge baseline.</value></data>
+  <data name="ProjectUpgrade_ModifiedFileRemoved" xml:space="preserve"><value>The user modified a scaffold file that the target version removes.</value></data>
+  <data name="ProjectUpgrade_ConflictsPreventApply" xml:space="preserve"><value>Upgrade has {0} conflict(s); no files were changed.</value></data>
+  <data name="ProjectUpgrade_PlanVersionMismatch" xml:space="preserve"><value>The upgrade plan versions do not match the supplied projects.</value></data>
+  <data name="ProjectUpgrade_ManifestChanged" xml:space="preserve"><value>The project manifest changed after the upgrade context was loaded.</value></data>
+  <data name="ProjectUpgrade_CreatePathAppeared" xml:space="preserve"><value>Upgrade plan is stale because a create path now exists: {0}</value></data>
+  <data name="ProjectUpgrade_ManagedFileChanged" xml:space="preserve"><value>Upgrade plan is stale because a managed file changed: {0}</value></data>
+  <data name="ProjectUpgrade_ModuleOwnershipConflict" xml:space="preserve"><value>Target template module '{0}' conflicts with an installed Recipe. Automatic ownership transfer is not supported.</value></data>
+  <data name="ProjectUpgrade_FileOwnershipConflict" xml:space="preserve"><value>Scaffold path '{0}' is owned by Recipe '{1}'. Automatic ownership transfer is not supported, even when the contents match.</value></data>
+  <data name="ProjectUpgrade_ProjectIdentityMismatch" xml:space="preserve"><value>The target scaffold identity does not match the current project.</value></data>
+  <data name="ProjectUpgrade_TargetFileStale" xml:space="preserve"><value>Target scaffold file is missing or stale: {0}</value></data>
+  <data name="ProjectUpgrade_PathEscapesProject" xml:space="preserve"><value>Scaffold path escapes the project: {0}</value></data>
+  <data name="Cli_RunFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="Cli_ListFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="Cli_ValidationFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="Cli_RecipeCatalogFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="ProjectUpgrade_DowngradeUnsupported" xml:space="preserve"><value>Project downgrade from {0} to {1} is not supported.</value></data>
+  <data name="ProjectUpgrade_LegacyBaselineMissing" xml:space="preserve"><value>This older project has no scaffold baseline. Upgrade it first with the matching XamlNexus version.</value></data>
+  <data name="ProjectUpgrade_UnsupportedXml" xml:space="preserve"><value>XML structure could not be checked safely (unsupported content, encoding, or size). Review the conflict document and merge manually.</value></data>
+  <data name="ProjectUpgrade_UnsupportedText" xml:space="preserve"><value>The modified scaffold file is binary, too large, or not supported UTF-8 text.</value></data>
+  <data name="ProjectUpgrade_SolutionMergeConflict" xml:space="preserve"><value>The user and target version changed the same solution project, section, or configuration.</value></data>
+  <data name="ProjectUpgrade_XmlMergeConflict" xml:space="preserve"><value>XML changes have conflicting values or child order, or nodes cannot be matched reliably. Review the conflict document and merge manually.</value></data>
+  <data name="ProjectUpgrade_TextMergeConflict" xml:space="preserve"><value>The user and target version changed overlapping lines.</value></data>
+  <data name="ProjectUpgrade_UpgradeRolledBack" xml:space="preserve"><value>Project upgrade failed. All scaffold changes were rolled back.</value></data>
+  <data name="ProjectUpgrade_UpgradeRollbackFailed" xml:space="preserve"><value>Project upgrade failed. Rollback encountered {0} additional error(s).</value></data>
+  <data name="Cli_InvalidArguments" xml:space="preserve"><value>{0}</value></data>
 </root>

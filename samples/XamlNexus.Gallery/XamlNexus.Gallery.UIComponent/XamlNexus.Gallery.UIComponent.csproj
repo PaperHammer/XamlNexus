@@ -37,4 +37,5 @@
     <XamlNexusVersion>1.0.3</XamlNexusVersion>
     <XamlNexusTemplate>Winui3</XamlNexusTemplate>
   </PropertyGroup>
+  <Import Project="../../../eng/GallerySharedUI.targets" />
 </Project>

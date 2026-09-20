@@ -27,6 +27,13 @@
 		<None Include="./README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(GalleryManifestPath)' != ''">
+		<None Include="$(GalleryManifestPath)" Pack="true" PackagePath="tools/$(TargetFramework)/any/gallery-manifest.json" />
+	</ItemGroup>
+	<Target Name="RequireGalleryManifest" BeforeTargets="GenerateNuspec" Condition="'$(RequireGalleryManifest)' == 'true'">
+		<Error Condition="'$(GalleryManifestPath)' == '' Or !Exists('$(GalleryManifestPath)')" Text="Official packages require a generated Gallery manifest." />
+	</Target>
+
 	<ItemGroup>
 		<Content Include="..\Templates\**\*" Exclude="..\Templates\**\bin\**;..\Templates\**\obj\**;..\Templates\**\.vs\**;..\Templates\**\Plugins\**">
 			<Pack>true</Pack>
@@ -38,6 +45,7 @@
 		<ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
 		<ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
 		<ProjectReference Include="..\XamlNexus.Recipes.BuiltIn\XamlNexus.Recipes.BuiltIn.csproj" />
+		<ProjectReference Include="..\XamlNexus.Tooling\XamlNexus.Tooling.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

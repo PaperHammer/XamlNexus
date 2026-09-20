@@ -26,6 +26,25 @@ try {
     if ($actualId -cne $PackageId -or $actualVersion -cne $Version) {
         throw "Release package mismatch: expected '$PackageId $Version', found '$actualId $actualVersion'."
     }
+    $entries = @($archive.Entries | Where-Object { $_.FullName -match '^tools/[^/]+/any/gallery-manifest.json$' })
+    if ($entries.Count -ne 1) { throw 'Expected a Gallery manifest beside the tool executable.' }
+    $reader = [IO.StreamReader]::new($entries[0].Open())
+    try { $manifest = $reader.ReadToEnd() | ConvertFrom-Json }
+    finally { $reader.Dispose() }
+    if ($manifest.schemaVersion -ne 1 -or $manifest.version -cne $Version) { throw 'Gallery/tool version mismatch.' }
+    if (@($manifest.assets).Count -ne 2) { throw 'Expected two Gallery architectures.' }
+    foreach ($rid in @('win-x64', 'win-arm64')) {
+        $assets = @($manifest.assets | Where-Object { $_.runtimeIdentifier -ceq $rid })
+        if ($assets.Count -ne 1) { throw "Missing or duplicate Gallery architecture: $rid" }
+        $asset = $assets[0]
+        $name = "XamlNexus.Gallery-$Version-$rid.zip"
+        $expectedUrl = "https://github.com/PaperHammer/XamlNexus/releases/download/v$Version/$name"
+        if ($asset.url -cne $expectedUrl -or $asset.sha256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'Invalid Gallery asset metadata.' }
+        $path = Join-Path $Directory $name
+        if (!(Test-Path -LiteralPath $path) -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ine $asset.sha256) {
+            throw "Gallery archive does not match the packaged manifest: $name"
+        }
+    }
 }
 finally { $archive.Dispose() }
 

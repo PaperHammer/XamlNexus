@@ -1,0 +1,35 @@
+<Project>
+  <!-- Shared implementations are edited in the WinUI template, not in Gallery obj/. -->
+  <ItemGroup>
+    <GallerySharedCompile Include="WindowConsts.cs" />
+    <GallerySharedCompile Include="ArcMarkupExtension/I18nExtension.cs" />
+    <GallerySharedCompile Include="Attributes/KeepAliveAttribute.cs" />
+    <GallerySharedCompile Include="Context/LoadingContext.cs" />
+    <GallerySharedCompile Include="Converters/BoolByValueConverter.cs" />
+    <GallerySharedCompile Include="Converters/IsStringConverter.cs" />
+    <GallerySharedCompile Include="Converters/VisibilityByValueConverter.cs" />
+    <GallerySharedPage Include="Feedback/Loading.xaml" />
+    <GallerySharedCompile Include="Feedback/Loading.xaml.cs" />
+    <GallerySharedCompile Include="Input/Button/ArcButton.cs" />
+    <GallerySharedPage Include="Input/Button/ArcButton.xaml" />
+    <GallerySharedCompile Include="Navigation/RootView/ArcNavigationContentView.xaml.cs" />
+    <GallerySharedCompile Include="Navigation/RootView/ArcNavigationView.cs" />
+    <GallerySharedPage Include="Navigation/RootView/ArcNavigationviewStyle.xaml" />
+    <GallerySharedPage Include="Resources/ResourceDictionary.xaml" />
+    <GallerySharedCompile Include="Styles/ArcImageIcon.cs" />
+    <GallerySharedCompile Include="Templates/ArcPage.cs" />
+    <GallerySharedPage Include="Templates/ArcPageHost.xaml" />
+    <GallerySharedCompile Include="Templates/ArcPageHost.xaml.cs" />
+    <GallerySharedPage Include="Templates/ArcPageSimpleHost.xaml" />
+    <GallerySharedCompile Include="Templates/ArcPageSimpleHost.xaml.cs" />
+    <GallerySharedCompile Include="Templates/ArcUserControl.cs" />
+    <GallerySharedCompile Include="Utils/ArcThemeUtil.cs" />
+    <GallerySharedCompile Include="Utils/FrameworkPayload.cs" />
+    <GallerySharedCompile Include="Utils/GlobalDialogUtils.cs" />
+    <GallerySharedCompile Include="Utils/GlobalMessageUtil.cs" />
+    <GallerySharedCompile Include="Utils/SystemUtil.cs" />
+    <GallerySharedCompile Include="Utils/Extensions/DispatcherQueueExtensions.cs" />
+    <GallerySharedCompile Include="Utils/Extensions/ThemeExtensions.cs" />
+    <GallerySharedCompile Include="Utils/Extensions/WindowExtensions.cs" />
+  </ItemGroup>
+</Project>

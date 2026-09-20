@@ -54,7 +54,7 @@
   "TryRegular": "Search for WinUI, enable a slow request or simulate a failure, then refresh. Use Page retention to explore navigation state.",
   "TryCached": "Search for WinUI, switch to Home, then return. The query, results and page ID stay the same.",
   "DesktopDevelopment": "Windows desktop development",
-  "HomeDescription": "Explore working examples. Understand the pattern. Use it in your app.",
+  "HomeDescription": "Explore what you can build with XamlNexus and find examples to get started.",
   "ExploreSamples": "Explore samples",
   "StartHere": "Start here",
   "HomeTip": "Start with Lists & async loading for data interactions. Page retention demonstrates state across navigation; Data & recovery demonstrates persistence across restarts.",

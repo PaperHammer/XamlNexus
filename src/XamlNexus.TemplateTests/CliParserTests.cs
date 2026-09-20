@@ -1,3 +1,4 @@
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.CommandLine;
 using XamlNexus.Common.Utils;
 using Xunit;

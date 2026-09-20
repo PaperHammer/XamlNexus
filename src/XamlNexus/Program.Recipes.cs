@@ -1,3 +1,4 @@
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.CommandLine;
 using Spectre.Console;
 using XamlNexus.Common.Projects;
@@ -43,7 +44,7 @@ namespace XamlNexus {
                 return SuccessExitCode;
             }
             catch (Exception exception) {
-                ShowCommandError("recipes", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), jsonOutput, "XC1103");
+                ShowCommandError("recipes", CliErrors.RecipeCatalogFailed.GetMessage(XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception)), jsonOutput, CliErrors.RecipeCatalogFailed.Code);
                 return GenerationFailureExitCode;
             }
         }

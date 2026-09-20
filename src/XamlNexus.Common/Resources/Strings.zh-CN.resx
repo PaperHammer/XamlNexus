@@ -416,4 +416,92 @@
   <data name="DoctorDiagnostic" xml:space="preserve"><value>诊断</value></data>
   <data name="DoctorHealthy" xml:space="preserve"><value>未发现错误：{0} 项警告。</value></data>
   <data name="DoctorUnhealthy" xml:space="preserve"><value>发现 {0} 项警告、{1} 项错误。</value></data>
+  <data name="Doctor_ProjectConsistent" xml:space="preserve"><value>清单与受管理的项目结构一致。</value></data>
+  <data name="Doctor_ProjectXmlUnreadable" xml:space="preserve"><value>无法检查项目 XML：{0}</value></data>
+  <data name="Doctor_WindowsProjectsFound" xml:space="preserve"><value>检测到 {0} 个面向 Windows 的项目。</value></data>
+  <data name="Doctor_WindowsProjectsMissing" xml:space="preserve"><value>未检测到面向 Windows 的项目。</value></data>
+  <data name="Doctor_AppSdkMissing" xml:space="preserve"><value>未引用 Microsoft.WindowsAppSDK。</value></data>
+  <data name="Doctor_AppSdkReferenced" xml:space="preserve"><value>已引用 Microsoft.WindowsAppSDK {0}。</value></data>
+  <data name="Doctor_AppSdkVersionsDiffer" xml:space="preserve"><value>引用了多个 Microsoft.WindowsAppSDK 版本：{0}。</value></data>
+  <data name="Doctor_RecipesEmpty" xml:space="preserve"><value>未安装 Recipe 模块。</value></data>
+  <data name="Doctor_RecipeUnavailable" xml:space="preserve"><value>当前目录中没有已安装的 Recipe“{0}”的定义。</value></data>
+  <data name="Doctor_RecipeVersionMatches" xml:space="preserve"><value>Recipe“{0}”的版本为 {1}，与目录一致。</value></data>
+  <data name="Doctor_RecipeVersionDiffers" xml:space="preserve"><value>Recipe“{0}”的已安装版本为 {1}，目录提供的版本为 {2}。</value></data>
+  <data name="Doctor_DataReferencePresent" xml:space="preserve"><value>拥有数据库的进程已引用 Data 项目。</value></data>
+  <data name="Doctor_DataReferenceMissing" xml:space="preserve"><value>拥有数据库的进程未引用 Data 项目。</value></data>
+  <data name="Doctor_WalTextFound" xml:space="preserve"><value>数据库服务源码中存在 WAL 相关文本；尚未验证运行时日志模式。</value></data>
+  <data name="Doctor_WalTextMissing" xml:space="preserve"><value>无法从数据库服务源码确认 WAL 初始化。允许自定义初始化或其他日志模式；请按需验证运行时配置。</value></data>
+  <data name="Doctor_ProtobufPresent" xml:space="preserve"><value>已包含混合架构的应用状态 Protobuf 集成。</value></data>
+  <data name="Doctor_ProtobufMissing" xml:space="preserve"><value>缺少混合架构的应用状态 Protobuf 集成。</value></data>
+  <data name="Doctor_ReleaseModuleMissing" xml:space="preserve"><value>未声明 GitHub 发布模块。</value></data>
+  <data name="Doctor_ReleaseMetadataComplete" xml:space="preserve"><value>发布元数据包含所有必填字段。</value></data>
+  <data name="Doctor_ReleaseMetadataMissing" xml:space="preserve"><value>发布元数据缺少：{0}。</value></data>
+  <data name="Doctor_ReleaseMetadataInvalid" xml:space="preserve"><value>发布元数据无效：{0}</value></data>
+  <data name="DoctorSdkInspectionFailed" xml:space="preserve"><value>无法检查 Windows SDK 文件：{0}</value></data>
+  <data name="ProjectValidation_SolutionMissing" xml:space="preserve"><value>解决方案文件缺失。</value></data>
+  <data name="ProjectValidation_VersionPropertiesMissing" xml:space="preserve"><value>共享版本属性文件缺失。</value></data>
+  <data name="ProjectValidation_WinuiProjectMissing" xml:space="preserve"><value>WinUI 应用项目缺失。</value></data>
+  <data name="ProjectValidation_CommonProjectMissing" xml:space="preserve"><value>Common 项目缺失。</value></data>
+  <data name="ProjectValidation_HybridHostMissing" xml:space="preserve"><value>混合架构后台宿主项目缺失。</value></data>
+  <data name="ProjectValidation_ShellMissing" xml:space="preserve"><value>应用外壳缺失。</value></data>
+  <data name="ProjectValidation_UiComponentsMissing" xml:space="preserve"><value>ArcXaml UI 组件项目缺失。</value></data>
+  <data name="ProjectValidation_EnglishResourcesMissing" xml:space="preserve"><value>英文资源缺失。</value></data>
+  <data name="ProjectValidation_ChineseResourcesMissing" xml:space="preserve"><value>中文资源缺失。</value></data>
+  <data name="ProjectValidation_LoggingMissing" xml:space="preserve"><value>日志基础设施缺失。</value></data>
+  <data name="ProjectValidation_SettingsMissing" xml:space="preserve"><value>设置面板项目缺失。</value></data>
+  <data name="ProjectValidation_SingleInstanceMissing" xml:space="preserve"><value>单实例应用入口缺失。</value></data>
+  <data name="ProjectValidation_UpdateLifecycleMissing" xml:space="preserve"><value>更新生命周期代码缺失。</value></data>
+  <data name="ProjectValidation_UpdateDownloaderMissing" xml:space="preserve"><value>经过校验的更新下载器缺失。</value></data>
+  <data name="ProjectValidation_ReleaseConfigMissing" xml:space="preserve"><value>发布配置缺失（eng/publishing/release.json）。</value></data>
+  <data name="ProjectValidation_InstallerScriptMissing" xml:space="preserve"><value>安装程序构建脚本缺失。</value></data>
+  <data name="ProjectValidation_AutostartMissing" xml:space="preserve"><value>自动启动集成缺失。</value></data>
+  <data name="ProjectValidation_BackgroundHostMissing" xml:space="preserve"><value>后台宿主项目缺失。</value></data>
+  <data name="ProjectValidation_GrpcClientMissing" xml:space="preserve"><value>命名管道 gRPC 客户端项目缺失。</value></data>
+  <data name="ProjectValidation_GrpcServiceMissing" xml:space="preserve"><value>命名管道 gRPC 服务项目缺失。</value></data>
+  <data name="ProjectValidation_TrayWindowMissing" xml:space="preserve"><value>系统托盘宿主窗口缺失。</value></data>
+  <data name="ProjectValidation_TrayWindowCodeMissing" xml:space="preserve"><value>系统托盘宿主窗口代码缺失。</value></data>
+  <data name="ProjectValidation_ValidatorUnavailable" xml:space="preserve"><value>模块“{0}”未注册结构校验器。</value></data>
+  <data name="ProjectValidation_ScaffoldFileMissing" xml:space="preserve"><value>脚手架管理的文件缺失。</value></data>
+  <data name="ProjectValidation_ScaffoldFileChanged" xml:space="preserve"><value>模板文件与生成基线不同。允许自定义修改；自动升级可能需要解决这些变更。</value></data>
+  <data name="ProjectValidation_RecipeFileMissing" xml:space="preserve"><value>Recipe 模块“{0}”管理的文件缺失。</value></data>
+  <data name="ProjectValidation_RecipeFileChanged" xml:space="preserve"><value>Recipe“{0}”的文件与生成基线不同。允许自定义修改；自动更新或移除可能需要解决这些变更。</value></data>
+  <data name="ProjectUpgrade_ConflictExportStale" xml:space="preserve"><value>冲突导出缺失或已过期。请根据当前项目和目标版本重新导出冲突。</value></data>
+  <data name="ProjectUpgrade_ManualResolutionRequired" xml:space="preserve"><value>此冲突需要先手动修改项目，再重试升级：{0}（{1}）。</value></data>
+  <data name="ProjectUpgrade_ResolvedFileMissing" xml:space="preserve"><value>缺少已解决的文件：{0}.merge</value></data>
+  <data name="ProjectUpgrade_ConflictMarkersRemain" xml:space="preserve"><value>存在未解决的冲突标记或无效文本：{0}</value></data>
+  <data name="ProjectUpgrade_ResolvedXmlInvalid" xml:space="preserve"><value>解决冲突后的 XML 无效：{0}</value></data>
+  <data name="ProjectUpgrade_BaselineVersionMismatch" xml:space="preserve"><value>只能从相同生成器版本补建缺失的脚手架基线。</value></data>
+  <data name="ProjectUpgrade_BaselineAlreadyPresent" xml:space="preserve"><value>此项目已有脚手架文件基线。</value></data>
+  <data name="ProjectUpgrade_TargetBaselineMissing" xml:space="preserve"><value>目标模板没有脚手架文件基线。</value></data>
+  <data name="ProjectUpgrade_AdoptionFileMissing" xml:space="preserve"><value>补建基线所需的脚手架文件缺失。</value></data>
+  <data name="ProjectUpgrade_AdoptionFileChanged" xml:space="preserve"><value>脚手架文件与相同版本的模板不同。</value></data>
+  <data name="ProjectUpgrade_BaselineMissing" xml:space="preserve"><value>此项目没有脚手架文件基线，无法安全升级。</value></data>
+  <data name="ProjectUpgrade_ManagedFileMissing" xml:space="preserve"><value>脚手架管理的文件缺失。</value></data>
+  <data name="ProjectUpgrade_DestinationOccupied" xml:space="preserve"><value>新的脚手架路径已被不同内容占用。</value></data>
+  <data name="ProjectUpgrade_MergeBaselineMissing" xml:space="preserve"><value>脚手架管理的文件已修改，但旧清单没有合并基线。</value></data>
+  <data name="ProjectUpgrade_ModifiedFileRemoved" xml:space="preserve"><value>用户修改的脚手架文件将被目标版本移除。</value></data>
+  <data name="ProjectUpgrade_ConflictsPreventApply" xml:space="preserve"><value>升级存在 {0} 个冲突；未修改任何文件。</value></data>
+  <data name="ProjectUpgrade_PlanVersionMismatch" xml:space="preserve"><value>升级计划的版本与所提供的项目不匹配。</value></data>
+  <data name="ProjectUpgrade_ManifestChanged" xml:space="preserve"><value>加载升级上下文后，项目清单发生了变化。</value></data>
+  <data name="ProjectUpgrade_CreatePathAppeared" xml:space="preserve"><value>待创建路径已存在，升级计划已过期：{0}</value></data>
+  <data name="ProjectUpgrade_ManagedFileChanged" xml:space="preserve"><value>受管理文件已变化，升级计划已过期：{0}</value></data>
+  <data name="ProjectUpgrade_ModuleOwnershipConflict" xml:space="preserve"><value>目标模板模块“{0}”与已安装的 Recipe 冲突。不支持自动转移所有权。</value></data>
+  <data name="ProjectUpgrade_FileOwnershipConflict" xml:space="preserve"><value>脚手架路径“{0}”由 Recipe“{1}”管理。即使内容相同，也不支持自动转移所有权。</value></data>
+  <data name="ProjectUpgrade_ProjectIdentityMismatch" xml:space="preserve"><value>目标脚手架标识与当前项目不匹配。</value></data>
+  <data name="ProjectUpgrade_TargetFileStale" xml:space="preserve"><value>目标脚手架文件缺失或已过期：{0}</value></data>
+  <data name="ProjectUpgrade_PathEscapesProject" xml:space="preserve"><value>脚手架路径超出项目目录：{0}</value></data>
+  <data name="Cli_RunFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="Cli_ListFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="Cli_ValidationFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="Cli_RecipeCatalogFailed" xml:space="preserve"><value>{0}</value></data>
+  <data name="ProjectUpgrade_DowngradeUnsupported" xml:space="preserve"><value>不支持将项目从 {0} 降级到 {1}。</value></data>
+  <data name="ProjectUpgrade_LegacyBaselineMissing" xml:space="preserve"><value>此旧项目没有脚手架基线。请先使用匹配的 XamlNexus 版本升级。</value></data>
+  <data name="ProjectUpgrade_UnsupportedXml" xml:space="preserve"><value>无法安全检查 XML 结构（内容、编码或大小不受支持）。请查看冲突文档并手动合并。</value></data>
+  <data name="ProjectUpgrade_UnsupportedText" xml:space="preserve"><value>修改后的脚手架文件为二进制、过大或不是受支持的 UTF-8 文本。</value></data>
+  <data name="ProjectUpgrade_SolutionMergeConflict" xml:space="preserve"><value>用户与目标版本修改了相同的解决方案项目、节或配置。</value></data>
+  <data name="ProjectUpgrade_XmlMergeConflict" xml:space="preserve"><value>XML 变更存在值或子节点顺序冲突，或无法可靠匹配节点。请查看冲突文档并手动合并。</value></data>
+  <data name="ProjectUpgrade_TextMergeConflict" xml:space="preserve"><value>用户与目标版本修改了重叠的行。</value></data>
+  <data name="ProjectUpgrade_UpgradeRolledBack" xml:space="preserve"><value>项目升级失败。已回滚所有脚手架变更。</value></data>
+  <data name="ProjectUpgrade_UpgradeRollbackFailed" xml:space="preserve"><value>项目升级失败。回滚时发生 {0} 个额外错误。</value></data>
+  <data name="Cli_InvalidArguments" xml:space="preserve"><value>{0}</value></data>
 </root>

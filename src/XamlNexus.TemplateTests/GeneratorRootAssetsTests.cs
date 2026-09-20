@@ -1,3 +1,4 @@
+using XamlNexus.Tooling.Diagnostics;
 using System.Text.Json;
 using System.Xml.Linq;
 using XamlNexus.Common.Generators;

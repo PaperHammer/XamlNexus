@@ -103,9 +103,36 @@ jobs:
         if: steps.metadata.outputs.should_publish == 'true'
         run: dotnet test ${{ steps.metadata.outputs.solution }} -c Release --no-build --no-restore -p:NuGetAudit=false
 
+      - name: Build version-matched Gallery assets
+        if: steps.metadata.outputs.should_publish == 'true'
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+          RELEASE_TAG: ${{ steps.metadata.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          & gh release view $env:RELEASE_TAG 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            $commit = git rev-parse "$($env:RELEASE_TAG)^{commit}"
+            if ($LASTEXITCODE -ne 0 -or $commit -ne '${{ github.sha }}') { throw 'Release tag does not match this source revision.' }
+            New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+            # NuGet 发布失败后重试时复用原始字节，不能重建并替换已有 SHA-256。
+            & gh release download $env:RELEASE_TAG --pattern '*.nupkg' --pattern 'XamlNexus.Gallery-*.zip' --dir artifacts
+            if ($LASTEXITCODE -ne 0) { throw 'Could not reuse existing release assets.' }
+          }
+          else {
+            ./eng/Publish-Gallery.ps1 -Architecture x64 -Version $env:RELEASE_VERSION -AssetOutputDirectory artifacts
+            ./eng/Publish-Gallery.ps1 -Architecture arm64 -Version $env:RELEASE_VERSION -AssetOutputDirectory artifacts
+          }
+          ./eng/release/New-GalleryManifest.ps1 -Directory artifacts -Version $env:RELEASE_VERSION -Tag $env:RELEASE_TAG -OutputPath artifacts/gallery-manifest.json
+
       - name: Pack .NET tool
         if: steps.metadata.outputs.should_publish == 'true'
-        run: dotnet pack ${{ steps.metadata.outputs.project }} -c Release --no-build --no-restore -o artifacts -p:ContinuousIntegrationBuild=true
+        shell: pwsh
+        run: |
+          if (@(Get-ChildItem artifacts -Filter '*.nupkg').Count -gt 0) { exit 0 }
+          $manifest = (Resolve-Path artifacts/gallery-manifest.json).Path
+          dotnet pack ${{ steps.metadata.outputs.project }} -c Release --no-build --no-restore -o artifacts -p:ContinuousIntegrationBuild=true -p:RequireGalleryManifest=true "-p:GalleryManifestPath=$manifest"
 
       - name: Validate release package
         if: steps.metadata.outputs.should_publish == 'true'
@@ -115,6 +142,49 @@ jobs:
           RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
         run: ./eng/release/Test-ReleasePackage.ps1 -Directory artifacts -PackageId $env:RELEASE_PACKAGE_ID -Version $env:RELEASE_VERSION
 
+      - name: Create GitHub release
+        if: steps.metadata.outputs.should_publish == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg')
+          if ($packages.Count -eq 0) { throw "No release packages were produced." }
+          $galleryAssets = @(Get-ChildItem -LiteralPath artifacts -Filter 'XamlNexus.Gallery-*.zip')
+          if ($galleryAssets.Count -ne 2) { throw 'Expected x64 and ARM64 Gallery assets.' }
+          $assets = @($packages.FullName) + @($galleryAssets.FullName)
+          $tag = '${{ steps.metadata.outputs.tag }}'
+          $title = 'XamlNexus ${{ steps.metadata.outputs.version }}'
+          & gh release view $tag 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            # 已发布的工具包固定了 Gallery 哈希，重试必须复用完全相同的资源。
+            $existing = Join-Path $env:RUNNER_TEMP 'existing-gallery-release'
+            New-Item -ItemType Directory -Path $existing -Force | Out-Null
+            foreach ($asset in $assets) {
+              $name = Split-Path $asset -Leaf
+              & gh release download $tag --pattern $name --dir $existing --clobber
+              if ($LASTEXITCODE -ne 0) { throw "Existing release lacks $name; repair the release before retrying." }
+              if ((Get-FileHash -LiteralPath $asset).Hash -ne (Get-FileHash -LiteralPath (Join-Path $existing $name)).Hash) {
+                throw "Published asset differs: $name. Publish a new version; do not replace pinned Gallery assets."
+              }
+            }
+          }
+          else {
+            $arguments = @(
+              'release', 'create', $tag,
+              '--title', $title,
+              '--notes-file', '${{ steps.metadata.outputs.notes_path }}',
+              '--target', '${{ github.sha }}'
+            )
+            $arguments += $assets
+            if ('${{ steps.metadata.outputs.channel }}' -eq 'preview') {
+              $arguments += '--prerelease'
+            }
+            & gh @arguments
+            if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed." }
+          }
+
+      # Gallery downloads must exist before the tool becomes installable from NuGet.
       - name: Log in to NuGet with OIDC
         if: steps.metadata.outputs.should_publish == 'true'
         uses: NuGet/login@v1
@@ -128,48 +198,8 @@ jobs:
         env:
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw "NuGet OIDC login did not return a temporary API key."
-          }
-          $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg' |
-            Where-Object { $_.Name -notlike '*.snupkg' })
-          if ($packages.Count -ne 1) {
-            throw "Expected exactly one NuGet package, found $($packages.Count)."
-          }
-          $package = $packages[0]
-          dotnet nuget push $package.FullName `
-            --api-key $env:NUGET_API_KEY `
-            --source https://api.nuget.org/v3/index.json `
-            --skip-duplicate
-
-      - name: Create GitHub release
-        if: steps.metadata.outputs.should_publish == 'true'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) { throw 'NuGet OIDC returned no API key.' }
           $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg')
-          if ($packages.Count -eq 0) { throw "No release packages were produced." }
-          $tag = '${{ steps.metadata.outputs.tag }}'
-          $title = 'XamlNexus ${{ steps.metadata.outputs.version }}'
-          & gh release view $tag 2>$null | Out-Null
-          if ($LASTEXITCODE -eq 0) {
-            & gh release upload $tag @($packages.FullName) --clobber
-            if ($LASTEXITCODE -ne 0) { throw "GitHub Release asset upload failed." }
-            & gh release edit $tag --title $title --notes-file '${{ steps.metadata.outputs.notes_path }}'
-            if ($LASTEXITCODE -ne 0) { throw "GitHub Release update failed." }
-          }
-          else {
-            $arguments = @(
-              'release', 'create', $tag,
-              '--title', $title,
-              '--notes-file', '${{ steps.metadata.outputs.notes_path }}',
-              '--target', '${{ github.sha }}'
-            )
-            $arguments += @($packages.FullName)
-            if ('${{ steps.metadata.outputs.channel }}' -eq 'preview') {
-              $arguments += '--prerelease'
-            }
-            & gh @arguments
-            if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed." }
-          }
+          if ($packages.Count -ne 1) { throw 'Expected exactly one tool package.' }
+          dotnet nuget push $packages[0].FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+          if ($LASTEXITCODE -ne 0) { throw 'NuGet publication failed.' }

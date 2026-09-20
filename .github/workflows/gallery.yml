@@ -7,6 +7,14 @@ on:
       - 'samples/XamlNexus.Gallery/**'
       - 'src/XamlNexus.Common/Assets/ListPage/**'
       - 'eng/Publish-Gallery.ps1'
+      - 'eng/release/*Gallery*.ps1'
+      - 'eng/release/Test-ReleasePackage.ps1'
+      - 'src/XamlNexus.Tooling/**'
+      - 'src/Templates/Winui3/Winui3_XamlNexus.UIComponent/**'
+      - 'eng/GallerySharedUI.targets'
+      - 'src/XamlNexus/Program.Gallery.cs'
+      - 'src/XamlNexus/XamlNexus.csproj'
+      - '.github/workflows/release-merged-pull-request.yml'
       - '.github/workflows/gallery.yml'
 
 permissions:
@@ -16,6 +24,9 @@ jobs:
   portable:
     runs-on: windows-latest
     timeout-minutes: 30
+    strategy:
+      matrix:
+        architecture: [x64, arm64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -25,9 +36,9 @@ jobs:
             10.0.x
       - name: Build portable Gallery
         shell: pwsh
-        run: ./eng/Publish-Gallery.ps1
+        run: ./eng/Publish-Gallery.ps1 -Architecture ${{ matrix.architecture }}
       - uses: actions/upload-artifact@v4
         with:
-          name: XamlNexus-Gallery-win-x64
+          name: XamlNexus-Gallery-win-${{ matrix.architecture }}
           path: .artifacts/gallery/**/*.zip
           if-no-files-found: error

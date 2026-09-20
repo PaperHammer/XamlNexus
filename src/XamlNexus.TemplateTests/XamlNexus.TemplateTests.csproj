@@ -30,6 +30,7 @@
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Logging\ArcLog.cs" Link="TemplateSources\PureArcLog.cs" />
     <ProjectReference Include="..\Templates\Winui3_Wpf\Winui3_Wpf_XamlNexus.Common\Winui3_Wpf_XamlNexus.Common.csproj" />
     <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
+    <ProjectReference Include="..\XamlNexus.Tooling\XamlNexus.Tooling.csproj" />
     <ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
     <ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
     <ProjectReference Include="..\XamlNexus.Recipes.BuiltIn\XamlNexus.Recipes.BuiltIn.csproj" />
