@@ -16,7 +16,7 @@ xamlnexus doctor --environment
 
 This guide describes the current source. Public packages gain new commands when the corresponding version is published.
 Use `dotnet tool update --global XamlNexus` to update an installed tool.
-Run `xamlnexus gallery` to open the Gallery matching the installed tool version. Official packages include a versioned download manifest: the first launch downloads and verifies the Windows x64/ARM64 archive; later launches use the local cache and work offline. After updating the tool, run the command again to fetch its matching Gallery. Close a running Gallery before opening another version.
+Run `xamlnexus gallery` to open the Gallery matching the installed tool version. Official packages include a versioned download manifest: the first launch downloads and verifies the Windows x64 archive; later launches use the local cache and work offline. After updating the tool, run the command again to fetch its matching Gallery. Close a running Gallery before opening another version.
 For unreleased source, follow the source-build instructions in the quickstart.
 Uninstall with `dotnet tool uninstall --global XamlNexus`.
 

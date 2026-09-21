@@ -24,7 +24,10 @@ public sealed partial class GallerySourceBrowser : UserControl
         string? selected = picker.SelectedItem as string;
         picker.ItemsSource = Kind switch
         {
-            "Demo" => new[] { "ListExampleView.xaml", "ListExampleView.xaml.cs", "ListGalleryPage.cs", "GalleryLifetimeView.xaml", "GalleryLifetime.cs", "GalleryItemsViewModel.cs", "GalleryItemsDataSource.cs" },
+            "Demo" => new[] { "ListExampleView.xaml", "ListExampleView.xaml.cs", "ListGalleryPage.cs", "GalleryItemsViewModel.cs", "GalleryItemsDataSource.cs" },
+            "Retention" => new[] { "KeepAliveGalleryPage.xaml", "KeepAliveGalleryPage.xaml.cs", "RegularRetentionPage.xaml", "CachedRetentionPage.xaml", "RetentionExamplePage.cs", "RetentionExampleView.xaml", "RetentionExampleView.xaml.cs", "DepartureRetentionPage.xaml", "DepartureRetentionPage.xaml.cs", "GalleryLifetime.cs" },
+            "Window" => new[] { "Framework.ArcWindow.cs", "Framework.ArcWindowHost.xaml", "Framework.ArcWindowManager.cs" },
+            "Page" => new[] { "Framework.ArcPage.cs", "Framework.ArcNavigationContentViewExtension.cs", "Framework.KeepAliveAttribute.cs" },
             "Data" => new[] { "MainPage.xaml", "MainPage.xaml.cs" },
             _ => new[] { "Page.xaml.txt", "Page.xaml.cs.txt", "ViewModel.cs.txt", "DataSource.cs.txt" }
         };
@@ -35,8 +38,8 @@ public sealed partial class GallerySourceBrowser : UserControl
     }
     private void UpdateLabels()
     {
-        SourceExpander.Header = GalleryStrings.Get(Kind == "Template" ? "TemplateSource" : Kind == "Data" ? "DataSource" : "DemoSource");
-        Description.Text = GalleryStrings.Get(Kind == "Template" ? "TemplateDescription" : Kind == "Data" ? "DataSourceDescription" : "DemoDescription");
+        SourceExpander.Header = GalleryStrings.Get(Kind == "Template" ? "TemplateSource" : Kind == "Data" ? "DataSource" : Kind is "Window" or "Page" ? "FrameworkSource" : "DemoSource");
+        Description.Text = GalleryStrings.Get(Kind == "Template" ? "TemplateDescription" : Kind == "Data" ? "DataSourceDescription" : Kind is "Window" or "Page" ? "FrameworkSourceHelp" : "DemoDescription");
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(picker, (string)SourceExpander.Header);
     }
     private void SelectionChanged(object sender, SelectionChangedEventArgs e) => Update();

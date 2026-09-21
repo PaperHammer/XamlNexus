@@ -12,6 +12,7 @@
     <Compile Include="..\XamlNexus.Common\Assets\ListPage\DataSource.cs.txt" Link="TemplateSources\ListDataSource.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppObjectFactory.cs" Link="TemplateSources\AppObjectFactory.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppServiceLocator.cs" Link="TemplateSources\AppServiceLocator.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\TaskUtils\TaskBlocking.cs" Link="TemplateSources\TaskBlocking.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.UIComponent\Navigation\INavigationRegistry.cs" Link="TemplateSources\INavigationRegistry.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.UIComponent\Navigation\NavigationRegistry.cs" Link="TemplateSources\NavigationRegistry.cs" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

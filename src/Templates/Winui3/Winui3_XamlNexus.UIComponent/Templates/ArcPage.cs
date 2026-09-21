@@ -14,12 +14,12 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         public virtual ArcPageContext? ArcContext { get; set; } = null!;
         public abstract Type ArcType { get; }
         /// <summary>
-        /// 页面是否被导航系统保活
+        /// 页面是否被导航系统保活 / Whether the navigation system retains this page.
         /// </summary>
         public bool KeepAlive => _keepAlive.Value;
         public bool IsPreLeaved => Volatile.Read(ref _isPreLeaved) == 1;
         /// <summary>
-        /// 该类型是否会存在多个实例（同类型多实例无法使用 ArcPageContext 管理器）
+        /// 该类型是否会存在多个实例（同类型多实例无法使用 ArcPageContext 管理器） / Whether this type allows multiple instances (same-type instances cannot use the ArcPageContext manager).
         /// </summary>
         protected virtual bool IsMultiInstance => false;
         protected ArcPageContextKey ContextKey => GetContextKey();
@@ -70,7 +70,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
                 }
             }
             catch (OperationCanceledException) {
-                // 被复活，忽略退出逻辑
+                // 被复活，忽略退出逻辑 / The page has been reactivated; skip leaving logic.
             }
             catch (Exception ex) {
                 ArcLog.GetLogger<ArcPage>().Error(ex);
@@ -84,7 +84,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
 
         /// <summary>
-        /// 页面进入
+        /// 页面进入 / The page is entering.
         /// </summary>
         protected virtual void OnEnter(FrameworkPayload? payload) {
             if (_exitCts != null) {
@@ -115,19 +115,19 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
                 await ArcContext.KeepAliveBlocking.WaitAsync();
             }
 
-            // 避免 JIT 优化代码顺序
+            // 避免 JIT 优化代码顺序 / Prevent JIT optimization from reordering this code.
             Volatile.Write(ref _isPreLeaved, 1);
         }
 
         /// <summary>
-        /// 页面离开
+        /// 页面离开 / The page is leaving.
         /// </summary>
         protected virtual Task OnLeaveAsync() {
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// 页面销毁
+        /// 页面销毁 / Page cleanup.
         /// </summary>
         protected virtual void OnDestroy() {
             Status = ArcPageStatus.Stopped;            
@@ -162,8 +162,8 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
 
         /// <summary>
-        /// 为单实例 / 多实例生成统一的 ContextKey。
-        /// 多实例依赖 TimeSpan，单实例不依赖。
+        /// 为单实例 / 多实例生成统一的 ContextKey。 / Generate a consistent ContextKey for single-instance and multiple-instance pages.
+        /// 多实例依赖 TimeSpan，单实例不依赖。 / Multiple instances use TimeSpan; a single instance does not.
         /// </summary>
         private ArcPageContextKey GetContextKey() {
             return IsMultiInstance
@@ -184,29 +184,29 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
 
     public enum ArcPageStatus {
         /// <summary>
-        /// [不可用/未加载]
-        /// 页面不在视觉树中 (Grid.Children 不包含此页面)。
-        /// 此时页面对象可能已被销毁，或者仅存在于缓存字典中但未挂载。
+        /// [不可用/未加载] / [Unavailable / unloaded]
+        /// 页面不在视觉树中 (Grid.Children 不包含此页面)。 / The page is outside the visual tree (Grid.Children does not contain it).
+        /// 此时页面对象可能已被销毁，或者仅存在于缓存字典中但未挂载。 / The page may have been cleaned up, or may exist only in the cache without being attached.
         /// </summary>
         Stopped,
 
         /// <summary>
-        /// Represents a state indicating that an entity is not yet active but is prepared to become active.
+        /// Represents a state indicating that an entity is not yet active but is prepared to become active. / 尚未激活，但已准备进入激活状态。
         /// </summary>
         PreActive,
 
         /// <summary>
-        /// [正常运行]
-        /// 页面在视觉树中，完全可见，且可以响应用户交互。
-        /// 对应：Opacity=1, IsHitTestVisible=True, ZIndex=最高
+        /// [正常运行] / [Active]
+        /// 页面在视觉树中，完全可见，且可以响应用户交互。 / The page is in the visual tree, fully visible and interactive.
+        /// 对应：Opacity=1, IsHitTestVisible=True, ZIndex=最高 / Corresponds to Opacity=1, IsHitTestVisible=True, and the highest ZIndex.
         /// </summary>
         Active,
 
         /// <summary>
-        /// [被隐藏/后台运行]
-        /// 页面依然在视觉树中，UI 线程仍在渲染它（动画、WebView 均在运行），
-        /// 但用户看不见，且无法点击。
-        /// 对应：Opacity=0, IsHitTestVisible=False, ZIndex=较低
+        /// [被隐藏/后台运行] / [Hidden / running in the background]
+        /// 页面依然在视觉树中，UI 线程仍在渲染它（动画、WebView 均在运行）， / The page remains in the visual tree, with UI rendering, animations and WebView still running,
+        /// 但用户看不见，且无法点击。 / but it is invisible and cannot receive clicks.
+        /// 对应：Opacity=0, IsHitTestVisible=False, ZIndex=较低 / Corresponds to Opacity=0, IsHitTestVisible=False, and a lower ZIndex.
         /// </summary>
         BackgroundRunning
     }

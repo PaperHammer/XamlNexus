@@ -68,7 +68,7 @@ namespace XamlNexus.Gallery.UIComponent.Utils {
         }
 
         internal static void Cleanup() {
-            foreach (var window in _activeWindows.Values) {
+            foreach (var window in new List<ArcWindow>(_activeWindows.Values)) {
                 if (!window.IsMainWindow) {
                     window.Close();
                 }
@@ -85,5 +85,6 @@ namespace XamlNexus.Gallery.UIComponent.Utils {
         PlayerWebCoreAdjust,
         PlayerWebCoreOnlyDetails,
         PlayerWebCoreDetailsEdit,
+        GallerySample,
     }
 }

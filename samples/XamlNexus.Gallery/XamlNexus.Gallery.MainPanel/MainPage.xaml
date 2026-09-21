@@ -9,8 +9,12 @@
     <ScrollViewer HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Left" x:Name="PageScroll">
         <StackPanel Spacing="20" Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
             <g:GalleryPageHeader Title="{Binding [DataTitle], Source={StaticResource Strings}}" Description="{Binding [DataDescription], Source={StaticResource Strings}}"/>
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding [SampleTryTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                <TextBlock Text="{Binding [DataTry], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
             <TextBlock Text="{Binding [EditRecords], Source={StaticResource Strings}}" FontSize="16" FontWeight="SemiBold"/>
-            <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="8" Padding="24">
+            <Border Style="{StaticResource Card}">
                 <Grid RowSpacing="16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -60,7 +64,7 @@
                 </Grid>
             </Border>
             <TextBlock Text="{Binding [BackupRestore], Source={StaticResource Strings}}" FontSize="16" FontWeight="SemiBold"/>
-            <Border Padding="24" CornerRadius="8" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
+            <Border Style="{StaticResource Card}">
                 <StackPanel Spacing="16">
                     <TextBlock Text="{Binding [BackupHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     <Grid ColumnSpacing="12">
@@ -79,20 +83,29 @@
                 <ProgressRing x:Name="BusyIndicator" Width="24" Height="24"/>
                 <TextBlock x:Name="StatusText" TextWrapping="Wrap" VerticalAlignment="Center"/>
             </StackPanel>
-            <StackPanel Spacing="16">
-                <g:GallerySourceBrowser Kind="Data"/>
-                <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [TryIt], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding [DataTry], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Opacity="0.75"/>
+            <TextBlock Text="{Binding [SampleUseTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <Expander Header="{Binding [UseInProject], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <g:GalleryIntegrationView Kind="Data"/>
+            </Expander>
+            <TextBlock Text="{Binding [DataImplementationTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <TextBlock Text="{Binding [DataDetailsIntro], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            <Expander Header="{Binding [DataState], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [DataWriteFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [DataWriteFlowBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [DataQueryFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [DataQueryFlowBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [DataRecoveryFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [DataRecoveryFlowBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
                 </StackPanel>
-                <Expander Header="{Binding [UseInProject], Source={StaticResource Strings}}" Style="{StaticResource Section}">
-                    <g:GalleryIntegrationView Kind="Data"/>
-                </Expander>
-                <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [DataState], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding [DataStateHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Opacity="0.75"/>
-                </StackPanel>
-            </StackPanel>
+            </Expander>
+            <g:GallerySourceBrowser Kind="Data"/>
         </StackPanel>
     </ScrollViewer>
 </arc:ArcPage>

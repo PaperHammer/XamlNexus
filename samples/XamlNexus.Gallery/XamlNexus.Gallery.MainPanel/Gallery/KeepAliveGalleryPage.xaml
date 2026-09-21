@@ -1,10 +1,54 @@
-<g:ListExamplePage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.KeepAliveGalleryPage">
-    <g:ListExamplePage.Resources>
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" xmlns:nav="using:XamlNexus.Gallery.UIComponent.Navigation" x:Class="XamlNexus.Gallery.MainPanel.Gallery.KeepAliveGalleryPage">
+    <arc:ArcPage.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </g:ListExamplePage.Resources>
-    <g:ListExampleView/>
-</g:ListExamplePage>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="{Binding [LifetimeTitle], Source={StaticResource Strings}}" Description="{Binding [LifetimeDescription], Source={StaticResource Strings}}"/>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [SampleTryTitle], Source={StaticResource Strings}}" Style="{StaticResource Eyebrow}"/>
+                    <TextBlock Text="{Binding [RetentionDemoTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [RetentionInstructions], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <ToggleSwitch x:Name="ModeSwitch"
+                                  Header="{Binding [RetentionModeHeader], Source={StaticResource Strings}}"
+                                  OffContent="{Binding [RetentionModeRegular], Source={StaticResource Strings}}"
+                                  OnContent="{Binding [RetentionModeKeepAlive], Source={StaticResource Strings}}"
+                                  Toggled="ModeSwitch_Toggled"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="LeaveButton" Content="{Binding [RetentionLeaveDraft], Source={StaticResource Strings}}" Style="{StaticResource AccentButtonStyle}" Click="LeaveDraft_Click"/>
+                        <Button x:Name="ReturnButton" Content="{Binding [RetentionReturnDraft], Source={StaticResource Strings}}" IsEnabled="False" Click="ReturnDraft_Click"/>
+                    </StackPanel>
+                    <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                        <nav:ArcNavigationContentView x:Name="DemoNavigation" MinHeight="430"/>
+                    </Border>
+                    <TextBlock Text="{Binding [RetentionObserveHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding [SampleUseTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <Expander Header="{Binding [UsageExample], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <g:GalleryCodeView x:Name="RetentionCode"/>
+            </Expander>
+            <Expander Header="{Binding [RetentionBoundaries], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [RetentionStateTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RetentionStateBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [RetentionCostTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RetentionCostBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+
+            <g:GallerySourceBrowser Kind="Retention"/>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

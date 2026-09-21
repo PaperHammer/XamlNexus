@@ -36,10 +36,12 @@ namespace Winui3_XamlNexus.UIComponent.Context {
             EnterLoading(showProgress, cts);
 
             IDisposable blockingHandle = _arcPageContext.KeepAliveBlocking.Block();
-
-            await operation(token);
-
-            LeaveLoading(blockingHandle);
+            try {
+                await operation(token);
+            }
+            finally {
+                LeaveLoading(blockingHandle);
+            }
         }
 
         public async Task RunWithProgressAsync(
@@ -78,14 +80,18 @@ namespace Winui3_XamlNexus.UIComponent.Context {
         }
 
         private void LeaveLoading(IDisposable blockingHandle) {
-            if (!IsValid) return;
+            try {
+                if (!IsValid) return;
 
-            LoadingControl!.Visibility = Visibility.Collapsed;
-            LoadingControl.CurValue = 0;
-            LoadingControl.TotalValue = 0;
-            LoadingControl.ProgressbarEnable = false;
-            LoadingControl.CtsToken = null;
-            blockingHandle.Dispose();
+                LoadingControl!.Visibility = Visibility.Collapsed;
+                LoadingControl.CurValue = 0;
+                LoadingControl.TotalValue = 0;
+                LoadingControl.ProgressbarEnable = false;
+                LoadingControl.CtsToken = null;
+            }
+            finally {
+                blockingHandle.Dispose();
+            }
         }
 
         private readonly WeakReference<Loading> _loadingReference;

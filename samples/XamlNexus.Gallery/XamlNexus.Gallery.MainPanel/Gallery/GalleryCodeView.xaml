@@ -6,37 +6,39 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <StackPanel Spacing="12">
-        <Grid x:Name="SourceToolbar">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="languageLabel" VerticalAlignment="Center"/>
-            <Button Grid.Column="1" Content="{Binding [Copy], Source={StaticResource Strings}}" AutomationProperties.Name="{Binding [CopySource], Source={StaticResource Strings}}" Click="Copy_Click"/>
-        </Grid>
-        <ItemsControl x:Name="CommandRows" Visibility="Collapsed">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border Margin="0,0,0,8" Padding="14,10" CornerRadius="4" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
-                            <Button Grid.Column="1" Tag="{Binding}" Click="CopyCommand_Click" ToolTipService.ToolTip="{Binding [CopyCommand], Source={StaticResource Strings}}" AutomationProperties.Name="{Binding [CopyCommand], Source={StaticResource Strings}}" Background="Transparent" BorderThickness="0">
-                                <FontIcon Glyph="" FontSize="14"/>
-                            </Button>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <InfoBar x:Name="feedback" IsClosable="True" AutomationProperties.LiveSetting="Polite"/>
-        <!-- Reserve space outside the text for both overlay scrollbar hit areas. -->
-        <ScrollViewer x:Name="SourceScroll" MaxHeight="420" Padding="0,0,20,20" HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
-            <TextBlock x:Name="text" Margin="0,0,16,16" FontFamily="Consolas" FontSize="13" IsTextSelectionEnabled="True" TextWrapping="NoWrap"/>
-        </ScrollViewer>
-    </StackPanel>
+    <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="0">
+        <StackPanel Spacing="12">
+            <Grid x:Name="SourceToolbar" Padding="16,10" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="languageLabel" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Style="{StaticResource SubtleButtonStyle}" Content="{Binding [Copy], Source={StaticResource Strings}}" AutomationProperties.Name="{Binding [CopySource], Source={StaticResource Strings}}" Click="Copy_Click"/>
+            </Grid>
+            <ItemsControl x:Name="CommandRows" Margin="16,16,16,4" Visibility="Collapsed">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,8" Padding="14,10" CornerRadius="4" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" BorderThickness="1">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Tag="{Binding}" Click="CopyCommand_Click" ToolTipService.ToolTip="{Binding [CopyCommand], Source={StaticResource Strings}}" AutomationProperties.Name="{Binding [CopyCommand], Source={StaticResource Strings}}" Background="Transparent" BorderThickness="0">
+                                    <FontIcon Glyph="" FontSize="14"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <InfoBar x:Name="feedback" Margin="16,0" IsClosable="True" AutomationProperties.LiveSetting="Polite"/>
+            <!-- 为覆盖式滚动条保留文本外边距。 / Reserve text gutters for overlay scrollbars. -->
+            <ScrollViewer x:Name="SourceScroll" MaxHeight="420" Padding="16,0,20,16" HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="text" Margin="0,0,16,16" FontFamily="Consolas" FontSize="13" IsTextSelectionEnabled="True" TextWrapping="NoWrap"/>
+            </ScrollViewer>
+        </StackPanel>
+    </Border>
 </UserControl>

@@ -24,9 +24,9 @@ dotnet tool update --global XamlNexus
 xamlnexus gallery
 ```
 
-No project directory is required. Official tool packages contain a manifest pinning the matching Gallery version, Windows x64/ARM64 downloads and SHA-256 hashes. First launch requires internet access; subsequent launches use the verified cache under `%LOCALAPPDATA%/XamlNexus/Gallery`. Updating the tool selects its matching Gallery on the next launch. Close an existing Gallery first; this command does not terminate it.
+No project directory is required. Official tool packages contain a manifest pinning the matching Gallery version, Windows x64 downloads and SHA-256 hashes. First launch requires internet access; subsequent launches use the verified cache under `%LOCALAPPDATA%/XamlNexus/Gallery`. Updating the tool selects its matching Gallery on the next launch. Close an existing Gallery first; this command does not terminate it.
 
-Gallery settings and database remain in `%LOCALAPPDATA%/XamlNexus.Gallery`. Old program caches are retained for rollback and can be removed manually after closing Gallery. Cancelled or failed downloads are not installed; retry the command. Source builds without a release manifest explain how to build Gallery locally. Requires Windows 10 1809 or later, x64 or ARM64.
+Gallery settings and database remain in `%LOCALAPPDATA%/XamlNexus.Gallery`. Old program caches are retained for rollback and can be removed manually after closing Gallery. Cancelled or failed downloads are not installed; retry the command. Source builds without a release manifest explain how to build Gallery locally. Requires Windows 10 1809 or later, x64 only.
 
 ## Create a project: `new`
 

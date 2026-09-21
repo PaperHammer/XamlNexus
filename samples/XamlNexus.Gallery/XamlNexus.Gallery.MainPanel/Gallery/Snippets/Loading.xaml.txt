@@ -1,0 +1,11 @@
+<arc:ArcPage x:Class="MyApp.MainPanel.LoadingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:arc="using:MyApp.UIComponent.Templates">
+    <arc:ArcPageHost x:Name="Host">
+        <StackPanel Spacing="12" Padding="24">
+            <Button x:Name="StartButton" Content="Load" Click="Load_Click"/>
+            <TextBlock x:Name="Result" TextWrapping="Wrap"/>
+        </StackPanel>
+    </arc:ArcPageHost>
+</arc:ArcPage>

@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Data;
 using XamlNexus.Gallery.UIComponent.Utils;
 namespace XamlNexus.Gallery.MainPanel.Gallery;
 
-/// <summary>中英文资源通过索引绑定原位更新；弱引用避免资源字典订阅延长页面保活。</summary>
+/// <summary>中英文资源通过索引绑定原位更新；弱引用避免资源字典订阅延长页面保活。 / Update bilingual resources through indexer bindings; weak references prevent resource subscriptions from retaining pages.</summary>
 [Microsoft.UI.Xaml.Data.Bindable]
 public sealed class GalleryStrings : INotifyPropertyChanged
 {

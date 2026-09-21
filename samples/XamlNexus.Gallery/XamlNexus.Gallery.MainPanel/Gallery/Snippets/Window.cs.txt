@@ -1,0 +1,17 @@
+using MyApp.UIComponent.Templates;
+using MyApp.UIComponent.Utils;
+
+namespace MyApp.UI;
+
+public sealed partial class MainWindow : ArcWindow
+{
+    public override ArcWindowHost ContentHost => MainHost;
+    public override bool IsMainWindow => true;
+    public override ArcWindowManagerKey Key { get; } = new(ArcWindowKey.Main);
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        InitializeWindow();
+    }
+}

@@ -11,8 +11,8 @@ public interface I__NAME__DataSource {
 }
 
 /// <summary>
-/// Runnable sample data. Replace this implementation with an application service.
-/// For hybrid applications, call the host through a client instead of opening its database here.
+/// Runnable sample data. Replace this implementation with an application service. / 可运行的示例数据；接入业务时请替换为应用服务。
+/// For hybrid applications, call the host through a client instead of opening its database here. / 混合应用应通过客户端调用宿主，不要在这里直接打开宿主数据库。
 /// </summary>
 public sealed class __NAME__SampleDataSource : I__NAME__DataSource {
     public Task<IReadOnlyList<__NAME__Item>> LoadAsync(CancellationToken cancellationToken) {

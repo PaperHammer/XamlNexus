@@ -72,7 +72,7 @@ public sealed class SqliteDatabaseInitializer(
         return await WriteBackupAsync(context, "manual", cancellationToken);
     }
 
-    // The host must pause its database operations and dispose existing contexts before restoring.
+    // The host must pause its database operations and dispose existing contexts before restoring. / 恢复前，宿主必须暂停数据库操作并释放已有上下文。
     public async Task<string> RestoreAsync(string backupPath, CancellationToken cancellationToken = default) {
         string resolved = Path.GetFullPath(backupPath);
         if (string.Equals(resolved, Path.GetFullPath(databaseOptions.DatabasePath), StringComparison.OrdinalIgnoreCase))
@@ -82,7 +82,7 @@ public sealed class SqliteDatabaseInitializer(
             DataSource = resolved, Mode = SqliteOpenMode.ReadOnly, Pooling = false,
         }.ToString());
         await source.OpenAsync(cancellationToken);
-        // Validate the exact snapshot that will be restored, even if the source file changes later.
+        // Validate the exact snapshot that will be restored, even if the source file changes later. / 校验实际用于恢复的快照，避免源文件随后变化影响恢复。
         await using var snapshot = new SqliteConnection("Data Source=:memory:");
         await snapshot.OpenAsync(cancellationToken);
         source.BackupDatabase(snapshot);
@@ -97,7 +97,7 @@ public sealed class SqliteDatabaseInitializer(
         string[] supported = candidate.Database.GetMigrations().ToArray();
         if (applied.Length == 0 || !applied.SequenceEqual(supported))
             throw new InvalidDataException("Backup migrations do not match this application version.");
-        // Verify the recipe's required table and columns before touching the current database.
+        // Verify the recipe's required table and columns before touching the current database. / 修改当前数据库前，先校验配方所需的表和列。
         _ = await candidate.AppState.AsNoTracking().Take(1).ToArrayAsync(cancellationToken);
 
         await using AppDbContext current = await contextFactory.CreateDbContextAsync(cancellationToken);

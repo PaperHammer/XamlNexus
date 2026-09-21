@@ -12,16 +12,18 @@ using Windows.UI.ViewManagement;
 
 namespace XamlNexus.Gallery.MainPanel.Gallery;
 
-/// <summary>源码只读展示：轻量词法着色，复制始终使用未加工的原文。</summary>
+/// <summary>源码只读展示：轻量词法着色，复制始终使用未加工的原文。 / Read-only source display with lightweight syntax coloring; copying always uses the original text.</summary>
 public sealed partial class GalleryCodeView : UserControl
 {
     private string source = string.Empty;
     private string language = "CLI";
+    private bool isLoaded;
     public GalleryCodeView()
     {
         InitializeComponent();
-        ActualThemeChanged += (_, _) => Render();
-        Loaded += (_, _) => Render();
+        ActualThemeChanged += (_, _) => { if (isLoaded) Render(); };
+        Loaded += (_, _) => { isLoaded = true; Render(); };
+        Unloaded += (_, _) => isLoaded = false;
     }
     private void CopyCommand_Click(object sender, RoutedEventArgs e) => CopyText((string)((Button)sender).Tag);
     private void Copy_Click(object sender, RoutedEventArgs e) => CopyText(source);
@@ -51,13 +53,13 @@ public sealed partial class GalleryCodeView : UserControl
         CommandRows.Visibility = commands ? Visibility.Visible : Visibility.Collapsed;
         CommandRows.ItemsSource = commands ? source.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries) : Array.Empty<string>();
         feedback.IsOpen = false;
-        Render();
+        if (isLoaded) Render();
     }
 
     private void Render()
     {
         text.Inlines.Clear();
-        // 高对比度遵循系统文本色；着色失败也应完整展示源码。
+        // 高对比度遵循系统文本色；着色失败也应完整展示源码。 / Use system text colors in high contrast; display the complete source even if highlighting fails.
         if (new AccessibilitySettings().HighContrast) { text.Inlines.Add(new Run { Text = source }); return; }
         string pattern = language switch
         {

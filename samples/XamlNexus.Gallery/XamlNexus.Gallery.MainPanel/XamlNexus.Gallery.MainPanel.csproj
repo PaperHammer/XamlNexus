@@ -30,7 +30,9 @@
     <XamlNexusTemplate>Winui3</XamlNexusTemplate>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Read the same files used by CLI generation; source remains available offline. -->
+    <EmbeddedResource Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Templates/ArcWindow.cs;../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Templates/ArcWindowHost.xaml;../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Utils/ArcWindowManager.cs;../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Templates/ArcPage.cs;../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Utils/Extensions/ArcNavigationContentViewExtension.cs;../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Attributes/KeepAliveAttribute.cs" LogicalName="Gallery.Sample.Framework.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="Gallery/Snippets/*.txt" LogicalName="Gallery.Example.%(Filename)%(Extension)" WithCulture="false" />
+    <!-- Read the same files used by CLI generation; source remains available offline. / 读取 CLI 生成所使用的同一组文件，源码可离线查看。 -->
     <EmbeddedResource Include="../../../src/XamlNexus.Common/Assets/ListPage/*.txt" LogicalName="Gallery.Template.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Gallery/*.xaml;Gallery/*.cs;ViewModels/GalleryItemsViewModel.cs;Services/GalleryItemsDataSource.cs;MainPage.xaml;MainPage.xaml.cs" LogicalName="Gallery.Sample.%(Filename)%(Extension)" WithCulture="false" />
   </ItemGroup>

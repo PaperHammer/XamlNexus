@@ -9,13 +9,13 @@ Set-StrictMode -Version Latest
 if ($Version -notmatch '^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$' -or $Tag -cne "v$Version") {
     throw 'Gallery requires the same version and v-prefixed tag as the tool.'
 }
-$assets = foreach ($rid in @('win-x64', 'win-arm64')) {
-    $name = "XamlNexus.Gallery-$Version-$rid.zip"
+$assets = foreach ($rid in @('win-x64')) {
+    $name = "XamlNexus Gallery v$Version.zip"
     $path = Join-Path $Directory $name
     if (!(Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing Gallery asset: $name" }
     @{
         runtimeIdentifier = $rid
-        url = "https://github.com/PaperHammer/XamlNexus/releases/download/$Tag/$name"
+        url = "https://github.com/PaperHammer/XamlNexus/releases/download/$Tag/$([Uri]::EscapeDataString($name))"
         sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
     }
 }

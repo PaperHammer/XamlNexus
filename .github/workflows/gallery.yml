@@ -24,9 +24,6 @@ jobs:
   portable:
     runs-on: windows-latest
     timeout-minutes: 30
-    strategy:
-      matrix:
-        architecture: [x64, arm64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -36,9 +33,9 @@ jobs:
             10.0.x
       - name: Build portable Gallery
         shell: pwsh
-        run: ./eng/Publish-Gallery.ps1 -Architecture ${{ matrix.architecture }}
+        run: ./eng/Publish-Gallery.ps1 -Architecture x64
       - uses: actions/upload-artifact@v4
         with:
-          name: XamlNexus-Gallery-win-${{ matrix.architecture }}
+          name: XamlNexus-Gallery-win-x64
           path: .artifacts/gallery/**/*.zip
           if-no-files-found: error

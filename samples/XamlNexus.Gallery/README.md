@@ -9,6 +9,17 @@ Gallery 与 CLI 默认项目模板分开维护，不会随 `xamlnexus new` 生�
 EF Core Migration、WAL、数据增删改查、托盘及用户触发通知。
 默认运行路径为 x64 非打包应用。
 
+## 内容与导航 / Content and navigation
+
+- **概览**：产品定位、基础设施 / Recipe / 可审查变更三组亮点、按“窗口与导航 / 列表与数据”筛选的交互示例，以及创建 → 扩展 → 维护的学习路径。
+- **工具指南**：工程起点（WinUI / hybrid、standard / basic）、五种 Recipe（settings、sqlite、tray、updater、editorconfig）和项目维护（doctor、validate、update、upgrade）。每项说明适用条件，并提供可复制命令。
+- **快速开始**：安装检查 → 创建运行 → 修改与生成列表页 → 添加存储与检查。Gallery 只展示和复制命令，不执行命令。
+- **窗口与导航 / 列表与数据**：保留真实交互、源码浏览与接入步骤。SQLite Recipe 提供数据层，Gallery 的业务 CRUD、备份与恢复界面属于定制演示。
+
+The overview introduces the product, highlights its foundations, and links to filtered interactive samples. The tool guide covers architecture/profile choices, all five built-in Recipes and project maintenance. Getting started follows four ordered steps from installation to storage. Copyable commands are examples only and are never executed by the Gallery.
+
+The guide describes the source version shipped with the Gallery. Keep its commands and capability descriptions aligned with `src/XamlNexus.Tooling/CommandLine/`, `src/XamlNexus.Recipes.BuiltIn/` and the user guide when changing the CLI. Both language files under `Gallery/Strings/` must be updated together. Theme colors and shared typography live in `GalleryStyles.xaml`; homepage highlights and learning links live in `GalleryHomeContent.cs`.
+
 ## 运行
 
 安装正式工具包后，可直接执行以下命令，不需要克隆源码或安装 WinUI 构建环境：
@@ -18,11 +29,15 @@ dotnet tool update --global XamlNexus
 xamlnexus gallery
 ```
 
-首次使用工具时，将 `update` 改为 `install`。Gallery 版本由已安装工具包中的清单固定，首次启动下载对应 x64/ARM64 ZIP 并验证 SHA-256，随后可离线启动。升级 tool 后，下次执行 `gallery` 获取对应新版；请先关闭正在运行的 Gallery。
+首次使用工具时，将 `update` 改为 `install`。Gallery 版本由已安装工具包中的清单固定，首次启动下载对应 x64 ZIP 并验证 SHA-256，随后可离线启动。升级 tool 后，下次执行 `gallery` 获取对应新版；请先关闭正在运行的 Gallery。
 
 程序缓存位于 `%LOCALAPPDATA%/XamlNexus/Gallery`，与下文的 Gallery 用户数据目录分开。旧版缓存保留，关闭应用后可手动清理无需保留的缓存版本。失败下载不会作为可用版本启动。
 
-Official tool packages provide `xamlnexus gallery`. The first launch downloads and verifies the pinned x64/ARM64 release; cached launches work offline. Updating the tool selects its matching Gallery on the next launch. Close the running Gallery first. Executables are cached under `%LOCALAPPDATA%/XamlNexus/Gallery`, separately from user data. Source-only tool builds without a release manifest report this explicitly.
+Official tool packages provide `xamlnexus gallery`. The first launch downloads and verifies the pinned x64 release; cached launches work offline. Updating the tool selects its matching Gallery on the next launch. Close the running Gallery first. Executables are cached under `%LOCALAPPDATA%/XamlNexus/Gallery`, separately from user data. Source-only tool builds without a release manifest report this explicitly.
+
+在 Visual Studio 中，可直接打开主解决方案 `src/XamlNexus.sln`，在 `Samples` 下将 `XamlNexus.Gallery.UI` 设为启动项目，选择 `Debug / x64` 和 `XamlNexus.Gallery.UI (Unpackaged)` 后按 F5。独立的 Gallery 解决方案仍可使用。
+
+For Visual Studio debugging, open `src/XamlNexus.sln`, set `Samples > XamlNexus.Gallery.UI` as the startup project, select `Debug / x64` and the `Unpackaged` launch profile, then press F5. The standalone Gallery solution remains available.
 
 以下为源码运行方式：
 
@@ -70,12 +85,13 @@ SQLite 示例页可以保存、查看、删除键值数据，并执行 SQLite �
 
 ## 便携发布 / Portable build
 
+发布文件名为 `XamlNexus Gallery v{版本号}.zip`，版本号与 NuGet Tool 包一致。
+Release assets use `XamlNexus Gallery v{version}.zip`, with the same version as the NuGet Tool package.
+
 在仓库根目录运行：
 
 ```powershell
 ./eng/Publish-Gallery.ps1
-# ARM64 可选；必须在对应设备上验证运行
-./eng/Publish-Gallery.ps1 -Architecture arm64
 ```
 
 产物位于 `.artifacts/gallery/`，解压 ZIP 后运行 `XamlNexus.Gallery.exe`。
@@ -83,7 +99,7 @@ SQLite 示例页可以保存、查看、删除键值数据，并执行 SQLite �
 数据和设置写入 `%LOCALAPPDATA%/XamlNexus.Gallery`。它与旧 SqliteShowcase 数据目录隔离，不自动迁移或删除旧数据。
 
 独立的 `Gallery portable build` 工作流在相关 PR 和手动触发时生成 x64 ZIP，
-上传为 Actions artifact，不会自动发布 GitHub Release，也不参与 CLI 的 NuGet 打包。
+上传为 Actions artifact，不会自动发布 GitHub Release，正式发布时 ZIP 上传至同版本 GitHub Release，CLI 的 NuGet 包仅包含下载清单。
 发布前需在没有开发环境的 Windows 设备上验证启动、源码查看和 SQLite 写入。
 
 Build from the repository root with `./eng/Publish-Gallery.ps1`. Extract the complete ZIP and run
@@ -96,7 +112,7 @@ settings and demo data live under LocalAppData. A clean Windows machine smoke te
 - “源码 · Gallery 示例”嵌入当前运行示例的页面、ViewModel 和数据服务。
 - 文件选择器支持完整源码浏览、文本选择与复制。XAML / C# / CLI 提供轻量语法着色，随浅色和深色主题更新；高对比度使用系统文本色。
 - 复制成功会显示提示；剪贴板不可用时提示重试或手动选择复制。复制内容始终是原始完整文本。
-- 列表、KeepAlive 与 SQLite 页面提供“在你的项目中使用”：项目准备入口、真实 CLI 命令、修改位置和验证步骤。SQLite 组件不会自动生成 Gallery 的业务页。
+- 列表与 SQLite 页面提供“在你的项目中使用”；保活页面提供独立导航用法说明与实际示例源码。SQLite 组件不会自动生成 Gallery 的业务页。
 - 发布包可离线查看源码，无需下载仓库。
 - `__APP__` / `__NAME__` 是 CLI 生成时替换的占位符；Gallery 的演示开关属于示例代码。
 
@@ -105,9 +121,13 @@ Choose a file to read or copy its complete source offline. XAML, C# and CLI exam
 
 ## 参数预览与生命周期对比 / Parameter preview and lifetime comparison
 
+实际使用时，页面继承 `ArcPage` 并添加 `[KeepAlive]`，通过 XamlNexus 导航进入和离开，触发页面保留与复用。页面持有的 UI 控件、动画对象和 ViewModel 数据可随实例一起保留；动画播放、暂停和恢复仍由动画逻辑及生命周期回调控制。进程退出后的恢复需要另行持久化。
+
+In an application, derive the page from `ArcPage`, add `[KeepAlive]`, and navigate through XamlNexus to trigger retention and reuse. The page retains its UI controls, animation objects and ViewModel data. Animation playback, pause and resume remain controlled by application logic and lifecycle callbacks. Restoring state after exit requires separate persistence.
+
 展开列表页的“源码模板 · CLI”，填写项目名称和页面名称，即可预览替换后的完整源码与目标文件路径；复制按钮复制当前显示的内容。关闭“替换模板参数”可查看原始模板。名称以大写英文字母开头，后接字母或数字；无效输入会显示提示并退回原始模板，不写入磁盘。这里只预览四个列表模板文件，导航接入仍由 CLI 完成。
 
-在列表中输入搜索条件，通过“生命周期对比”的两个入口来回切换。两列记录真实的创建、进入、离开和卸载回调，显示页面与 ViewModel 编号以及搜索条件，每类仅保留最近 20 条。普通页面返回时创建新实例；KeepAlive 返回时复用原实例。本例的 ViewModel 由页面创建，应用若通过外部服务持有状态，其生命周期可以不同。OnDestroy 是框架清理回调，并不表示 GC 已回收；当前框架可能从导航清理和 Unloaded 两条路径触发它，因此记录不会去重。
+“页面保活”使用独立的 ArcNavigationContentView，在普通页面、KeepAlive 页面和导航离开页之间导航。输入文字并增加计数后，必须通过导航离开再返回：普通页面实例和 ViewModel 重建，KeepAlive 页面复用实例并保留状态。两列记录真实回调与实例编号，每类最多 20 条。仅添加特性或切换 Content / Visibility 不会自动获得导航缓存。外部持有的 ViewModel 可能独立保留数据，因此应结合实例编号判断。OnDestroy 是框架清理回调，不代表 GC，可能重复触发。
 
 Expand “Source template · CLI” to preview project/page parameter replacement and output paths. Copy uses the displayed source. Invalid names fall back to the raw template; no files are written. The preview covers four list templates; CLI generation also handles navigation integration.
 
@@ -126,14 +146,14 @@ Gallery 源自原 SqliteShowcase 示例，现拥有独立 solution、应用标�
 - **首页 / Home**：功能卡片、快速开始与示例入口。
 - **搜索 / Search**：搜索中英文功能名称或描述，选择建议进入对应示例。
 - **列表与异步加载 / Lists & async loading**：搜索、刷新、慢请求（3 秒）、模拟失败与重试。离开后重新创建页面。
-- **页面保活 / Page retention**：同样的列表，使用 `[KeepAlive]`。切走再返回，实例编号、数据和搜索条件保持不变。
+- **页面保活 / Page retention**：独立的输入框和计数器示例，使用真实导航对比普通页面与 `[KeepAlive]` 页面；无需跳转到列表示例。
 - **数据与恢复 / Data & recovery**：使用 SQLite 演示数据编辑、备份恢复及通知，附使用提示与代码。
 - **快速开始 / Getting started**：环境诊断、创建项目、添加组件及维护命令。
 - **设置 / Settings**：Gallery 专用的主题、窗口材质、语言与关于页面。
 
 示例页统一提供可操作演示、Tips 和可展开/复制的代码。切换应用语言时，Gallery 导航与说明同步更新。默认生成项目仍保持简洁；本次 Gallery 布局仅属于示例应用。
 
-The Gallery uses category navigation, feature cards, interactive examples, tips and expandable/copyable code. Compare the regular list with the KeepAlive page by searching, navigating away and returning. The instance ID makes the lifetime visible. Enable the slow-request/failure switches before refreshing to exercise cancellation and recovery. This sample redesign does not change the default generated application's shell.
+The retention example uses a dedicated ArcNavigationContentView with ordinary, cached and away pages. Enter text and increment the counter, navigate away, then return to compare instance IDs and state. Use XamlNexus navigation: the attribute alone does not cache manually replaced content. Lists & async loading remains independent and focuses on loading, cancellation and recovery.
 
 KeepAlive 只保留当前进程内的页面实例，不会自动保存数据库编辑，也不提供退出后的状态恢复。
 
@@ -154,3 +174,9 @@ Gallery pages and controls use paired XAML/code-behind files with shared styles.
 CLI 命令逐条展示，每条提供独立复制按钮；接入指南按创建、业务接入与验证分区。列表与异步加载只展示数据交互，页面保活展示实例保留，生命周期日志按需展开。设置按模板式标题分组，同组行间距为 6px，行高至少 90px。
 
 CLI commands are separate rows with individual copy actions. Integration guidance separates creation, data integration and verification. Async lists focus on data interactions; page retention focuses on retained instances with optional lifecycle logs. Settings use grouped headers, 6px row gaps and a 90px minimum row height.
+
+## 窗口与页面基础 / Window and page fundamentals
+
+“基础用法”新增 ArcWindow 与 ArcPage 介绍：标题栏、主题过渡、窗口跟踪、导航参数、生命周期和状态保留。页面提供体验入口，并嵌入 CLI WinUI 模板真实源码供离线查看。保活页采用宽屏双栏、窄屏纵向布局，事件记录和能力边界默认折叠。
+
+Fundamentals includes ArcWindow and ArcPage introductions covering title bars, theme transitions, window tracking, navigation payloads, lifecycle hooks and retention. Each links to an interactive feature and embeds actual CLI WinUI template sources for offline reading. The retention page uses a responsive demo and guidance layout with collapsible lifecycle details.

@@ -10,7 +10,7 @@ using XamlNexus.Gallery.MainPanel.Services;
 
 namespace XamlNexus.Gallery.MainPanel.ViewModels;
 
-/// <summary>Page-owned state. Call lifecycle methods and commands on the UI thread.</summary>
+/// <summary>Page-owned state. Call lifecycle methods and commands on the UI thread. / 页面持有的状态；请在 UI 线程调用生命周期方法和命令。</summary>
 public sealed class GalleryItemsViewModel : INotifyPropertyChanged {
     private readonly IGalleryItemsDataSource source;
     private readonly RefreshAction refresh;

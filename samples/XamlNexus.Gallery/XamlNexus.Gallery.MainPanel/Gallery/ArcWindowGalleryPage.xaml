@@ -1,0 +1,104 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.ArcWindowGalleryPage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="ArcWindow" Description="{Binding [WindowDescription], Source={StaticResource Strings}}"/>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [SampleTryTitle], Source={StaticResource Strings}}" Style="{StaticResource Eyebrow}"/>
+                    <TextBlock Text="{Binding [WindowLiveTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [WindowLiveHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{Binding [WindowRefreshStatus], Source={StaticResource Strings}}" Style="{StaticResource AccentButtonStyle}" Click="RefreshWindow_Click"/>
+                        <Button Content="{Binding [WindowOpenNew], Source={StaticResource Strings}}" Click="OpenWindow_Click"/>
+                        <Button Content="{Binding [WindowAction], Source={StaticResource Strings}}" Click="Try_Click"/>
+                    </StackPanel>
+                    <Border Style="{StaticResource CompactCard}">
+                        <TextBlock x:Name="WindowStateText" Style="{StaticResource BodyText}" FontFamily="Consolas"/>
+                    </Border>
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding [WindowKeyListTitle], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
+                        <ItemsControl x:Name="WindowKeyList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnSpacing="10" Padding="4,6">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                        <FontIcon Glyph="&#xE737;" FontSize="16" Foreground="{ThemeResource GalleryAccentBrush}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding}" FontFamily="Consolas" TextWrapping="Wrap"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <Expander Header="{Binding [WindowStateCodeTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <g:GalleryCodeView x:Name="WindowStateCode"/>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="XAML + C#" Style="{StaticResource Eyebrow}"/>
+                    <TextBlock Text="{Binding [WindowSetupTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [WindowUseHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <Expander Header="{Binding [UsageExample], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <StackPanel Spacing="16">
+                            <g:GalleryCodeView x:Name="XamlExample"/>
+                            <g:GalleryCodeView x:Name="CodeExample"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding [WindowImplementationTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <Border Style="{StaticResource CompactCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE7F4;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1" Spacing="10">
+                        <TextBlock Text="{Binding [WindowCompositionTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [WindowCompositionSummary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                        <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="4" Padding="12,8">
+                            <TextBlock Text="{Binding [WindowCompositionCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource CompactCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE790;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1" Spacing="10">
+                        <TextBlock Text="{Binding [WindowAppearanceTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [WindowAppearanceSummary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                        <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="4" Padding="12,8">
+                            <TextBlock Text="{Binding [WindowAppearanceCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource CompactCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE8F2;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1" Spacing="10">
+                        <TextBlock Text="{Binding [WindowCoordinationTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [WindowCoordinationSummary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                        <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="4" Padding="12,8">
+                            <TextBlock Text="{Binding [WindowCoordinationCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <g:GallerySourceBrowser Kind="Window"/>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

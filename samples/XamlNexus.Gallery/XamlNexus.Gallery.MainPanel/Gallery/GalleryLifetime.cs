@@ -11,7 +11,7 @@ public sealed class LifetimeEntry(string time, string action, string pageId, str
     public string ViewModelId { get; } = viewModelId;
     public string Query { get; } = query;
 }
-/// <summary>只保存文本数据，不持有被观察的页面或 ViewModel。</summary>
+/// <summary>只保存文本数据，不持有被观察的页面或 ViewModel。 / Store text only, without retaining observed pages or ViewModels.</summary>
 public static class GalleryLifetime
 {
     public static ObservableCollection<LifetimeEntry> Regular { get; } = new();

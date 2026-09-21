@@ -97,6 +97,10 @@ public sealed class GalleryDistributionTests : IDisposable {
             manifest with { Assets = [manifest.Assets[0], manifest.Assets[0]] },
             manifest with { Assets = [manifest.Assets[0] with { Url = "https://github.com/other/repo/release.zip" }] },
             manifest with { Assets = [manifest.Assets[0] with { Sha256 = "bad" }] },
+            manifest with { Assets = [manifest.Assets[0] with {
+                RuntimeIdentifier = "win-arm64",
+                Url = "https://github.com/PaperHammer/XamlNexus/releases/download/v1.2.3/XamlNexus%20Gallery%20v1.2.3.zip"
+            }] },
             manifest with { Version = "../escape" },
         }) {
             Save(invalid);
@@ -105,7 +109,7 @@ public sealed class GalleryDistributionTests : IDisposable {
     }
 
     private static GalleryManifest Manifest(byte[] zip, string version = "1.2.3") => new(1, version,
-        [new("win-x64", $"https://github.com/PaperHammer/XamlNexus/releases/download/v{version}/XamlNexus.Gallery-{version}-win-x64.zip",
+        [new("win-x64", $"https://github.com/PaperHammer/XamlNexus/releases/download/v{version}/XamlNexus%20Gallery%20v{version}.zip",
             Convert.ToHexString(SHA256.HashData(zip)))]);
 
     private static byte[] Archive(string[] entries) {

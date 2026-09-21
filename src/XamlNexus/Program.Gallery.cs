@@ -14,10 +14,10 @@ internal partial class Program {
             return GenerationFailureExitCode;
         }
         string? rid = RuntimeInformation.OSArchitecture switch {
-            Architecture.X64 => "win-x64", Architecture.Arm64 => "win-arm64", _ => null,
+            Architecture.X64 => "win-x64", _ => null,
         };
         if (rid is null) {
-            Console.Error.WriteLine(GalleryText("Gallery supports Windows x64 and ARM64.", "Gallery 支持 Windows x64 和 ARM64。"));
+            Console.Error.WriteLine(GalleryText("Gallery releases currently support Windows x64 only.", "当前 Gallery 发布版仅支持 Windows x64。"));
             return GenerationFailureExitCode;
         }
         string manifestPath = Path.Combine(AppContext.BaseDirectory, "gallery-manifest.json");

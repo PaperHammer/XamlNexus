@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinUIEx;
 using WinRT.Interop;
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Logging;
@@ -38,6 +39,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             _userSettings = userSettings;
             _commandsClient = commandsClient;
             _commandsClient.UIRecieveCmd += CommandsClient_UIRecieveCmd;
+            this.AppWindow.Closing += (_, _) => this.Hide();
             this.Closed += MainWindow_Closed;
         }
 

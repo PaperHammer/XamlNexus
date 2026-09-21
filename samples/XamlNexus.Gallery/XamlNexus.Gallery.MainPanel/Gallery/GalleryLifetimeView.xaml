@@ -24,7 +24,7 @@
                             <Run Text="{Binding ViewModelId}"/>
                         </TextBlock>
                         <TextBlock FontSize="12" TextWrapping="Wrap">
-                            <Run Text="{Binding [Query], Source={StaticResource Strings}}"/>
+                            <Run Text="{Binding [RetentionInput], Source={StaticResource Strings}}"/>
                             <Run Text="{Binding Query}"/>
                         </TextBlock>
                     </StackPanel>
@@ -35,11 +35,11 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <StackPanel Spacing="8">
-                <Button Content="{Binding [OpenRegular], Source={StaticResource Strings}}" Tag="list" Click="Navigate_Click" HorizontalAlignment="Stretch"/>
+                <TextBlock Text="{Binding [RegularRetentionTitle], Source={StaticResource Strings}}" FontWeight="SemiBold"/>
                 <ListView ItemsSource="{x:Bind g:GalleryLifetime.Regular}" ItemTemplate="{StaticResource EventTemplate}" SelectionMode="None" Height="210"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="8">
-                <Button Content="{Binding [OpenCached], Source={StaticResource Strings}}" Tag="keepalive" Click="Navigate_Click" HorizontalAlignment="Stretch"/>
+                <TextBlock Text="{Binding [CachedRetentionTitle], Source={StaticResource Strings}}" FontWeight="SemiBold"/>
                 <ListView ItemsSource="{x:Bind g:GalleryLifetime.Cached}" ItemTemplate="{StaticResource EventTemplate}" SelectionMode="None" Height="210"/>
             </StackPanel>
         </Grid>

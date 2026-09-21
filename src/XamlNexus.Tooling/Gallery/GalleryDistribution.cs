@@ -22,11 +22,11 @@ public sealed partial record GalleryManifest(int SchemaVersion, string Version, 
             throw new InvalidDataException("Duplicate Gallery architecture.");
 
         foreach (var asset in manifest.Assets) {
-            if (asset.RuntimeIdentifier is not ("win-x64" or "win-arm64") ||
+            if (asset.RuntimeIdentifier != "win-x64" ||
                 !AssetsSHA256Regex().IsMatch(asset.Sha256 ?? "") ||
                 !Uri.TryCreate(asset.Url, UriKind.Absolute, out var uri) || uri.Scheme != "https" ||
                 uri.Host != "github.com" || !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment) ||
-                uri.AbsolutePath != $"/PaperHammer/XamlNexus/releases/download/v{manifest.Version}/XamlNexus.Gallery-{manifest.Version}-{asset.RuntimeIdentifier}.zip")
+                uri.AbsolutePath != $"/PaperHammer/XamlNexus/releases/download/v{manifest.Version}/XamlNexus%20Gallery%20v{manifest.Version}.zip")
                 throw new InvalidDataException("Invalid Gallery release asset.");
         }
         return manifest;
@@ -50,7 +50,7 @@ public static class GalleryDistribution {
         Action<string>? progress = null, CancellationToken cancellationToken = default) {
         // 同样验证调用方传入的路径片段，缓存目录不能由不可信清单任意指定。
         if (!Regex.IsMatch(manifest.Version, @"^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$") ||
-            asset.RuntimeIdentifier is not ("win-x64" or "win-arm64") ||
+            asset.RuntimeIdentifier != "win-x64" ||
             !Regex.IsMatch(asset.Sha256, "^[a-fA-F0-9]{64}$"))
             throw new InvalidDataException("Invalid Gallery cache identity.");
 

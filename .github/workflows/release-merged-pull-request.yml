@@ -117,12 +117,11 @@ jobs:
             if ($LASTEXITCODE -ne 0 -or $commit -ne '${{ github.sha }}') { throw 'Release tag does not match this source revision.' }
             New-Item -ItemType Directory -Path artifacts -Force | Out-Null
             # NuGet 发布失败后重试时复用原始字节，不能重建并替换已有 SHA-256。
-            & gh release download $env:RELEASE_TAG --pattern '*.nupkg' --pattern 'XamlNexus.Gallery-*.zip' --dir artifacts
+            & gh release download $env:RELEASE_TAG --pattern '*.nupkg' --pattern 'XamlNexus Gallery v*.zip' --dir artifacts
             if ($LASTEXITCODE -ne 0) { throw 'Could not reuse existing release assets.' }
           }
           else {
             ./eng/Publish-Gallery.ps1 -Architecture x64 -Version $env:RELEASE_VERSION -AssetOutputDirectory artifacts
-            ./eng/Publish-Gallery.ps1 -Architecture arm64 -Version $env:RELEASE_VERSION -AssetOutputDirectory artifacts
           }
           ./eng/release/New-GalleryManifest.ps1 -Directory artifacts -Version $env:RELEASE_VERSION -Tag $env:RELEASE_TAG -OutputPath artifacts/gallery-manifest.json
 
@@ -150,8 +149,8 @@ jobs:
         run: |
           $packages = @(Get-ChildItem -LiteralPath artifacts -Filter '*.nupkg')
           if ($packages.Count -eq 0) { throw "No release packages were produced." }
-          $galleryAssets = @(Get-ChildItem -LiteralPath artifacts -Filter 'XamlNexus.Gallery-*.zip')
-          if ($galleryAssets.Count -ne 2) { throw 'Expected x64 and ARM64 Gallery assets.' }
+          $galleryAssets = @(Get-ChildItem -LiteralPath artifacts -Filter 'XamlNexus Gallery v*.zip')
+          if ($galleryAssets.Count -ne 1) { throw 'Expected one x64 Gallery asset.' }
           $assets = @($packages.FullName) + @($galleryAssets.FullName)
           $tag = '${{ steps.metadata.outputs.tag }}'
           $title = 'XamlNexus ${{ steps.metadata.outputs.version }}'

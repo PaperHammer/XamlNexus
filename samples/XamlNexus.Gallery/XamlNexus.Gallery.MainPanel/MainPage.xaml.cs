@@ -160,7 +160,7 @@ namespace XamlNexus.Gallery.MainPanel {
         }
 
         private async Task RefreshAfterWriteAsync(string successKey, params object[] arguments) {
-            // A refresh failure must not imply that a committed write was rolled back.
+            // A refresh failure must not imply that a committed write was rolled back. / 刷新失败不代表已提交的写入被回滚。
             try {
                 await LoadEntriesCoreAsync();
                 SetStatus(successKey, arguments);
@@ -201,7 +201,7 @@ namespace XamlNexus.Gallery.MainPanel {
 
         private async void Notify_Click(object sender, RoutedEventArgs e) =>
             await RunAsync("notification", () => {
-                // Resolve at the user action boundary, after tray initialization has completed.
+                // Resolve at the user action boundary, after tray initialization has completed. / 在用户操作时解析服务，此时托盘初始化已完成。
                 AppServiceLocator.Services.GetRequiredService<INotificationService>().ShowNotification(
                     Text("Showcase_NotificationTitle"), Text("Showcase_NotificationBody", Entries.Count));
                 SetStatus("Showcase_NotificationRequested");

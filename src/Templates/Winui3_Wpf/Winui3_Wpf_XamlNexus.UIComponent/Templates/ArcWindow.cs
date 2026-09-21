@@ -34,7 +34,7 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
 
             this.Closed += (_, _) => _isClosed = true;
             this.Activated += ArcWindow_Activated;
-            this.AppWindow.Closing += AppWindow_Closing;
+            this.Closed += ArcWindow_Closed;
         }
 
         private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
@@ -45,7 +45,7 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
             ArcWindowManager.UpdateWindowVisualState(this);
         }
 
-        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+        private void ArcWindow_Closed(object sender, WindowEventArgs args) {
             this.Activated -= ArcWindow_Activated;
             this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
             this.ContentHost.AppRoot.ActualThemeChanged -= Host_ActualThemeChanged;
@@ -56,8 +56,9 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
             }
         }
 
-        private async void AppRoot_Loaded(object sender, RoutedEventArgs e) {
-            await SetThemeAsync();
+        private void AppRoot_Loaded(object sender, RoutedEventArgs e) {
+            if (!_isClosed)
+                UpdateTheme();
         }
 
         protected void InitializeWindow() {
@@ -92,10 +93,12 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
 
         public async Task SetThemeAsync() {
             await _themeTransition.WaitAsync();
-            var overlay = ContentHost.AppThemeTransitionImage;
+            Image? overlay = null;
             try {
+                if (_isClosed) return;
                 var root = ContentHost.AppRoot;
-                if (_isClosed || !root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0) return;
+                if (!root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0) return;
+                overlay = ContentHost.AppThemeTransitionImage;
                 UpdateThemeIcon();
                 // Same snapshot and Composition fade sequence as VirtualPaper.
                 var bitmap = new RenderTargetBitmap();
@@ -118,7 +121,7 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
                 if (!_isClosed) UpdateTheme();
             }
             finally {
-                if (!_isClosed) {
+                if (!_isClosed && overlay is not null) {
                     overlay.Visibility = Visibility.Collapsed;
                     overlay.Source = null;
                 }

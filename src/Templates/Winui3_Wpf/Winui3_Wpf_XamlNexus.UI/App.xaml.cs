@@ -154,11 +154,24 @@ namespace Winui3_Wpf_XamlNexus.UI {
         }
 
         public static void ShutDown() {
-            ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
-            ArcLog.GetLogger<App>().Info("UI was closed");
-            Application.Current.Exit();
+            if (_isShuttingDown) return;
+            _isShuttingDown = true;
+            ArcWindowManager.MainWindow?.Hide();
+            var cleanupTimer = Stopwatch.StartNew();
+            ArcLog.GetLogger<App>().Info("Shutting down UI...");
+            try {
+                ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<App>().Error("Application cleanup failed", exception);
+            }
+            finally {
+                ArcLog.GetLogger<App>().Info($"UI was closed; service cleanup took {cleanupTimer.ElapsedMilliseconds} ms");
+                Application.Current.Exit();
+            }
         }
 
+        private static bool _isShuttingDown;
         private readonly IUserSettingsClient? _userSettings;
         private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();
         private readonly Mutex _mutex = new(false, Consts.CoreField.UniqueAppUIUid);

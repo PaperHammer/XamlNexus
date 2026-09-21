@@ -1,0 +1,11 @@
+<!-- MyApp.MainPanel/DetailsPage.xaml -->
+<arc:ArcPage x:Class="MyApp.MainPanel.DetailsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:arc="using:MyApp.UIComponent.Templates">
+    <TextBox x:Name="Draft" Header="Draft" Margin="24"/>
+</arc:ArcPage>
+
+<!-- Inside your window's content host / 放在窗口的内容宿主中 -->
+<!-- <nav:ArcNavigationContentView x:Name="Pages"/>
+     xmlns:nav="using:MyApp.UIComponent.Navigation" -->

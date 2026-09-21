@@ -49,7 +49,7 @@ foreach ($page in $sharedUi.Project.ItemGroup.GallerySharedPage) {
 Copy-Item (Join-Path $repository 'samples/XamlNexus.Gallery/README.md') (Join-Path $publish 'README.md')
 $license = Join-Path $repository 'LICENSE'
 if (Test-Path $license) { Copy-Item $license (Join-Path $publish 'LICENSE') }
-$archive = Join-Path $output "XamlNexus.Gallery-$version-win-$Architecture.zip"
+$archive = Join-Path $output "XamlNexus Gallery v$version.zip"
 Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $archive
 if ($AssetOutputDirectory) {
     New-Item -ItemType Directory -Path $AssetOutputDirectory -Force | Out-Null

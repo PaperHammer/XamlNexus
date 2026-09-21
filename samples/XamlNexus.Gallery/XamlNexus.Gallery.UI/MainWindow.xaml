@@ -6,7 +6,7 @@
     xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates"
     xmlns:local="using:XamlNexus.Gallery.UI"
     xmlns:navi="using:XamlNexus.Gallery.UIComponent.Navigation"
-    Width="1280" Height="820" MinHeight="648" MinWidth="800" Title="XamlNexus Gallery">
+    Width="1440" Height="820" MinHeight="648" MinWidth="800" Title="XamlNexus Gallery">
     <local:GalleryShell x:Name="MainHost">
         <local:GalleryShell.SearchContent>
             <Grid x:Name="TitleBarTools" MaxWidth="400" Margin="24,0">
@@ -18,18 +18,22 @@
         </local:GalleryShell.SearchContent>
         <Grid x:Name="MainGrid" Background="Transparent">
             <NavigationView x:Name="NavigationViewControl" PaneDisplayMode="Auto" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                OpenPaneLength="300" CompactPaneLength="48" IsBackButtonVisible="Collapsed"
+                OpenPaneLength="280" CompactPaneLength="48" IsBackButtonVisible="Collapsed"
                 IsPaneToggleButtonVisible="False" IsSettingsVisible="False" IsTitleBarAutoPaddingEnabled="False"
                 SelectionChanged="OnNavigationViewSelectionChanged">
                 <NavigationView.MenuItems>
                     <NavigationViewItem x:Name="Nav_Home" Tag="home" Icon="Home" />
-                    <NavigationViewItem x:Name="Nav_Fundamentals" SelectsOnInvoked="False" IsExpanded="True" Icon="Library">
+                    <NavigationViewItem x:Name="Nav_ToolGuide" Tag="tool-guide"><NavigationViewItem.Icon><FontIcon Glyph="&#xE82D;"/></NavigationViewItem.Icon></NavigationViewItem>
+                    <NavigationViewItem x:Name="Nav_GettingStarted" Tag="getting-started"><NavigationViewItem.Icon><FontIcon Glyph="&#xE768;"/></NavigationViewItem.Icon></NavigationViewItem>
+                    <NavigationViewItemSeparator/>
+                    <NavigationViewItem x:Name="Nav_Fundamentals" Tag="fundamentals" IsExpanded="True" Icon="Library">
                         <NavigationViewItem.MenuItems>
-                            <NavigationViewItem x:Name="Nav_GettingStarted" Tag="getting-started"><NavigationViewItem.Icon><FontIcon Glyph="&#xE768;"/></NavigationViewItem.Icon></NavigationViewItem>
+                            <NavigationViewItem x:Name="Nav_ArcWindow" Tag="arc-window"><NavigationViewItem.Icon><FontIcon Glyph="&#xE737;"/></NavigationViewItem.Icon></NavigationViewItem>
+                            <NavigationViewItem x:Name="Nav_ArcPage" Tag="arc-page"><NavigationViewItem.Icon><FontIcon Glyph="&#xE8A5;"/></NavigationViewItem.Icon></NavigationViewItem>
                             <NavigationViewItem x:Name="Nav_Lifetime" Tag="keepalive"><NavigationViewItem.Icon><FontIcon Glyph="&#xE81C;"/></NavigationViewItem.Icon></NavigationViewItem>
                         </NavigationViewItem.MenuItems>
                     </NavigationViewItem>
-                    <NavigationViewItem x:Name="Nav_Capabilities" SelectsOnInvoked="False" IsExpanded="True" Icon="AllApps">
+                    <NavigationViewItem x:Name="Nav_Capabilities" Tag="capabilities" IsExpanded="True" Icon="AllApps">
                         <NavigationViewItem.MenuItems>
                             <NavigationViewItem x:Name="Nav_List" Tag="list" Icon="List" />
                             <NavigationViewItem x:Name="Nav_MainPage" Tag="sqlite" Icon="Save" />

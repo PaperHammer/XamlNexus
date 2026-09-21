@@ -184,6 +184,8 @@ namespace XamlNexus.Gallery.UI {
         public static void ShutDown() {
             if (_isShuttingDown) return;
             _isShuttingDown = true;
+            // Hide immediately so service disposal never blocks the visible close experience.
+            ArcWindowManager.MainWindow?.Hide();
             try {
                 ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
             }

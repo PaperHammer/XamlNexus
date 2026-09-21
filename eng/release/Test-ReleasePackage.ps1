@@ -32,13 +32,13 @@ try {
     try { $manifest = $reader.ReadToEnd() | ConvertFrom-Json }
     finally { $reader.Dispose() }
     if ($manifest.schemaVersion -ne 1 -or $manifest.version -cne $Version) { throw 'Gallery/tool version mismatch.' }
-    if (@($manifest.assets).Count -ne 2) { throw 'Expected two Gallery architectures.' }
-    foreach ($rid in @('win-x64', 'win-arm64')) {
+    if (@($manifest.assets).Count -ne 1) { throw 'Expected one x64 Gallery asset.' }
+    foreach ($rid in @('win-x64')) {
         $assets = @($manifest.assets | Where-Object { $_.runtimeIdentifier -ceq $rid })
         if ($assets.Count -ne 1) { throw "Missing or duplicate Gallery architecture: $rid" }
         $asset = $assets[0]
-        $name = "XamlNexus.Gallery-$Version-$rid.zip"
-        $expectedUrl = "https://github.com/PaperHammer/XamlNexus/releases/download/v$Version/$name"
+        $name = "XamlNexus Gallery v$Version.zip"
+        $expectedUrl = "https://github.com/PaperHammer/XamlNexus/releases/download/v$Version/$([Uri]::EscapeDataString($name))"
         if ($asset.url -cne $expectedUrl -or $asset.sha256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'Invalid Gallery asset metadata.' }
         $path = Join-Path $Directory $name
         if (!(Test-Path -LiteralPath $path) -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ine $asset.sha256) {

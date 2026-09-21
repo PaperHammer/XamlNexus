@@ -9,7 +9,7 @@ namespace __APP__.MainPanel;
 
 public sealed partial class __NAME__Page : ArcPage {
     public override Type ArcType => typeof(__NAME__Page);
-    // Replace the sample through new __NAME__ViewModel(yourDataSource).
+    // Replace the sample through new __NAME__ViewModel(yourDataSource). / 通过 new __NAME__ViewModel(yourDataSource) 替换示例数据源。
     public __NAME__ViewModel ViewModel { get; } = new();
     private bool subscribed;
 

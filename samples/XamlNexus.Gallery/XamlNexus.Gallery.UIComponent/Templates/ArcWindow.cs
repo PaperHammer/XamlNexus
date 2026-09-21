@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.UI.Composition;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using XamlNexus.Gallery.Common;
+using XamlNexus.Gallery.Common.Logging;
 using XamlNexus.Gallery.UIComponent.Utils;
 using XamlNexus.Gallery.UIComponent.Utils.Extensions;
 using WinUIEx;
@@ -31,8 +32,9 @@ namespace XamlNexus.Gallery.UIComponent.Templates {
                 ArcThemeUtil.SetMainWindowBackdrop(systemBackdrop);
             }
 
+            this.Closed += (_, _) => _isClosed = true;
             this.Activated += ArcWindow_Activated;
-            this.AppWindow.Closing += AppWindow_Closing;
+            this.Closed += ArcWindow_Closed;
         }
 
         private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
@@ -40,11 +42,13 @@ namespace XamlNexus.Gallery.UIComponent.Templates {
             if (_isActive == isActive) return;
             _isActive = isActive;
 
-            ArcWindowTitleBarUtil.UpdateTitleBar(this, ArcThemeUtil.GetFormatMainWindowTheme(), isActive);
+            ArcWindowManager.UpdateWindowVisualState(this);
         }
 
-        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+        private void ArcWindow_Closed(object sender, WindowEventArgs args) {
             this.Activated -= ArcWindow_Activated;
+            this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
+            this.ContentHost.AppRoot.ActualThemeChanged -= Host_ActualThemeChanged;
 
             if (IsMainWindow) {
                 ArcWindowManager.Cleanup();
@@ -52,14 +56,14 @@ namespace XamlNexus.Gallery.UIComponent.Templates {
             }
         }
 
-        private async void AppRoot_Loaded(object sender, RoutedEventArgs e) {
-            _compositor = ElementCompositionPreview.GetElementVisual(this.ContentHost.AppRoot).Compositor;
-            _isLoaded = true;
-            await SetThemeAsync();
+        private void AppRoot_Loaded(object sender, RoutedEventArgs e) {
+            if (!_isClosed)
+                UpdateTheme();
         }
 
         protected void InitializeWindow() {
             this.ContentHost.AppRoot.Loaded += AppRoot_Loaded;
+            this.ContentHost.AppRoot.ActualThemeChanged += Host_ActualThemeChanged;
 
             if (IsNeedTrack) {
                 ArcWindowManager.TrackWindow(Key, this);
@@ -67,6 +71,8 @@ namespace XamlNexus.Gallery.UIComponent.Templates {
             SetWindowStartupPosition();
             SetWindowStyle();
             SetWindowTitleBar();
+            UpdateThemeIcon();
+            UpdateTheme();
         }
 
         #region theme
@@ -86,37 +92,56 @@ namespace XamlNexus.Gallery.UIComponent.Templates {
         }
 
         public async Task SetThemeAsync() {
-            if (!_isLoaded || _compositor == null || this.ContentHost.AppRoot == null || this.ContentHost.AppRoot.ActualWidth <= 0 || this.ContentHost.AppRoot.ActualHeight <= 0)
-                return;
+            await _themeTransition.WaitAsync();
+            Image? overlay = null;
+            try {
+                if (_isClosed)
+                    return;
 
-            UpdateThemeIcon();
+                var root = ContentHost.AppRoot;
+                if (!root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0)
+                    return;
 
-            // 捕获当前界面图像
-            var bitmap = new RenderTargetBitmap();
-            await bitmap.RenderAsync(this.ContentHost.AppRoot);
-            this.ContentHost.AppThemeTransitionImage.Source = bitmap;
-            this.ContentHost.AppThemeTransitionImage.Visibility = Visibility.Visible;
-            this.ContentHost.AppThemeTransitionImage.Opacity = 1.0;
+                overlay = ContentHost.AppThemeTransitionImage;
+                UpdateThemeIcon();
+                var bitmap = new RenderTargetBitmap();
+                await bitmap.RenderAsync(root);
+                if (_isClosed)
+                    return;
 
-            UpdateTheme();
+                overlay.Source = bitmap;
+                overlay.Visibility = Visibility.Visible;
+                overlay.Opacity = 1;
+                UpdateTheme();
 
-            // 动画
-            var imageVisual = ElementCompositionPreview.GetElementVisual(this.ContentHost.AppThemeTransitionImage);
-            var fadeAnim = _compositor.CreateScalarKeyFrameAnimation();
-            fadeAnim.InsertKeyFrame(0f, 1f);
-            fadeAnim.InsertKeyFrame(1f, 0f);
-            fadeAnim.Duration = TimeSpan.FromMilliseconds(600);
-            imageVisual.StartAnimation(nameof(imageVisual.Opacity), fadeAnim);
+                var visual = ElementCompositionPreview.GetElementVisual(overlay);
+                var fade = visual.Compositor.CreateScalarKeyFrameAnimation();
+                fade.InsertKeyFrame(0, 1);
+                fade.InsertKeyFrame(1, 0);
+                fade.Duration = TimeSpan.FromMilliseconds(600);
+                visual.StartAnimation(nameof(visual.Opacity), fade);
+                await Task.Delay(600);
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<ArcWindow>().Error("Theme transition failed", exception);
+                if (!_isClosed)
+                    UpdateTheme();
+            }
+            finally {
+                if (!_isClosed && overlay is not null) {
+                    overlay.Visibility = Visibility.Collapsed;
+                    overlay.Source = null;
+                }
+                _themeTransition.Release();
+            }
+        }
 
-            await Task.Delay(600);
-
-            this.ContentHost.AppThemeTransitionImage.Visibility = Visibility.Collapsed;
-            this.ContentHost.AppThemeTransitionImage.Source = null;
+        private void Host_ActualThemeChanged(FrameworkElement sender, object args) {
+            ArcWindowManager.UpdateWindowVisualState(this);
         }
 
         private void UpdateTheme() {
             ArcThemeUtil.ApplyTheme(this.ContentHost.AppRoot);
-            // 系统材质监听窗口根元素的主题，必须与内部内容同步。
             this.ContentHost.RequestedTheme = this.ContentHost.AppRoot.RequestedTheme;
             ArcWindowManager.UpdateWindowVisualState(this);
         }
@@ -155,8 +180,8 @@ namespace XamlNexus.Gallery.UIComponent.Templates {
         }
         #endregion
 
-        private bool _isLoaded;
-        private Compositor _compositor = null!;
+        private readonly SemaphoreSlim _themeTransition = new(1, 1);
+        private bool _isClosed;
         private bool? _isActive = null;
         private readonly PropertyHost _propertyHost;
     }

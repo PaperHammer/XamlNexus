@@ -1,0 +1,183 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.ToolGuidePage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="{Binding [ToolGuide], Source={StaticResource Strings}}" Description="{Binding [ToolGuideIntro], Source={StaticResource Strings}}"/>
+            <SelectorBar x:Name="GuideTabs" SelectionChanged="GuideTabs_SelectionChanged">
+                <SelectorBarItem Text="{Binding [ToolArchitecture], Source={StaticResource Strings}}" Tag="architecture" IsSelected="True"/>
+                <SelectorBarItem Text="{Binding [ToolRecipes], Source={StaticResource Strings}}" Tag="recipes"/>
+                <SelectorBarItem Text="{Binding [ToolMaintenance], Source={StaticResource Strings}}" Tag="maintenance"/>
+                <SelectorBarItem Text="{Binding [ToolCommands], Source={StaticResource Strings}}" Tag="commands"/>
+            </SelectorBar>
+            <StackPanel x:Name="ArchitecturePanel" Spacing="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding [ArchitectureIntro], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [ArchitectureHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [WinuiTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [WinuiBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="WinuiCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [HybridTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [HybridBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="HybridCode"/>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="{Binding [ProfilesTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [StandardTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [StandardBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [BasicTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [BasicBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="BasicCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [ProjectMapTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [ProjectMapBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            <StackPanel x:Name="RecipesPanel" Spacing="20" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding [RecipesIntro], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [RecipesHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <g:GalleryCodeView x:Name="RecipeListCode"/>
+                <Border Style="{StaticResource NoteCard}">
+                    <TextBlock Text="{Binding [RecipePlanHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [RecipeSettingsTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeSettingsBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="SettingsCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [RecipeSqliteTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeSqliteBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="SqliteCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [RecipeTrayTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeTrayBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="TrayCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [RecipeUpdaterTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeUpdaterBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="UpdaterCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [RecipeEditorTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeEditorBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="EditorCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource NoteCard}">
+                    <TextBlock Text="{Binding [RecipeBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                </Border>
+            </StackPanel>
+            <StackPanel x:Name="MaintenancePanel" Spacing="20" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding [MaintenanceIntro], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [MaintenanceHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [MaintainInspectTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [MaintainInspectBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="InspectCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [MaintainComponentTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [MaintainComponentBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="ComponentCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [MaintainScaffoldTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [MaintainScaffoldBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="ScaffoldCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource NoteCard}">
+                    <TextBlock Text="{Binding [UpdateBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                </Border>
+            </StackPanel>
+            <StackPanel x:Name="CommandsPanel" Spacing="20" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding [CommandsIntro], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [CommandsHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [CommandCreateTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [CommandCreateBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="CreateOptionsCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [CommandPageTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [CommandPageBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="PageCommandCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [CommandRunTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [CommandRunBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="RunCommandCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [CommandAutomationTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [CommandAutomationBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="AutomationCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [CommandGalleryTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [CommandGalleryBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <g:GalleryCodeView x:Name="GalleryCommandCode"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource NoteCard}">
+                    <TextBlock Text="{Binding [CommandBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                </Border>
+            </StackPanel>
+            <TextBlock Text="{Binding [GuideCodeNote], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

@@ -24,9 +24,9 @@ dotnet tool update --global XamlNexus
 xamlnexus gallery
 ```
 
-无需位于项目目录。正式工具包内的清单固定 Gallery 版本、Windows x64/ARM64 下载地址和 SHA-256。首次启动需要联网，之后使用 `%LOCALAPPDATA%/XamlNexus/Gallery` 下的已校验缓存，可离线运行。更新 tool 后，下次启动获取对应新版。已有 Gallery 正在运行时，请先关闭；命令不会强制结束它。
+无需位于项目目录。正式工具包内的清单固定 Gallery 版本、Windows x64 下载地址和 SHA-256。首次启动需要联网，之后使用 `%LOCALAPPDATA%/XamlNexus/Gallery` 下的已校验缓存，可离线运行。更新 tool 后，下次启动获取对应新版。已有 Gallery 正在运行时，请先关闭；命令不会强制结束它。
 
-Gallery 设置和数据库仍位于 `%LOCALAPPDATA%/XamlNexus.Gallery`。旧程序缓存保留以便回退，关闭 Gallery 后可手动清理。取消或失败的下载不会安装，可重新执行命令。未包含发布清单的源码构建会提示本地构建方法。支持 Windows 10 1809 及更新版本，x64 或 ARM64。
+Gallery 设置和数据库仍位于 `%LOCALAPPDATA%/XamlNexus.Gallery`。旧程序缓存保留以便回退，关闭 Gallery 后可手动清理。取消或失败的下载不会安装，可重新执行命令。未包含发布清单的源码构建会提示本地构建方法。支持 Windows 10 1809 及更新版本，仅 x64。
 
 ## 创建项目：`new`
 

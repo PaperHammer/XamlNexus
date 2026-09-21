@@ -77,7 +77,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
 
             oldPage.NavigateExit(
                 beforeLeave: () => {
-                    // 如果在等待期间 oldPage 被复活（变为 PreActive 或 Active），不能移除
+                    // 如果在等待期间 oldPage 被复活（变为 PreActive 或 Active），不能移除 / Do not remove oldPage if it was reactivated as PreActive or Active while awaiting.
                     if (oldPage.Status == ArcPageStatus.Active || oldPage.Status == ArcPageStatus.PreActive) {
                         return;
                     }
@@ -132,7 +132,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
 
         private static ArcPage? GetActivePage(Dictionary<Type, ArcPage> map) {
             foreach (var kvp in map) {
-                // 在快速切换时，上一个页面可能还处于 PreActive（动画中），它也应该被视为 oldPage
+                // 在快速切换时，上一个页面可能还处于 PreActive（动画中），它也应该被视为 oldPage / During rapid navigation, the previous page may still be PreActive (animating); treat it as oldPage too.
                 if (kvp.Value.Status == ArcPageStatus.Active || kvp.Value.Status == ArcPageStatus.PreActive) {
                     return kvp.Value;
                 }
@@ -154,7 +154,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
 
     public enum ArcNavigationTransition {
         Fade,
-        // Slide, DrillIn ...
+        // Slide, DrillIn ... / 滑动、钻入等过渡效果。
     }
 
     public record ArcNavigationOptions(ArcNavigationTransition Transition);

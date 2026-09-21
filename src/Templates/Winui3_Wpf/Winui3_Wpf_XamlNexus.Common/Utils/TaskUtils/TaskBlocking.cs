@@ -1,21 +1,19 @@
 namespace Winui3_Wpf_XamlNexus.Common.Utils.TaskUtils {
     public class TaskBlocking {
         public IDisposable Block() {
-            CancellationTokenRegistration reg = default;
+            var registration = new object();
 
             lock (_lockObj) {
-                _registrations.Add(reg);
-
-                if (_registrations.Count == 1)
+                if (_registrations.Count == 0)
                     _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                _registrations.Add(registration);
             }
 
             return new Unsubscriber(() => {
                 lock (_lockObj) {
-                    if (_registrations.Remove(reg) && _registrations.Count == 0)
+                    if (_registrations.Remove(registration) && _registrations.Count == 0)
                         _tcs.TrySetResult();
                 }
-                reg.Dispose();
             });
         }
 
@@ -29,7 +27,7 @@ namespace Winui3_Wpf_XamlNexus.Common.Utils.TaskUtils {
         }
 
         private readonly object _lockObj = new();
-        private readonly HashSet<CancellationTokenRegistration> _registrations = [];
+        private readonly HashSet<object> _registrations = [];
         private TaskCompletionSource _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 

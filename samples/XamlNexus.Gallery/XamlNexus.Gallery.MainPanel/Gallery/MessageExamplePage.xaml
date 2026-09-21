@@ -1,0 +1,9 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.MessageExamplePage">
+    <arc:ArcPage.Resources>
+        <g:GalleryStrings x:Key="Strings"/>
+    </arc:ArcPage.Resources>
+    <StackPanel Spacing="12">
+        <TextBlock Text="{Binding [PageReceived], Source={StaticResource Strings}}" FontWeight="SemiBold"/>
+        <TextBlock x:Name="ReceivedMessage" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+    </StackPanel>
+</arc:ArcPage>

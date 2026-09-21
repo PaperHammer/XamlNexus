@@ -4,64 +4,109 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <DataTemplate x:Key="SpotlightCard">
+                <Button Style="{StaticResource GalleryTileButton}" Tag="{Binding Id}" Click="Navigate_Click" AutomationProperties.Name="{Binding Title}">
+                    <StackPanel Spacing="14">
+                        <FontIcon Glyph="{Binding Glyph}" FontSize="26" HorizontalAlignment="Left" Foreground="{ThemeResource GalleryAccentBrush}"/>
+                        <TextBlock Text="{Binding Title}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding Description}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <FontIcon Glyph="" FontSize="14" HorizontalAlignment="Right" Foreground="{ThemeResource GalleryAccentBrush}"/>
+                    </StackPanel>
+                </Button>
+            </DataTemplate>
+            <DataTemplate x:Key="SampleCard">
+                <Button Style="{StaticResource GalleryTileButton}" Tag="{Binding Id}" Click="Navigate_Click" AutomationProperties.Name="{Binding Title}">
+                    <Grid ColumnSpacing="18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Width="48" Height="48" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" VerticalAlignment="Top">
+                            <FontIcon Glyph="{Binding Glyph}" FontSize="24" Foreground="{ThemeResource GalleryAccentBrush}"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" Spacing="8">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource CardTitle}"/>
+                            <TextBlock Text="{Binding Description}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </Button>
+            </DataTemplate>
         </ResourceDictionary>
     </arc:ArcPage.Resources>
-    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Left">
-        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
-            <Grid MinHeight="210" Padding="32" CornerRadius="8" RequestedTheme="Dark">
-                <Grid.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#081836" Offset="0"/>
-                        <GradientStop Color="#0E4E82" Offset="1"/>
-                    </LinearGradientBrush>
-                </Grid.Background>
-                <FontIcon Glyph="" FontSize="144" Opacity="0.15" HorizontalAlignment="Right"/>
-                <StackPanel Spacing="10" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding [DesktopDevelopment], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
-                    <TextBlock Text="XamlNexus Gallery" FontSize="36" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding [HomeDescription], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="16"/>
-                </StackPanel>
-            </Grid>
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Button Content="{Binding [GettingStarted], Source={StaticResource Strings}}" Tag="getting-started" Click="Navigate_Click" HorizontalAlignment="Stretch" MinHeight="56"/>
-                <Button Grid.Column="1" Content="{Binding [Documentation], Source={StaticResource Strings}}" Tag="https://github.com/PaperHammer/XamlNexus/wiki" Click="Link_Click" HorizontalAlignment="Stretch" MinHeight="56"/>
-                <Button Grid.Column="2" Content="GitHub" Tag="https://github.com/PaperHammer/XamlNexus" Click="Link_Click" HorizontalAlignment="Stretch" MinHeight="56"/>
-            </Grid>
-            <TextBlock Text="{Binding [ExploreSamples], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="20" FontWeight="SemiBold"/>
-            <ItemsRepeater ItemsSource="{x:Bind g:GalleryCatalog.Entries}">
-                <ItemsRepeater.Layout>
-                    <UniformGridLayout MinItemWidth="280" MinColumnSpacing="16" MinRowSpacing="16" ItemsStretch="Fill" MaximumRowsOrColumns="2"/>
-                </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                        <Button Tag="{Binding Id}" Click="Navigate_Click" Padding="20" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" AutomationProperties.Name="{Binding Title}">
-                            <Grid ColumnSpacing="20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32"/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <FontIcon Glyph="{Binding Glyph}" FontSize="24" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                                <StackPanel Grid.Column="1" Spacing="6">
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding Description}" FontSize="12" Opacity="0.75" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Grid>
-                        </Button>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
-            <StackPanel Spacing="4">
-                <TextBlock Text="{Binding [StartHere], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontWeight="SemiBold"/>
-                <TextBlock Text="{Binding [HomeTip], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Opacity="0.75"/>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Width="{Binding ViewportWidth, ElementName=PageScroll}" MaxWidth="1440" HorizontalAlignment="Left" Spacing="36">
+            <Border Background="{ThemeResource GalleryHeroBrush}" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" BorderThickness="0,0,0,1" Padding="36,32">
+                <Grid x:Name="Hero" SizeChanged="Hero_SizeChanged" ColumnSpacing="32" RowSpacing="28">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition x:Name="ConsoleColumn" Width="340"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Spacing="20" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding [HomeKicker], Source={StaticResource Strings}}" Style="{StaticResource Eyebrow}"/>
+                        <TextBlock Text="{Binding [HomeHeadline], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="36" LineHeight="44" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level1"/>
+                        <TextBlock Text="{Binding [HomeLead], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" MaxWidth="560" HorizontalAlignment="Left"/>
+                        <StackPanel Spacing="12" HorizontalAlignment="Left">
+                            <Button Tag="getting-started" Click="Navigate_Click" Style="{StaticResource AccentButtonStyle}" Padding="20,12" Content="{Binding [HomePrimary], Source={StaticResource Strings}}"/>
+                            <HyperlinkButton Tag="tool-guide" Click="Navigate_Click" Padding="0,4" Content="{Binding [HomeSecondary], Source={StaticResource Strings}}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Border x:Name="HeroConsole" Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" BorderThickness="1" CornerRadius="12" Padding="20" VerticalAlignment="Center">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="{Binding [HomeConsole], Source={StaticResource Strings}}" Style="{StaticResource Eyebrow}"/>
+                            <TextBlock Text="PowerShell" FontFamily="Consolas" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <g:GalleryCodeView x:Name="Commands"/>
+                            <TextBlock Text="{Binding [HomeConsoleHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+            <StackPanel Padding="28,0,28,48" Spacing="36">
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding [HomeHighlights], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                <TextBlock Text="{Binding [HomeHighlightsHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
-            <Expander Header="{Binding [FirstProject], Source={StaticResource Strings}}" Style="{StaticResource Section}">
-                <g:GalleryCodeView x:Name="Commands"/>
-            </Expander>
+            <ItemsRepeater x:Name="Highlights" ItemsSource="{x:Bind g:GalleryHomeContent.Highlights}" ItemTemplate="{StaticResource SpotlightCard}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout MinItemWidth="240" MinColumnSpacing="16" MinRowSpacing="16" MaximumRowsOrColumns="3" ItemsStretch="Fill"/>
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding [HomeSamples], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                <TextBlock Text="{Binding [HomeSamplesHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+            <ComboBox x:Name="SampleFilter" SelectedIndex="0" SelectionChanged="SampleFilter_SelectionChanged" MinWidth="220" AutomationProperties.Name="{Binding [ExploreSamples], Source={StaticResource Strings}}">
+                <ComboBoxItem Content="{Binding [FilterAll], Source={StaticResource Strings}}" Tag="all"/>
+                <ComboBoxItem Content="{Binding [FilterFramework], Source={StaticResource Strings}}" Tag="framework"/>
+                <ComboBoxItem Content="{Binding [FilterData], Source={StaticResource Strings}}" Tag="data"/>
+            </ComboBox>
+            <ItemsRepeater x:Name="SampleItems" ItemTemplate="{StaticResource SampleCard}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout MinItemWidth="240" MinColumnSpacing="16" MinRowSpacing="16" MaximumRowsOrColumns="2" ItemsStretch="Fill"/>
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
+            <StackPanel x:Name="RecentSection" Spacing="16" Visibility="Collapsed">
+                <TextBlock Text="{Binding [RecentVisits], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                <ItemsRepeater x:Name="RecentItems" ItemsSource="{x:Bind g:GalleryCatalog.Recent}" ItemTemplate="{StaticResource SampleCard}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout MinItemWidth="240" MinColumnSpacing="16" MinRowSpacing="16" MaximumRowsOrColumns="2" ItemsStretch="Fill"/>
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+            </StackPanel>
+            <Border Style="{StaticResource NoteCard}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{Binding [FooterTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [FooterBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <HyperlinkButton NavigateUri="https://github.com/PaperHammer/XamlNexus/wiki" Content="{Binding [Documentation], Source={StaticResource Strings}}" Padding="0,8"/>
+                        <HyperlinkButton NavigateUri="https://github.com/PaperHammer/XamlNexus" Content="GitHub" Padding="0,8"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </arc:ArcPage>

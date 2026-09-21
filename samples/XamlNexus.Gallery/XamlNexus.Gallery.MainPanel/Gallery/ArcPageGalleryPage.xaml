@@ -1,0 +1,101 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:nav="using:XamlNexus.Gallery.UIComponent.Navigation" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.ArcPageGalleryPage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="ArcPage" Description="{Binding [PageDescription], Source={StaticResource Strings}}"/>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Payload" Style="{StaticResource Eyebrow}"/>
+                    <TextBlock Text="{Binding [PageDemoTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [PageDemoHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBox x:Name="MessageInput" Header="{Binding [PageMessage], Source={StaticResource Strings}}" Text="Hello, ArcPage!" MaxLength="200"/>
+                    <Button Content="{Binding [PageNavigate], Source={StaticResource Strings}}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Left" Click="NavigateMessage_Click"/>
+                    <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                        <Grid MinHeight="96">
+                            <TextBlock x:Name="MessagePlaceholder" Text="{Binding [PageDemoPlaceholder], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <nav:ArcNavigationContentView x:Name="MessageNavigation"/>
+                        </Grid>
+                    </Border>
+                    <Expander Header="{Binding [UsageExample], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <StackPanel Spacing="16">
+                            <g:GalleryCodeView x:Name="XamlExample"/>
+                            <g:GalleryCodeView x:Name="CodeExample"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Loading" Style="{StaticResource Eyebrow}"/>
+                    <TextBlock Text="{Binding [LoadingUsageTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [LoadingInteractiveHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <arc:ArcPageHost x:Name="LoadingHost" MinHeight="220">
+                        <Grid Padding="20">
+                            <StackPanel Spacing="12" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding [LoadingDemoContent], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="{Binding [LoadingRun], Source={StaticResource Strings}}" Click="RunLoading_Click"/>
+                                    <Button Content="{Binding [LoadingRunProgress], Source={StaticResource Strings}}" Style="{StaticResource AccentButtonStyle}" Click="RunProgress_Click"/>
+                                </StackPanel>
+                                <TextBlock x:Name="LoadingStatus" Text="{Binding [LoadingIdle], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </arc:ArcPageHost>
+                    <Expander Header="{Binding [UsageExample], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <StackPanel Spacing="16">
+                            <g:GalleryCodeView x:Name="LoadingXaml"/>
+                            <g:GalleryCodeView x:Name="LoadingCode"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding [PageLifecycleTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [PageRegularFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
+                    <TextBlock Text="OnEnter  →  OnPreLeaveAsync  →  OnLeaveAsync  →  OnDestroy" Style="{StaticResource BodyText}" FontFamily="Consolas"/>
+                    <Border Height="1" Background="{ThemeResource GalleryCardStrokeBrush}"/>
+                    <TextBlock Text="{Binding [PageKeepAliveFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
+                    <TextBlock Text="OnEnter  →  OnPreLeaveAsync  →  Background  →  OnEnter" Style="{StaticResource BodyText}" FontFamily="Consolas"/>
+                    <TextBlock Text="{Binding [PageLifecycleShortHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <Expander Header="{Binding [PageOnEnterTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <TextBlock Text="{Binding [PageOnEnterDetail], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </Expander>
+                    <Expander Header="{Binding [PageOnPreLeaveTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <TextBlock Text="{Binding [PageOnPreLeaveDetail], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </Expander>
+                    <Expander Header="{Binding [PageOnLeaveTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <TextBlock Text="{Binding [PageOnLeaveDetail], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </Expander>
+                    <Expander Header="{Binding [PageOnDestroyTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <TextBlock Text="{Binding [PageOnDestroyDetail], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </Expander>
+                    <Expander Header="{Binding [PageLifecycleCodeTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <g:GalleryCodeView x:Name="LifecycleCode"/>
+                    </Expander>
+                    <Expander Header="{Binding [PageBlockingTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}" IsExpanded="True">
+                        <StackPanel Spacing="14">
+                            <TextBlock Text="{Binding [PageBlockingDetail], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            <Border Style="{StaticResource CompactCard}">
+                                <TextBlock Text="{Binding [PageBlockingWarning], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            </Border>
+                            <g:GalleryCodeView x:Name="BlockingCode"/>
+                        </StackPanel>
+                    </Expander>
+                    <Button Content="{Binding [PageSeeRetention], Source={StaticResource Strings}}" HorizontalAlignment="Left" Click="Try_Click"/>
+                </StackPanel>
+            </Border>
+
+            <g:GallerySourceBrowser Kind="Page"/>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

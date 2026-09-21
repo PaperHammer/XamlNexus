@@ -6,7 +6,12 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border MinHeight="90" Padding="20,16" CornerRadius="4" Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
+    <Border MinHeight="90"
+            Padding="20,16"
+            CornerRadius="6"
+            Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource GalleryCardStrokeBrush}"
+            BorderThickness="1">
         <Grid x:Name="RowLayout" ColumnSpacing="20" RowSpacing="0" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

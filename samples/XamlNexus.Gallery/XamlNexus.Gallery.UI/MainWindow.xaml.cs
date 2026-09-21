@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using XamlNexus.Gallery.MainPanel.Gallery;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinUIEx;
 using WinRT.Interop;
 using XamlNexus.Gallery.Common;
 using XamlNexus.Gallery.Common.Logging;
@@ -26,6 +27,7 @@ namespace XamlNexus.Gallery.UI {
         private readonly Stack<NavigationViewItem> navigationHistory = new();
         private NavigationViewItem? currentItem;
         private bool goingBack;
+        private bool initialSearchFocus;
         public override NavigationView AppNavView => this.NavigationViewControl;
         public override bool IsMainWindow => true;
         public override ArcWindowManagerKey Key => _windowKey;
@@ -49,13 +51,33 @@ namespace XamlNexus.Gallery.UI {
                 goingBack = true;
                 NavigationViewControl.SelectedItem = navigationHistory.Pop();
             };
+            this.AppWindow.Closing += (_, _) => this.Hide();
             this.Closed += MainWindow_Closed;
             GalleryCatalog.NavigationRequested += NavigateToSample;
             LanguageUtil.LanguageUpdated += GalleryLanguageChanged;
             UpdateGalleryLabels();
             NavigationViewControl.SelectedItem = Nav_Home;
+            SampleSearch.Loaded += (_, _) => QueueInitialSearchFocus();
+            Activated += (_, e) => { if (e.WindowActivationState != WindowActivationState.Deactivated) QueueInitialSearchFocus(); };
+
         }
 
+        private void QueueInitialSearchFocus() {
+            if (initialSearchFocus) return;
+            MainHost.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => {
+                if (!initialSearchFocus && SampleSearch.IsLoaded)
+                    initialSearchFocus = SampleSearch.Focus(FocusState.Programmatic);
+            });
+        }
+        protected override void SetWindowStartupPosition() {
+            var display = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
+            if (display is null) return;
+            var area = display.WorkArea;
+            int width = Math.Min(AppWindow.Size.Width, Math.Max(1, area.Width - 32));
+            int height = Math.Min(AppWindow.Size.Height, Math.Max(1, area.Height - 32));
+            AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
+            AppWindow.Move(new Windows.Graphics.PointInt32(area.X + (area.Width - width) / 2, area.Y + (area.Height - height) / 2));
+        }
         private void TitleBarRootChanged(XamlRoot sender, XamlRootChangedEventArgs args) => UpdateTitleBarRegions();
         private void UpdateTitleBarRegions() {
             if (!ExtendsContentIntoTitleBar || MainHost.XamlRoot is null) return;
@@ -92,11 +114,14 @@ namespace XamlNexus.Gallery.UI {
                 Type? pageType = id switch {
                     "home" => typeof(GalleryHomePage),
                     "settings" => typeof(GallerySettingsPage),
+                    "fundamentals" => typeof(WindowNavigationGalleryPage),
+                    "capabilities" => typeof(ListsDataGalleryPage),
                     _ => GalleryCatalog.Entries.FirstOrDefault(entry => entry.Id == id)?.PageType,
                 };
                 if (pageType is null)
                     return;
 
+                if (id is not null) GalleryCatalog.RecordVisit(id);
                 NaviContent.Navigate(pageType);
                 if (!goingBack && currentItem is not null && currentItem != args.SelectedItemContainer)
                     navigationHistory.Push(currentItem);
@@ -113,33 +138,33 @@ namespace XamlNexus.Gallery.UI {
 
         private void GalleryLanguageChanged(object? sender, EventArgs args) => UpdateGalleryLabels();
         private void UpdateGalleryLabels() {
-            Nav_Home.Content = GalleryCatalog.Text("Home", "首页");
-            Nav_Fundamentals.Content = GalleryCatalog.Text("Fundamentals", "基础用法");
-            Nav_Capabilities.Content = GalleryCatalog.Text("Capabilities", "功能示例");
-            Nav_AppSettings.Content = GalleryCatalog.Text("Settings", "设置");
-            ToolTipService.SetToolTip(MainHost.Back, GalleryCatalog.Text("Back", "返回"));
-            ToolTipService.SetToolTip(MainHost.Menu, GalleryCatalog.Text("Navigation", "导航菜单"));
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(MainHost.Back, GalleryCatalog.Text("Back", "返回"));
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(MainHost.Menu, GalleryCatalog.Text("Navigation", "导航菜单"));
-            SampleSearch.PlaceholderText = GalleryCatalog.Text("Search features and samples…", "搜索功能与示例…");
+            Nav_Home.Content = GalleryStrings.Get("NavigationOverview");
+            Nav_Fundamentals.Content = GalleryStrings.Get("NavigationFundamentals");
+            Nav_Capabilities.Content = GalleryStrings.Get("NavigationCapabilities");
+            Nav_AppSettings.Content = GalleryStrings.Get("Settings");
+            ToolTipService.SetToolTip(MainHost.Back, GalleryStrings.Get("Back"));
+            ToolTipService.SetToolTip(MainHost.Menu, GalleryStrings.Get("NavigationMenu"));
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(MainHost.Back, GalleryStrings.Get("Back"));
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(MainHost.Menu, GalleryStrings.Get("NavigationMenu"));
+            SampleSearch.PlaceholderText = GalleryStrings.Get("SearchFeatures");
             foreach (var item in SampleItems()) {
                 var entry = GalleryCatalog.Entries.FirstOrDefault(entry => entry.Id == item.Tag as string);
                 if (entry is not null) item.Content = entry.Title;
             }
         }
-        private IEnumerable<NavigationViewItem> SampleItems() => new[] { Nav_Home, Nav_GettingStarted, Nav_Lifetime, Nav_List, Nav_MainPage };
+        private IEnumerable<NavigationViewItem> SampleItems() => new[] { Nav_Home, Nav_ToolGuide, Nav_GettingStarted, Nav_ArcWindow, Nav_ArcPage, Nav_Lifetime, Nav_List, Nav_MainPage };
         private void NavigateToSample(string id) {
-            var item = SampleItems().FirstOrDefault(item => item.Tag as string == id);
+            var item = id == "settings" ? Nav_AppSettings : SampleItems().FirstOrDefault(item => item.Tag as string == id);
             if (item is null) return;
-            if (item == Nav_GettingStarted || item == Nav_Lifetime) Nav_Fundamentals.IsExpanded = true;
-            if (item == Nav_List || item == Nav_MainPage) Nav_Capabilities.IsExpanded = true;
+            if (item == Nav_Fundamentals || item == Nav_Lifetime || item == Nav_ArcWindow || item == Nav_ArcPage) Nav_Fundamentals.IsExpanded = true;
+            if (item == Nav_Capabilities || item == Nav_List || item == Nav_MainPage) Nav_Capabilities.IsExpanded = true;
             NavigationViewControl.SelectedItem = item;
         }
         private void SampleSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args) {
             if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
             string query = sender.Text.Trim();
             sender.ItemsSource = GalleryCatalog.Entries.Where(entry =>
-                (entry.EnglishTitle + entry.ChineseTitle + entry.EnglishDescription + entry.ChineseDescription)
+                (entry.Title + entry.Description)
                     .Contains(query, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
         private void SampleSearch_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args) {

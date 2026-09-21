@@ -9,9 +9,11 @@
     <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Left">
         <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
             <g:GalleryPageHeader x:Name="Header" Description="{Binding [ListDescription], Source={StaticResource Strings}}"/>
-            <TextBlock x:Name="ExampleTitle" Text="{Binding [ListExampleTitle], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontWeight="SemiBold"/>
-            <StackPanel>
-                <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="8,8,0,0" Padding="24">
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [SampleTryTitle], Source={StaticResource Strings}}" Style="{StaticResource Eyebrow}"/>
+                    <TextBlock x:Name="ExampleTitle" Text="{Binding [ListExampleTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock x:Name="TryDescription" Text="{Binding [ListTrySteps], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     <Grid ColumnSpacing="24" RowSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
@@ -58,30 +60,57 @@
                         </StackPanel>
                         <StackPanel x:Name="Options" Grid.Column="1" Spacing="8">
                             <TextBlock x:Name="OptionsHeading" Text="{Binding [Options], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
-                            <Button Content="{Binding [Refresh], Source={StaticResource Strings}}" Command="{Binding RefreshCommand}"/>
+                            <Button Style="{StaticResource AccentButtonStyle}" Content="{Binding [Refresh], Source={StaticResource Strings}}" Command="{Binding RefreshCommand}"/>
                             <CheckBox x:Name="Slow" Content="{Binding [SlowRequest], Source={StaticResource Strings}}" Click="Slow_Click"/>
                             <CheckBox x:Name="Fail" Content="{Binding [SimulateFailure], Source={StaticResource Strings}}" Click="Fail_Click"/>
-                            <TextBlock x:Name="InstanceLabel" FontSize="12" Opacity="0.65"/>
                         </StackPanel>
                     </Grid>
-                </Border>
-                <g:GallerySourceBrowser Kind="Template"/>
-            </StackPanel>
-            <StackPanel Spacing="4">
-                <TextBlock Text="{Binding [TryIt], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontWeight="SemiBold"/>
-                <TextBlock x:Name="TryDescription" Style="{StaticResource BodyText}" Opacity="0.75"/>
-            </StackPanel>
-            <Expander x:Name="LifetimeSection" Header="{Binding [CompareLifetimes], Source={StaticResource Strings}}" Style="{StaticResource Section}">
-                <g:GalleryLifetimeView/>
-            </Expander>
-            <Expander Header="{Binding [UseInProject], Source={StaticResource Strings}}" Style="{StaticResource Section}">
-                <g:GalleryIntegrationView x:Name="Integration"/>
-            </Expander>
+                    <Expander Header="{Binding [UseInProject], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="{Binding [ListScopeHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            <g:GalleryIntegrationView x:Name="Integration"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding [ListBehaviorTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <Border Style="{StaticResource CompactCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE895;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="{Binding [ListRequestFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [ListRequestFlowBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{Binding [ListRequestFlowCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource CompactCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE73E;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="{Binding [ListUiStateTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [ListUiStateBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{Binding [ListUiStateCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource CompactCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE711;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="{Binding [ListCancellationTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [ListCancellationBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{Binding [ListCancellationCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <g:GallerySourceBrowser Kind="Template"/>
             <g:GallerySourceBrowser Kind="Demo"/>
-            <StackPanel x:Name="PersistenceTip" Spacing="4">
-                <TextBlock Text="{Binding [NotPersistence], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontWeight="SemiBold"/>
-                <TextBlock Text="{Binding [PersistenceHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Opacity="0.75"/>
-            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

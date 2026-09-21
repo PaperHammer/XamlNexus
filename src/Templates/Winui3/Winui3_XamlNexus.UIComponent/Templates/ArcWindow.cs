@@ -45,7 +45,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
             ArcWindowManager.UpdateWindowVisualState(this);
         }
 
-        // Closing can be cancelled by tray behavior; release resources only after a real close.
+        // Closing can be cancelled by tray behavior; release resources only after a real close. / 托盘行为可能取消关闭；仅在窗口实际关闭后释放资源。
         private void ArcWindow_Closed(object sender, WindowEventArgs args) {
             this.Activated -= ArcWindow_Activated;
             this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
@@ -57,8 +57,9 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
             }
         }
 
-        private async void AppRoot_Loaded(object sender, RoutedEventArgs e) {
-            await SetThemeAsync();
+        private void AppRoot_Loaded(object sender, RoutedEventArgs e) {
+            if (!_isClosed)
+                UpdateTheme();
         }
 
         protected void InitializeWindow() {
@@ -93,12 +94,14 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
 
         public async Task SetThemeAsync() {
             await _themeTransition.WaitAsync();
-            var overlay = ContentHost.AppThemeTransitionImage;
+            Image? overlay = null;
             try {
+                if (_isClosed) return;
                 var root = ContentHost.AppRoot;
-                if (_isClosed || !root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0) return;
+                if (!root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0) return;
+                overlay = ContentHost.AppThemeTransitionImage;
                 UpdateThemeIcon();
-                // Same snapshot and Composition fade sequence as VirtualPaper.
+                // Same snapshot and Composition fade sequence as VirtualPaper. / 使用与 VirtualPaper 相同的快照和 Composition 淡出顺序。
                 var bitmap = new RenderTargetBitmap();
                 await bitmap.RenderAsync(root);
                 if (_isClosed) return;
@@ -119,7 +122,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
                 if (!_isClosed) UpdateTheme();
             }
             finally {
-                if (!_isClosed) {
+                if (!_isClosed && overlay is not null) {
                     overlay.Visibility = Visibility.Collapsed;
                     overlay.Source = null;
                 }
