@@ -388,6 +388,8 @@ public static class XamlNexusProjectUpgrade {
             localContent.AsSpan().SequenceEqual(targetContent))
             return;
 
+        bool isSolution = Path.GetExtension(installed.Path).Equals(".sln", StringComparison.OrdinalIgnoreCase);
+        bool isXml = IsSemanticXmlPath(installed.Path);
         XamlNexusTextMergeResult merge = XamlNexusThreeWayTextMerge.Merge(
             baselineContent,
             localContent,
@@ -395,9 +397,7 @@ public static class XamlNexusProjectUpgrade {
         byte[]? mergedContent = merge.Content;
         XamlNexusMergeStatus mergeStatus = merge.Status;
         XamlNexusUpgradeChangeStrategy mergeStrategy = XamlNexusUpgradeChangeStrategy.TextMerge;
-        bool semanticConflict = false;
-        if (mergeStatus != XamlNexusMergeStatus.Merged &&
-            Path.GetExtension(installed.Path).Equals(".sln", StringComparison.OrdinalIgnoreCase)) {
+        if (isSolution && mergeStatus != XamlNexusMergeStatus.Merged) {
             XamlNexusSolutionMergeResult solutionMerge = XamlNexusThreeWaySolutionMerge.Merge(
                 baselineContent,
                 localContent,
@@ -408,10 +408,10 @@ public static class XamlNexusProjectUpgrade {
                 mergeStrategy = XamlNexusUpgradeChangeStrategy.SolutionMerge;
             }
             else if (solutionMerge.Status == XamlNexusMergeStatus.Conflict) {
-                semanticConflict = true;
+                mergeStrategy = XamlNexusUpgradeChangeStrategy.SolutionMerge;
             }
         }
-        else if (IsSemanticXmlPath(installed.Path)) {
+        else if (isXml) {
             // Disjoint line edits can still conflict structurally (for example,
             // inserting the same named control at different positions).
             // XML validation must not be bypassed by a successful text merge.
@@ -421,12 +421,7 @@ public static class XamlNexusProjectUpgrade {
                 targetContent);
             mergeStatus = xmlMerge.Status;
             mergedContent = xmlMerge.Content;
-            if (xmlMerge.Status == XamlNexusMergeStatus.Merged) {
-                mergeStrategy = XamlNexusUpgradeChangeStrategy.XmlMerge;
-            }
-            else if (xmlMerge.Status == XamlNexusMergeStatus.Conflict) {
-                semanticConflict = true;
-            }
+            mergeStrategy = XamlNexusUpgradeChangeStrategy.XmlMerge;
         }
         if (mergeStatus == XamlNexusMergeStatus.Merged) {
             if (!mergedContent!.AsSpan().SequenceEqual(localContent)) {
@@ -440,15 +435,13 @@ public static class XamlNexusProjectUpgrade {
             return;
         }
 
-        var reason = mergeStatus == XamlNexusMergeStatus.Unsupported
-            ? IsSemanticXmlPath(installed.Path)
-                ? ProjectUpgradeErrors.UnsupportedXml
-                : ProjectUpgradeErrors.UnsupportedText
-            : semanticConflict
-                ? Path.GetExtension(installed.Path).Equals(".sln", StringComparison.OrdinalIgnoreCase)
-                    ? ProjectUpgradeErrors.SolutionMergeConflict
-                    : ProjectUpgradeErrors.XmlMergeConflict
-                : ProjectUpgradeErrors.TextMergeConflict;
+        var reason = (mergeStatus, mergeStrategy) switch {
+            (XamlNexusMergeStatus.Unsupported, _) when isXml => ProjectUpgradeErrors.UnsupportedXml,
+            (XamlNexusMergeStatus.Unsupported, _) => ProjectUpgradeErrors.UnsupportedText,
+            (_, XamlNexusUpgradeChangeStrategy.SolutionMerge) => ProjectUpgradeErrors.SolutionMergeConflict,
+            (_, XamlNexusUpgradeChangeStrategy.XmlMerge) => ProjectUpgradeErrors.XmlMergeConflict,
+            _ => ProjectUpgradeErrors.TextMergeConflict,
+        };
         conflicts.Add(new XamlNexusUpgradeConflict(
             reason.Code,
             installed.Path,
@@ -460,7 +453,7 @@ public static class XamlNexusProjectUpgrade {
                 baselineContent,
                 localContent,
                 targetContent,
-                wholeFile: semanticConflict || IsSemanticXmlPath(installed.Path)),
+                wholeFile: isXml || mergeStrategy == XamlNexusUpgradeChangeStrategy.SolutionMerge),
             actualHash,
             Convert.ToHexString(SHA256.HashData(baselineContent)) + ":" +
                 Convert.ToHexString(SHA256.HashData(localContent)) + ":" +

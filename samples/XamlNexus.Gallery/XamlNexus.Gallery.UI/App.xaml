@@ -20,6 +20,9 @@
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
 
+            <!-- Keep Gallery typography consistent across Chinese and English UI. -->
+            <FontFamily x:Key="ContentControlThemeFontFamily">Microsoft YaHei UI, Segoe UI Variable Text</FontFamily>
+
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <BitmapImage x:Key="NaviIcon_ThemeAuto" UriSource="ms-appx:///Assets/ui_components/Light/theme_auto.png"/>

@@ -54,6 +54,8 @@ xamlnexus run
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
 xamlnexus page add Projects --kind list
+xamlnexus page add ProjectDetails --kind details
+xamlnexus page add ProjectEditor --kind form
 xamlnexus run
 ```
 
@@ -101,14 +103,17 @@ xamlnexus new HybridApp --preset hybrid
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus doctor
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 xamlnexus --help
 ```
 
-- `update <id>` 更新已安装组件，`upgrade` 升级脚手架基础代码；更新 CLI 不会自动更新已有项目。
+- `status` 汇总环境、项目文件、脚手架和 Recipe 更新状态，并给出下一步命令。
+- `update <id>` 更新单个组件，`update --all` 在一个事务中更新所有过期组件，`upgrade` 升级脚手架基础代码；更新 CLI 不会自动更新已有项目。
 - 生成的文件可以自行修改。组件更新和移除会检查受管理文件，脚手架升级会报告合并冲突。
 - `--dry-run` 用于预览变更；`--json` 只改变输出格式，不会阻止文件写入。
 - 安装包、签名和在线更新分发，需要单独配置生成项目中的发布文件。

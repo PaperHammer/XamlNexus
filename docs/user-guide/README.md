@@ -27,11 +27,14 @@ See the [command reference](commands.md) for all options, defaults, supported co
 | Create a default project | `xamlnexus new MyApp` |
 | Run for development | `xamlnexus run` |
 | Add an ordinary page | `xamlnexus page add Orders` |
+| Add a details/form page | `xamlnexus page add OrderDetails --kind details` |
 | Add a capability | `xamlnexus add sqlite` |
 | Preview component removal | `xamlnexus remove sqlite --dry-run` |
 | Preview a component update | `xamlnexus update sqlite --dry-run` |
+| Preview all component updates | `xamlnexus update --all --dry-run` |
 | Preview a scaffold upgrade | `xamlnexus upgrade --dry-run` |
 | Validate the project | `xamlnexus validate` |
+| Show maintenance status | `xamlnexus status` |
 | Diagnose the environment and integration | `xamlnexus doctor` |
 | Read help | `xamlnexus --help` |
 

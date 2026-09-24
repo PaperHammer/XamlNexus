@@ -8,6 +8,7 @@ Commands that modify an existing project support a validated preview:
 xamlnexus add sqlite --project D:\Projects\MyApp --dry-run
 xamlnexus remove sqlite --project D:\Projects\MyApp --dry-run
 xamlnexus update sqlite --project D:\Projects\MyApp --dry-run
+xamlnexus update --all --project D:\Projects\MyApp --dry-run
 xamlnexus upgrade --project D:\Projects\MyApp --dry-run
 ```
 
@@ -22,9 +23,10 @@ Add `--json` when a script or CI job needs to consume the result:
 xamlnexus add sqlite --project D:\Projects\MyApp --dry-run --json
 ```
 
-A successful preview has `status: "planned"`, `dryRun: true`, version
-information, and a `changes` array. Recipe changes include an `owned` or
-`project` scope. Upgrade plans expose `canApply`, conflicts, and only the
+A successful single-item preview has `status: "planned"`; a batch add or
+`update --all` preview has `status: "preview"`. Both include `dryRun: true`,
+version information and changed paths. Single Recipe changes also include an
+`owned` or `project` scope. Upgrade plans expose `canApply`, conflicts, and only the
 change kind and relative path; generated file contents are never included.
 An upgrade change reports `strategy: "textMerge"` for independent line edits
 or `strategy: "xmlMerge"` when an XML/MSBuild/XAML semantic merge combines
@@ -58,15 +60,19 @@ usage. JSON is written as one document to standard output.
 
 ## Query commands
 
-`list`, `validate`, and `recipes` also accept `--json`:
+`status`, `list`, `validate`, and `recipes` also accept `--json`:
 
 ```powershell
+xamlnexus status --project D:\Projects\MyApp --json
 xamlnexus list --project D:\Projects\MyApp --json
 xamlnexus validate --project D:\Projects\MyApp --json
 xamlnexus recipes --json
 ```
 
-`list` returns project identity, generator version, and installed modules.
+`status` combines scaffold and Recipe versions with validation and Doctor
+results, plus suggested maintenance commands. Available updates do not make it
+unhealthy; validation or Doctor errors return exit code `1`. `list` returns
+project identity, generator version, and installed modules.
 `validate` returns `status: "valid"` or `"invalid"`, an `isValid` boolean, and
 the complete coded issue list. `recipes` returns the complete built-in Recipe
 descriptors, including compatibility, dependency, and conflict metadata.

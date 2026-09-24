@@ -74,13 +74,13 @@
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="{Binding [ListBehaviorTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <TextBlock Text="{Binding [ListBehaviorTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}" FontSize="18" LineHeight="26"/>
             <Border Style="{StaticResource CompactCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE895;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <FontIcon Glyph="&#xE895;" FontSize="18" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
                     <StackPanel Grid.Column="1" Spacing="8">
-                        <TextBlock Text="{Binding [ListRequestFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [ListRequestFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}" FontSize="14" LineHeight="22"/>
                         <TextBlock Text="{Binding [ListRequestFlowBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                         <TextBlock Text="{Binding [ListRequestFlowCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                     </StackPanel>
@@ -89,9 +89,9 @@
             <Border Style="{StaticResource CompactCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE73E;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <FontIcon Glyph="&#xE73E;" FontSize="18" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
                     <StackPanel Grid.Column="1" Spacing="8">
-                        <TextBlock Text="{Binding [ListUiStateTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [ListUiStateTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}" FontSize="14" LineHeight="22"/>
                         <TextBlock Text="{Binding [ListUiStateBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                         <TextBlock Text="{Binding [ListUiStateCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                     </StackPanel>
@@ -100,9 +100,9 @@
             <Border Style="{StaticResource CompactCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE711;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <FontIcon Glyph="&#xE711;" FontSize="18" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
                     <StackPanel Grid.Column="1" Spacing="8">
-                        <TextBlock Text="{Binding [ListCancellationTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [ListCancellationTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}" FontSize="14" LineHeight="22"/>
                         <TextBlock Text="{Binding [ListCancellationBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                         <TextBlock Text="{Binding [ListCancellationCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                     </StackPanel>

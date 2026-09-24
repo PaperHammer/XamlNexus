@@ -195,18 +195,9 @@ namespace XamlNexus.Gallery.MainPanel {
 
         private void SetControlsEnabled(bool enabled) {
             foreach (Control control in new Control[] { KeyInput, ValueInput, SaveButton, RefreshButton,
-                DeleteButton, IntegrityButton, NotifyButton, BackupButton, RestoreButton, BackupList, EntriesList, RecentFirstCheckBox })
+                DeleteButton, IntegrityButton, BackupButton, RestoreButton, BackupList, EntriesList, RecentFirstCheckBox })
                 control.IsEnabled = enabled;
         }
-
-        private async void Notify_Click(object sender, RoutedEventArgs e) =>
-            await RunAsync("notification", () => {
-                // Resolve at the user action boundary, after tray initialization has completed. / 在用户操作时解析服务，此时托盘初始化已完成。
-                AppServiceLocator.Services.GetRequiredService<INotificationService>().ShowNotification(
-                    Text("Showcase_NotificationTitle"), Text("Showcase_NotificationBody", Entries.Count));
-                SetStatus("Showcase_NotificationRequested");
-                return Task.CompletedTask;
-            });
 
         private static string Text(string key, params object[] arguments) =>
             string.Format(LanguageUtil.GetI18n(key), arguments);

@@ -15,6 +15,10 @@ xamlnexus page add Orders
 xamlnexus page add Reports --no-navigation
 # Call from outside the project or from a script
 xamlnexus page add Customers --project <project-directory> --dry-run --json
+# List, details and editor pages
+xamlnexus page add Orders --kind list
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 ```
 
 The command creates `MainPanel/OrdersPage.xaml`, its code-behind, `MainPanel/ViewModels/OrdersViewModel.cs`, and `UI/Navigation/OrdersNavigation.cs`. Names such as Orders must start with an uppercase English letter, followed by English letters or digits. The default title is the name; add localization resources for translations. Generation uses existing MainPanel, ArcPage, and ObservableObject infrastructure, which must be retained.
@@ -23,7 +27,9 @@ These files are user business code, not removable Recipes. Edit them directly; w
 
 If `UIComponent/Navigation/INavigationRegistry.cs` exists, the command creates registration without reading or rewriting MainWindow. Older projects receive the three business files and a manual-integration notice; `--no-navigation` explicitly skips registration. Custom windows must consume the [shared registry](../technical/navigation.md). JSON reports navigation as automatic or manual, including in previews.
 
-File collisions, invalid structure, and unsafe paths prevent writes. Write failures use transactional rollback. Manually registered duplicate routes are rejected by the startup registry; the CLI does not scan C# registration code. Custom shells may generate pages, but generation does not repair their XAML or the old shell. It does not edit App.xaml.cs or require SQLite. Pages own factory-created ViewModels, whose constructor arguments resolve from application services. Dry runs list files; JSON supports scripts. Run `xamlnexus run` afterward. The default is an empty ViewModel and ordinary page, without the Query example below.
+File collisions, invalid structure, and unsafe paths prevent writes. Write failures use transactional rollback. Manually registered duplicate routes are rejected by the startup registry; the CLI does not scan C# registration code. Custom shells may generate pages, but generation does not repair their XAML or the old shell. It does not edit App.xaml.cs or require SQLite. Pages own factory-created ViewModels, whose constructor arguments resolve from application services. Dry runs list files; JSON supports scripts. Run `xamlnexus run` afterward.
+
+The default `blank` kind creates an empty ViewModel and ordinary page. `list` provides search, refresh, cancellation and asynchronous states; `details` reads an `id` from `FrameworkPayload` and includes loading and retry; `form` supports create mode without an `id` and edit mode with an `id`, with validation, dirty tracking, asynchronous save and reset. Each business template includes a runnable data-source interface and sample implementation to replace with an application service.
 
 ## Start without a database
 

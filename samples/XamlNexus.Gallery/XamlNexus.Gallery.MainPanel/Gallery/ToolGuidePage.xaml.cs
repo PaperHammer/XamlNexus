@@ -19,20 +19,21 @@ public sealed partial class ToolGuidePage : ArcPage
         TrayCode.SetSource("xamlnexus add tray --dry-run", "commands");
         UpdaterCode.SetSource("xamlnexus add updater --dry-run", "commands");
         EditorCode.SetSource("xamlnexus add editorconfig --dry-run", "commands");
-        InspectCode.SetSource("xamlnexus doctor --environment\nxamlnexus validate\nxamlnexus doctor", "commands");
-        ComponentCode.SetSource("xamlnexus update sqlite --dry-run\nxamlnexus remove sqlite --dry-run", "commands");
+        InspectCode.SetSource("xamlnexus doctor --environment\nxamlnexus status\nxamlnexus validate\nxamlnexus doctor", "commands");
+        ComponentCode.SetSource("xamlnexus update --all --dry-run\nxamlnexus update --all\nxamlnexus remove sqlite --dry-run", "commands");
         ScaffoldCode.SetSource("xamlnexus upgrade --dry-run", "commands");
         CreateOptionsCode.SetSource("xamlnexus\nxamlnexus new MyApp --preset winui --profile standard --language zh-CN --solution-format slnx --output D:\\Projects", "commands");
-        PageCommandCode.SetSource("xamlnexus page add Dashboard --kind blank --dry-run\nxamlnexus page add Projects --kind list\nxamlnexus page add EmbeddedPanel --kind blank --no-navigation", "commands");
+        PageCommandCode.SetSource("xamlnexus page add Dashboard --kind blank --dry-run\nxamlnexus page add Projects --kind list\nxamlnexus page add OrderDetails --kind details\nxamlnexus page add OrderEditor --kind form", "commands");
         RunCommandCode.SetSource("xamlnexus run --dry-run\nxamlnexus run\nxamlnexus run --no-build", "commands");
-        AutomationCode.SetSource("xamlnexus list --project . --json\nxamlnexus validate --project . --json\nxamlnexus doctor --project . --json\nxamlnexus upgrade --project . --dry-run --json", "commands");
+        AutomationCode.SetSource("xamlnexus status --project . --json\nxamlnexus update --all --project . --dry-run --json\nxamlnexus validate --project . --json\nxamlnexus upgrade --project . --dry-run --json", "commands");
         GalleryCommandCode.SetSource("xamlnexus --version\nxamlnexus gallery", "commands");
     }
     private void GuideTabs_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
     {
-        if (ArchitecturePanel is null || RecipesPanel is null || MaintenancePanel is null || CommandsPanel is null) return;
+        if (ArchitecturePanel is null || PagesPanel is null || RecipesPanel is null || MaintenancePanel is null || CommandsPanel is null) return;
         string? tab = sender.SelectedItem?.Tag as string;
         ArchitecturePanel.Visibility = tab == "architecture" ? Visibility.Visible : Visibility.Collapsed;
+        PagesPanel.Visibility = tab == "pages" ? Visibility.Visible : Visibility.Collapsed;
         RecipesPanel.Visibility = tab == "recipes" ? Visibility.Visible : Visibility.Collapsed;
         MaintenancePanel.Visibility = tab == "maintenance" ? Visibility.Visible : Visibility.Collapsed;
         CommandsPanel.Visibility = tab == "commands" ? Visibility.Visible : Visibility.Collapsed;

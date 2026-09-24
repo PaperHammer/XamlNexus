@@ -172,13 +172,14 @@ Quick start:
 Usage:
   xamlnexus                         Start interactive mode
   xamlnexus new &lt;name&gt; [options]    Create a project
-  xamlnexus page add &lt;name&gt; [--project &lt;directory&gt;] [--kind blank|list] [--no-navigation] [--dry-run] [--json]
+  xamlnexus page add &lt;name&gt; [--project &lt;directory&gt;] [--kind blank|list|details|form] [--no-navigation] [--dry-run] [--json]
     Add a page; --no-navigation skips navigation registration.
   xamlnexus run [path] [--project &lt;directory&gt;] [--no-build] [--dry-run] [--json]
     Build and run Debug/x64 unpackaged; Ctrl+C stops this run.
     --no-build uses existing output; no watch or hot reload.
   xamlnexus gallery                Download/cache and open the matching Gallery
   xamlnexus list [path] [--json]    List project capabilities
+  xamlnexus status [path] [--json]  Show project health and maintenance actions
   xamlnexus validate [path] [--json] Validate the manifest and managed files
   xamlnexus doctor --environment [--json]
   xamlnexus doctor [path] [--json] Diagnose environment and project health
@@ -187,6 +188,7 @@ Usage:
   xamlnexus add &lt;recipe[,recipe...]&gt; [options]  Install Recipes transactionally
   xamlnexus remove &lt;recipe&gt; [options] Remove a Recipe transactionally
   xamlnexus update &lt;recipe&gt; [options] Update a Recipe transactionally
+  xamlnexus update --all [options]  Update outdated Recipes in one transaction
   xamlnexus --help                  Show help (aliases: help, -h, -?)
   xamlnexus --version               Show version
 
@@ -213,8 +215,11 @@ Examples:
   xamlnexus new DataApp --profile basic --features settings,sqlite
   xamlnexus run --project MyApp
   xamlnexus page add Workspace --project MyApp --dry-run
+  xamlnexus page add OrderDetails --kind details --project MyApp
+  xamlnexus page add OrderEditor --kind form --project MyApp
   xamlnexus new MyApp --preset hybrid --output D:\Projects --language en-US
   xamlnexus list D:\Projects\MyApp
+  xamlnexus status D:\Projects\MyApp
   xamlnexus validate --project D:\Projects\MyApp --json
   xamlnexus doctor --project D:\Projects\MyApp --json
   xamlnexus upgrade --project D:\Projects\MyApp --dry-run --json
@@ -223,6 +228,7 @@ Examples:
   xamlnexus add editorconfig --project D:\Projects\MyApp --dry-run
   xamlnexus remove editorconfig --project D:\Projects\MyApp
   xamlnexus update sqlite --project D:\Projects\MyApp
+  xamlnexus update --all --project D:\Projects\MyApp --dry-run
 
 Recipes: settings, sqlite, tray, updater, editorconfig.
   standard includes settings; hybrid includes tray and updater.

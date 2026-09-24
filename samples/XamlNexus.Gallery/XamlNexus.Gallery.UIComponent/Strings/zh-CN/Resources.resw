@@ -325,7 +325,6 @@
   <data name="Showcase_Delete.Content" xml:space="preserve"><value>删除选中项</value></data>
   <data name="Showcase_Integrity.Content" xml:space="preserve"><value>完整性检查</value></data>
   <data name="Showcase_Sort.Content" xml:space="preserve"><value>最近更新优先（自动保存）</value></data>
-  <data name="Showcase_Notify.Content" xml:space="preserve"><value>发送提醒</value></data>
   <data name="Showcase_InvalidKey" xml:space="preserve"><value>键必须包含 1 到 200 个字符。</value></data>
   <data name="Showcase_SelectFirst" xml:space="preserve"><value>请先选择一项。</value></data>
   <data name="Showcase_Saved" xml:space="preserve"><value>已保存：{0}</value></data>
@@ -336,11 +335,6 @@
   <data name="Showcase_SortSaved" xml:space="preserve"><value>排序偏好已保存。</value></data>
   <data name="Showcase_RefreshFailed" xml:space="preserve"><value>列表刷新失败，请点击刷新重试。</value></data>
   <data name="Showcase_Failed" xml:space="preserve"><value>操作失败：{0}</value></data>
-  <data name="Showcase_NotificationRequested" xml:space="preserve"><value>已请求显示提醒。</value></data>
-  <data name="Showcase_NotificationTitle" xml:space="preserve"><value>本地数据提醒</value></data>
-  <data name="Showcase_NotificationBody" xml:space="preserve"><value>当前列表有 {0} 条记录。</value></data>
-  <data name="Showcase_TrayToggle" xml:space="preserve"><value>显示 / 隐藏</value></data>
-  <data name="Showcase_TrayExit" xml:space="preserve"><value>退出</value></data>
   <data name="Showcase_Backup.Content" xml:space="preserve"><value>创建备份</value></data>
   <data name="Showcase_BackupList.PlaceholderText" xml:space="preserve"><value>选择数据库备份</value></data>
   <data name="Showcase_Restore.Content" xml:space="preserve"><value>恢复备份</value></data>

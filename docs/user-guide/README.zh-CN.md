@@ -27,11 +27,14 @@
 | 创建默认项目 | `xamlnexus new MyApp` |
 | 开发运行 | `xamlnexus run` |
 | 添加普通页面 | `xamlnexus page add Orders` |
+| 添加详情/表单页面 | `xamlnexus page add OrderDetails --kind details` |
 | 添加能力 | `xamlnexus add sqlite` |
 | 预览组件移除 | `xamlnexus remove sqlite --dry-run` |
 | 预览组件更新 | `xamlnexus update sqlite --dry-run` |
+| 预览全部组件更新 | `xamlnexus update --all --dry-run` |
 | 预览脚手架升级 | `xamlnexus upgrade --dry-run` |
 | 检查项目 | `xamlnexus validate` |
+| 查看项目维护状态 | `xamlnexus status` |
 | 诊断环境与集成 | `xamlnexus doctor` |
 | 查看帮助 | `xamlnexus --help` |
 

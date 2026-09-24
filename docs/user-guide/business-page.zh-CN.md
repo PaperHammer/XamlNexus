@@ -16,6 +16,10 @@ xamlnexus page add Orders
 xamlnexus page add Reports --no-navigation
 # 从项目外调用或用于脚本
 xamlnexus page add Customers --project <项目目录> --dry-run --json
+# 列表、详情和编辑页面
+xamlnexus page add Orders --kind list
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 ```
 
 命令生成 `MainPanel/OrdersPage.xaml`、对应代码文件和
@@ -35,7 +39,7 @@ JSON 输出的 `navigation` 为 `automatic` 或 `manual`，预览同样显示是
 自定义外壳替代 MainWindow 时允许页面生成，但命令不会修复原外壳或原有 XAML 语法错误。
 生成不会修改 App.xaml.cs，也不要求 SQLite。页面级 ViewModel 由页面持有，通过 AppObjectFactory 创建；构造参数从模块注册的应用服务中解析。
 `--dry-run` 只列出变更文件，`--json` 可用于脚本。添加后执行 `xamlnexus run`。
-默认生成空白 ViewModel 和普通页面骨架，不包含下文的 Query 示例。
+默认 `blank` 生成空白 ViewModel 和普通页面骨架。`list` 生成搜索、刷新、取消和异步状态；`details` 从 `FrameworkPayload` 的 `id` 读取记录标识，提供加载与重试；`form` 同时支持无 `id` 的新建模式和带 `id` 的编辑模式，包含校验、脏状态、异步保存与重置。三种业务模板都附带可运行的数据源接口和示例实现，接入实际业务时替换实现即可。
 
 ## 不依赖数据库的页面起点
 

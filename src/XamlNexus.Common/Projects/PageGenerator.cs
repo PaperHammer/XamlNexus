@@ -3,9 +3,10 @@ using XamlNexus.Common.Recipes;
 
 namespace XamlNexus.Common.Projects;
 
-public static partial class PageGenerator {
+public static class PageGenerator {
     public static IReadOnlyList<string> Add(XamlNexusProjectContext project, string name, bool dryRun = false, bool skipNavigation = false, string kind = "blank") {
-        if (kind is not ("blank" or "list")) throw new ArgumentException("Page kind must be blank or list.", nameof(kind));
+        if (kind is not ("blank" or "list" or "details" or "form"))
+            throw new ArgumentException("Page kind must be blank, list, details or form.", nameof(kind));
         if (project.Manifest.Project.Preset is not ("winui" or "hybrid"))
             throw new InvalidOperationException("Page generation supports WinUI and hybrid projects.");
         if (!Regex.IsMatch(name, "^[A-Z][A-Za-z0-9]*$", RegexOptions.CultureInvariant))
@@ -22,15 +23,7 @@ public static partial class PageGenerator {
             string full = Path.GetFullPath(Path.Combine(root, path));
             if (!full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                 throw new IOException("Page path escapes the project.");
-            for (string? current = full; current is not null; current = Path.GetDirectoryName(current)) {
-                try {
-                    if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
-                        throw new IOException("Page generation does not support linked files or directories.");
-                }
-                catch (FileNotFoundException) { }
-                catch (DirectoryNotFoundException) { }
-                if (current.Equals(root, StringComparison.OrdinalIgnoreCase)) break;
-            }
+            ProjectPathSafety.EnsureNoLinks(full);
             return full;
         }
         if (!File.Exists(SafePath($"{app}.MainPanel/{app}.MainPanel.csproj")))
@@ -53,7 +46,7 @@ public static partial class PageGenerator {
                 }
                 """));
         }
-        var plan = new XamlNexusRecipePlan { Changes = [
+        XamlNexusRecipeFileChange[] CreateBlankPage() => [
             XamlNexusRecipeFileChange.CreateText($"{app}.MainPanel/{page}.xaml", $$"""
                 <arc:ArcPage
                     x:Class="{{app}}.MainPanel.{{page}}"
@@ -89,12 +82,32 @@ public static partial class PageGenerator {
                     // Add page state here. Shared services can be injected through the constructor.
                 }
                 """),
-            .. navigationChanges,
-        ] };
-        if (kind == "list") plan = new XamlNexusRecipePlan { Changes = [.. CreateListPage(app, name), .. navigationChanges] };
+        ];
+        IEnumerable<XamlNexusRecipeFileChange> pageChanges = kind switch {
+            "blank" => CreateBlankPage(),
+            "list" => CreatePageFromAssets("ListPage", app, name),
+            "details" => CreatePageFromAssets("DetailsPage", app, name),
+            "form" => CreatePageFromAssets("FormPage", app, name),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+        var plan = new XamlNexusRecipePlan { Changes = [.. pageChanges, .. navigationChanges] };
         foreach (var change in plan.Changes) SafePath(change.RelativePath);
         return XamlNexusRecipeTransaction.ApplyPageChanges(project, plan, dryRun);
     }
 
-
+    private static IEnumerable<XamlNexusRecipeFileChange> CreatePageFromAssets(string assetDirectory, string app, string name) {
+        foreach (var (asset, relative) in new[] {
+            ("Page.xaml", $"{app}.MainPanel/{name}Page.xaml"),
+            ("Page.xaml.cs", $"{app}.MainPanel/{name}Page.xaml.cs"),
+            ("ViewModel.cs", $"{app}.MainPanel/ViewModels/{name}ViewModel.cs"),
+            ("DataSource.cs", $"{app}.MainPanel/Services/{name}DataSource.cs"),
+        }) {
+            using var stream = typeof(PageGenerator).Assembly.GetManifestResourceStream(
+                $"XamlNexus.Common.Assets.{assetDirectory}.{asset}.txt")
+                ?? throw new InvalidOperationException($"Missing {assetDirectory} asset: {asset}");
+            using var reader = new StreamReader(stream);
+            yield return XamlNexusRecipeFileChange.CreateText(relative, reader.ReadToEnd()
+                .Replace("__APP__", app).Replace("__NAME__", name));
+        }
+    }
 }

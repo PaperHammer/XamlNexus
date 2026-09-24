@@ -77,13 +77,15 @@ At `<!-- Add page content here. -->`, insert:
 
 Run again to see the result. The home ViewModel is factory-created and can receive module-registered services through its constructor without changing startup. The standard settings panel can switch theme and language.
 
-## 4. Add an ordinary page
+## 4. Add pages
 
 After stopping the app, run inside MyApp:
 
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 xamlnexus run
 ```
 
@@ -94,7 +96,7 @@ Current templates generate and register:
 - `MyApp.MainPanel/ViewModels/WorkspaceViewModel.cs`
 - `MyApp.UI/Navigation/WorkspaceNavigation.cs`
 
-These are ordinary page scaffolds, not query, list, or form business implementations. Edit the Page and ViewModel directly. Custom windows must consume the shared registry; `--no-navigation` generates only the Page and ViewModel. See [pages](business-page.md) and [navigation](../technical/navigation.md).
+The default kind is an ordinary page scaffold. `--kind list`, `details`, and `form` add runnable business starting points with replaceable data-source interfaces. Edit the generated Page, ViewModel, and service directly. Custom windows must consume the shared registry; `--no-navigation` skips the navigation registration. See [pages](business-page.md) and [navigation](../technical/navigation.md).
 
 ## 5. Add capabilities
 
@@ -150,8 +152,10 @@ Inside the generated project:
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 ```
 

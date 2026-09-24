@@ -59,7 +59,7 @@ xamlnexus list --project "D:\Projects\MyApp"
 xamlnexus validate --project "D:\Projects\MyApp\xamlnexus.json"
 ```
 
-`run`, `list`, `validate`, `doctor`, and `upgrade` also accept a positional path, such as `xamlnexus run ./MyApp`. Supply the path once, either positionally or through `--project`. For `new`, `-p` means preset, not project path.
+`run`, `list`, `status`, `validate`, `doctor`, and `upgrade` also accept a positional path, such as `xamlnexus run ./MyApp`. Supply the path once, either positionally or through `--project`. For `new`, `-p` means preset, not project path.
 
 ## Run for development: `run`
 
@@ -81,11 +81,13 @@ Accepts a project path, `--no-build`, `--dry-run`, and `--json`. By default it b
 xamlnexus page add Orders --dry-run
 xamlnexus page add Orders
 xamlnexus page add Details --no-navigation
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 ```
 
 Accepts `--project`, `--no-navigation`, `--dry-run`, and `--json`. Names start with an uppercase English letter and contain only English letters or digits, such as `Orders`.
 
-By default, it generates an ordinary Page and ViewModel and connects navigation. `--no-navigation` skips navigation integration for projects managing navigation themselves. Supports `--kind blank|list` (default blank); the list template includes search, refresh and asynchronous state. See [list page template](list-page.md). Form and business CRUD generation are not provided. Edit the generated source directly; see [page development](business-page.md) for file locations and integration details.
+By default, it generates an ordinary Page and ViewModel and connects navigation. `--no-navigation` skips navigation integration for projects managing navigation themselves. Supports `--kind blank|list|details|form` (default blank): list includes search, refresh and asynchronous state; details demonstrates navigation payloads, loading, retry and cancellation; form provides create/edit state, validation, dirty tracking, save and reset. The generated data sources are runnable samples intended to be replaced by application services. See [page development](business-page.md) and [list page template](list-page.md).
 
 ## Inspect and manage components
 
@@ -96,20 +98,31 @@ By default, it generates an ordinary Page and ViewModel and connects navigation.
 | `add <id[,id...]>` | Add one or more components | `--project`, `--dry-run`, `--json` |
 | `remove <id>` | Remove one component | `--project`, `--dry-run`, `--json` |
 | `update <id>` | Update one component to the version provided by the current tool | `--project`, `--dry-run`, `--json` |
+| `update --all` | Update every outdated component in one transaction | `--project`, `--dry-run`, `--json` |
 
 ```powershell
 xamlnexus recipes
 xamlnexus add settings,sqlite --dry-run
 xamlnexus add settings,sqlite
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus remove sqlite --dry-run
 ```
 
-The batch-add example requires a project without either component, such as a basic project. Standard already includes settings. Do not add installed components again. `remove` and `update` handle one component at a time. Updating to the same version does nothing; downgrades are rejected.
+The batch-add example requires a project without either component, such as a basic project. Standard already includes settings. Do not add installed components again. `remove` and `update <id>` handle one component at a time. `update --all` rehearses every update in a temporary project snapshot and commits the combined result once. Updating to the same version does nothing; downgrades are rejected.
 
 Built-in components are `settings`, `editorconfig`, `sqlite`, `tray`, and `updater`. The first three support both architectures; the last two serve pure WinUI, since hybrid already includes those capabilities. `updater` depends on `settings`. Batch addition handles dependency ordering. See the [product model](../introduction/product-model.md) for boundaries.
 
 You can customize generated source and configuration. Component updates and removal check files and stop on user changes or missing files to protect your work. They do not discard edits or recalculate hashes to bypass checks.
+
+## Project status: `status`
+
+```powershell
+xamlnexus status
+xamlnexus status --json
+```
+
+`status` combines tool and scaffold versions, project validation, Doctor results and available Recipe versions, then suggests commands such as `update --all --dry-run` and `upgrade --dry-run`. Available updates do not cause failure; validation or Doctor errors return exit code `1`.
 
 ## Check a project: `validate` and `doctor`
 

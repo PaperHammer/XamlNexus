@@ -87,13 +87,15 @@ SDK 检查以项目目录中 `dotnet --version` 的实际结果为准，遵循�
 再次执行 `xamlnexus run` 查看变化。首页 ViewModel 由工厂创建，可通过构造函数注入模块注册的服务；
 不需要修改应用启动流程。主题和语言设置可在标准版设置页中切换。
 
-## 4. 添加普通页面
+## 4. 添加页面
 
 停止运行后，在 MyApp 目录执行：
 
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 xamlnexus run
 ```
 
@@ -104,8 +106,8 @@ xamlnexus run
 - `MyApp.MainPanel/ViewModels/WorkspaceViewModel.cs`
 - `MyApp.UI/Navigation/WorkspaceNavigation.cs`
 
-仅生成普通页面骨架，不包含查询、列表或表单业务。直接编辑页面与 ViewModel 即可。
-自定义窗口需消费统一导航注册表；`--no-navigation` 可只生成页面和 ViewModel。
+默认生成普通页面骨架；`--kind list`、`details`、`form` 会生成带可替换数据源接口的可运行业务起点。直接编辑生成的页面、ViewModel 和服务即可。
+自定义窗口需消费统一导航注册表；`--no-navigation` 会跳过导航注册。
 详见 [页面开发](business-page.zh-CN.md)和[导航接口](../technical/navigation.zh-CN.md)。
 
 ## 5. 按需添加能力
@@ -175,8 +177,10 @@ CLI 诊断消息和帮助中的英文常量尚未全部本地化。
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 ```
 

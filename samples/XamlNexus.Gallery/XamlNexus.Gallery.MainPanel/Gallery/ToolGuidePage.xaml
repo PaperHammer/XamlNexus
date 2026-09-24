@@ -11,6 +11,7 @@
             <g:GalleryPageHeader Title="{Binding [ToolGuide], Source={StaticResource Strings}}" Description="{Binding [ToolGuideIntro], Source={StaticResource Strings}}"/>
             <SelectorBar x:Name="GuideTabs" SelectionChanged="GuideTabs_SelectionChanged">
                 <SelectorBarItem Text="{Binding [ToolArchitecture], Source={StaticResource Strings}}" Tag="architecture" IsSelected="True"/>
+                <SelectorBarItem Text="{Binding [ToolPages], Source={StaticResource Strings}}" Tag="pages"/>
                 <SelectorBarItem Text="{Binding [ToolRecipes], Source={StaticResource Strings}}" Tag="recipes"/>
                 <SelectorBarItem Text="{Binding [ToolMaintenance], Source={StaticResource Strings}}" Tag="maintenance"/>
                 <SelectorBarItem Text="{Binding [ToolCommands], Source={StaticResource Strings}}" Tag="commands"/>
@@ -54,6 +55,9 @@
                         <TextBlock Text="{Binding [ProjectMapBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </Border>
+            </StackPanel>
+            <StackPanel x:Name="PagesPanel" Visibility="Collapsed">
+                <g:PageTemplateShowcaseView/>
             </StackPanel>
             <StackPanel x:Name="RecipesPanel" Spacing="20" Visibility="Collapsed">
                 <StackPanel Spacing="8">
@@ -113,6 +117,24 @@
                         <TextBlock Text="{Binding [MaintainInspectTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
                         <TextBlock Text="{Binding [MaintainInspectBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         <g:GalleryCodeView x:Name="InspectCode"/>
+                        <Border Style="{StaticResource CompactCard}" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="{Binding [StatusPreviewTitle], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
+                                <Grid ColumnSpacing="20" RowSpacing="8">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{Binding [StatusProject], Source={StaticResource Strings}}"/><TextBlock Grid.Column="1" Text="{Binding [StatusHealthy], Source={StaticResource Strings}}" Foreground="{ThemeResource SystemFillColorSuccessBrush}" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="1" Text="{Binding [StatusScaffold], Source={StaticResource Strings}}"/><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding [StatusScaffoldCurrent], Source={StaticResource Strings}}"/>
+                                    <TextBlock Grid.Row="2" Text="{Binding [StatusRecipes], Source={StaticResource Strings}}"/><TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding [StatusRecipesCurrent], Source={StaticResource Strings}}"/>
+                                    <TextBlock Grid.Row="3" Text="{Binding [StatusNextAction], Source={StaticResource Strings}}"/><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding [StatusNoAction], Source={StaticResource Strings}}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource Card}">
@@ -120,6 +142,14 @@
                         <TextBlock Text="{Binding [MaintainComponentTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
                         <TextBlock Text="{Binding [MaintainComponentBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         <g:GalleryCodeView x:Name="ComponentCode"/>
+                        <Border Style="{StaticResource CompactCard}" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="{Binding [UpdateAllFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
+                                <TextBlock Text="{Binding [UpdateAllFlowDiscover], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                                <TextBlock Text="{Binding [UpdateAllFlowRehearse], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                                <TextBlock Text="{Binding [UpdateAllFlowCommit], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource Card}">

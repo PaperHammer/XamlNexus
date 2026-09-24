@@ -45,6 +45,16 @@ namespace XamlNexus {
             AnsiConsole.MarkupLine("[yellow]Dry run:[/] no project files were changed.");
         }
 
+        /// <summary>显示单个 Recipe 已提交的版本和文件列表</summary>
+        private static void ShowAppliedRecipe(string title, XamlNexusRecipeApplyResult result, string? symbol = null) {
+            AnsiConsole.MarkupLine(
+                $"[green]{title}:[/] {Markup.Escape(RecipeCommandNames.ToCommandName(result.RecipeId))} {Markup.Escape(result.RecipeVersion)}");
+            foreach (string file in result.ChangedFiles) {
+                if (symbol is null) AnsiConsole.WriteLine($"  {file}");
+                else AnsiConsole.MarkupLine($"  [grey]{symbol}[/] {Markup.Escape(file)}");
+            }
+        }
+
         /// <summary>
         /// 按输出模式报告命令错误；JSON 包含操作名和可选错误码，文本模式显示错误消息
         /// </summary>

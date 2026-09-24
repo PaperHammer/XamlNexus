@@ -1,0 +1,86 @@
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using __APP__.MainPanel.Services;
+
+namespace __APP__.MainPanel.ViewModels;
+
+public sealed class __NAME__ViewModel : INotifyPropertyChanged {
+    private readonly I__NAME__DataSource source;
+    private readonly RetryAction retry;
+    private CancellationTokenSource? loading;
+    private string currentId = "sample";
+    private __NAME__Details? item;
+    private string error = string.Empty;
+    private bool busy;
+
+    public __NAME__ViewModel() : this(new __NAME__SampleDataSource()) { }
+    public __NAME__ViewModel(I__NAME__DataSource source) {
+        this.source = source ?? throw new ArgumentNullException(nameof(source));
+        retry = new RetryAction(this);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public ICommand RetryCommand => retry;
+    public string PageTitle => "__NAME__ details";
+    public string Title => item?.Title ?? string.Empty;
+    public string Description => item?.Description ?? string.Empty;
+    public string Identifier => item is null ? string.Empty : "ID: " + item.Id;
+    public string ErrorTitle => "Could not load details";
+    public string RetryText => "Retry";
+    public string ErrorMessage => error;
+    public bool IsBusy => busy;
+    public bool HasError => error.Length > 0;
+    public bool HasItem => item is not null && !busy;
+
+    public async Task LoadAsync(string id) {
+        Deactivate();
+        currentId = string.IsNullOrWhiteSpace(id) ? "sample" : id;
+        using var request = new CancellationTokenSource();
+        loading = request;
+        busy = true;
+        error = string.Empty;
+        item = null;
+        NotifyState();
+        try {
+            __NAME__Details result = await source.GetAsync(currentId, request.Token);
+            if (ReferenceEquals(loading, request) && !request.IsCancellationRequested) item = result;
+        }
+        catch (OperationCanceledException) when (request.IsCancellationRequested) { }
+        catch (Exception exception) {
+            if (ReferenceEquals(loading, request)) error = exception.Message;
+        }
+        finally {
+            if (ReferenceEquals(loading, request)) {
+                loading = null;
+                busy = false;
+                NotifyState();
+            }
+        }
+    }
+
+    public void Deactivate() {
+        CancellationTokenSource? previous = loading;
+        loading = null;
+        previous?.Cancel();
+        busy = false;
+        NotifyState();
+    }
+
+    private void NotifyState() {
+        foreach (string property in new[] { nameof(Title), nameof(Description), nameof(Identifier), nameof(ErrorMessage), nameof(IsBusy), nameof(HasError), nameof(HasItem) })
+            Notify(property);
+        retry.RaiseCanExecuteChanged();
+    }
+    private void Notify([CallerMemberName] string? property = null) => PropertyChanged?.Invoke(this, new(property));
+
+    private sealed class RetryAction(__NAME__ViewModel owner) : ICommand {
+        public event EventHandler? CanExecuteChanged;
+        public bool CanExecute(object? parameter) => !owner.busy;
+        public async void Execute(object? parameter) => await owner.LoadAsync(owner.currentId);
+        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
+}

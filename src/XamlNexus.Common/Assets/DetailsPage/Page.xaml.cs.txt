@@ -1,0 +1,37 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
+using __APP__.MainPanel.ViewModels;
+using __APP__.UIComponent.Templates;
+using __APP__.UIComponent.Utils;
+
+namespace __APP__.MainPanel;
+
+public sealed partial class __NAME__Page : ArcPage {
+    public override Type ArcType => typeof(__NAME__Page);
+    // Replace the sample source through new __NAME__ViewModel(yourDataSource).
+    // 通过 new __NAME__ViewModel(yourDataSource) 替换示例数据源。
+    public __NAME__ViewModel ViewModel { get; } = new();
+
+    public __NAME__Page() => InitializeComponent();
+
+    protected override async void OnEnter(FrameworkPayload? payload) {
+        base.OnEnter(payload);
+        string id = payload is not null && payload.TryGet<string>("id", out string payloadId)
+            ? payloadId
+            : "sample";
+        await ViewModel.LoadAsync(id);
+    }
+
+    protected override Task OnPreLeaveAsync() {
+        ViewModel.Deactivate();
+        return base.OnPreLeaveAsync();
+    }
+
+    protected override void OnDestroy() {
+        ViewModel.Deactivate();
+        base.OnDestroy();
+    }
+
+    public Visibility ToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+}

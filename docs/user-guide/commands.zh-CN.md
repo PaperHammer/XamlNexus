@@ -59,7 +59,7 @@ xamlnexus list --project "D:\Projects\MyApp"
 xamlnexus validate --project "D:\Projects\MyApp\xamlnexus.json"
 ```
 
-`run`、`list`、`validate`、`doctor`、`upgrade` 也接受位置参数路径，例如 `xamlnexus run ./MyApp`。路径只指定一次，不要同时传位置路径和 `--project`。`new -p` 表示架构，不表示项目路径。
+`run`、`list`、`status`、`validate`、`doctor`、`upgrade` 也接受位置参数路径，例如 `xamlnexus run ./MyApp`。路径只指定一次，不要同时传位置路径和 `--project`。`new -p` 表示架构，不表示项目路径。
 
 ## 开发运行：`run`
 
@@ -81,11 +81,13 @@ xamlnexus run --no-build
 xamlnexus page add Orders --dry-run
 xamlnexus page add Orders
 xamlnexus page add Details --no-navigation
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 ```
 
 支持 `--project`、`--no-navigation`、`--dry-run` 和 `--json`。名称以英文大写字母开头，其余为英文字母或数字，例如 `Orders`。
 
-默认生成普通 Page、ViewModel 并接入导航。`--no-navigation` 跳过导航接入，适合自行组织导航的项目。支持 `--kind blank|list`（默认 blank）；列表模板包含搜索、刷新与异步状态，见[列表页面模板](list-page.zh-CN.md)。不生成表单或业务 CRUD。页面源码可直接修改；详细位置和接入方式见[页面开发](business-page.zh-CN.md)。
+默认生成普通 Page、ViewModel 并接入导航。`--no-navigation` 跳过导航接入，适合自行组织导航的项目。支持 `--kind blank|list|details|form`（默认 blank）：list 包含搜索、刷新和异步状态；details 演示导航 Payload、加载、重试和取消；form 提供新建/编辑、字段校验、脏状态、保存和重置。生成的数据源是可运行示例，接入业务时替换接口实现。详见[页面开发](business-page.zh-CN.md)和[列表页面模板](list-page.zh-CN.md)。
 
 ## 查看与管理组件
 
@@ -96,20 +98,31 @@ xamlnexus page add Details --no-navigation
 | `add <id[,id...]>` | 添加一个或多个组件 | `--project`、`--dry-run`、`--json` |
 | `remove <id>` | 移除一个组件 | `--project`、`--dry-run`、`--json` |
 | `update <id>` | 将一个组件更新到当前工具提供的版本 | `--project`、`--dry-run`、`--json` |
+| `update --all` | 在一个事务中更新全部过期组件 | `--project`、`--dry-run`、`--json` |
 
 ```powershell
 xamlnexus recipes
 xamlnexus add settings,sqlite --dry-run
 xamlnexus add settings,sqlite
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus remove sqlite --dry-run
 ```
 
-上述批量添加适用于尚未安装这两个组件的项目，例如基础版。标准版已包含 settings。不要重复添加已安装组件。`remove` 和 `update` 每次处理一个组件；同版本更新不做修改，降级会被拒绝。
+上述批量添加适用于尚未安装这两个组件的项目，例如基础版。标准版已包含 settings。不要重复添加已安装组件。`remove` 和 `update <id>` 每次处理一个组件；`update --all` 先在临时项目快照中演练所有更新，再一次提交。同版本更新不做修改，降级会被拒绝。
 
 内置组件包括 `settings`、`editorconfig`、`sqlite`、`tray`、`updater`。前三个支持两种架构；后两个用于纯 WinUI，混合宿主已有对应能力。`updater` 依赖 `settings`。批量添加会处理依赖顺序；组件边界见[产品模型](../introduction/product-model.zh-CN.md)。
 
 生成源码和配置都可以自行修改。组件更新和移除会检查文件，遇到用户修改或缺失时停止，避免覆盖用户内容；不会自动丢弃修改或重新计算哈希来跳过检查。
+
+## 项目状态：`status`
+
+```powershell
+xamlnexus status
+xamlnexus status --json
+```
+
+`status` 汇总工具与脚手架版本、项目校验、Doctor 结果及已安装 Recipe 的可用版本，并给出 `update --all --dry-run`、`upgrade --dry-run` 等建议命令。发现可更新内容不会导致失败退出；项目校验或 Doctor 存在错误时返回 `1`。
 
 ## 检查项目：`validate` 与 `doctor`
 

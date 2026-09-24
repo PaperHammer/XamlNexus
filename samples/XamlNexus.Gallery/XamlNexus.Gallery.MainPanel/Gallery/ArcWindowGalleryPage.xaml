@@ -57,13 +57,13 @@
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="{Binding [WindowImplementationTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <TextBlock Text="{Binding [WindowImplementationTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}" FontSize="18" LineHeight="26"/>
             <Border Style="{StaticResource CompactCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE7F4;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <FontIcon Glyph="&#xE7F4;" FontSize="18" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
                     <StackPanel Grid.Column="1" Spacing="10">
-                        <TextBlock Text="{Binding [WindowCompositionTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [WindowCompositionTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}" FontSize="14" LineHeight="22"/>
                         <TextBlock Text="{Binding [WindowCompositionSummary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                         <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="4" Padding="12,8">
                             <TextBlock Text="{Binding [WindowCompositionCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
@@ -74,9 +74,9 @@
             <Border Style="{StaticResource CompactCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE790;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <FontIcon Glyph="&#xE790;" FontSize="18" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
                     <StackPanel Grid.Column="1" Spacing="10">
-                        <TextBlock Text="{Binding [WindowAppearanceTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [WindowAppearanceTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}" FontSize="14" LineHeight="22"/>
                         <TextBlock Text="{Binding [WindowAppearanceSummary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                         <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="4" Padding="12,8">
                             <TextBlock Text="{Binding [WindowAppearanceCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
@@ -87,9 +87,9 @@
             <Border Style="{StaticResource CompactCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE8F2;" FontSize="22" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
+                    <FontIcon Glyph="&#xE8F2;" FontSize="18" Foreground="{ThemeResource GalleryAccentBrush}" VerticalAlignment="Top"/>
                     <StackPanel Grid.Column="1" Spacing="10">
-                        <TextBlock Text="{Binding [WindowCoordinationTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [WindowCoordinationTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}" FontSize="14" LineHeight="22"/>
                         <TextBlock Text="{Binding [WindowCoordinationSummary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                         <Border Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}" CornerRadius="4" Padding="12,8">
                             <TextBlock Text="{Binding [WindowCoordinationCode], Source={StaticResource Strings}}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>

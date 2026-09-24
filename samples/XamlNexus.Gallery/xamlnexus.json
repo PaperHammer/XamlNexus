@@ -86,17 +86,6 @@
           "sha256": "f6a7274508e87ec1c338e20e8a8d5b2f1101a8c6693c7d4ffb4e5e5a0d36fa19"
         }
       ]
-    },
-    {
-      "id": "system-tray",
-      "version": "1.0.0",
-      "source": "recipe",
-      "files": [
-        {
-          "path": "XamlNexus.Gallery.UI/Modules/SystemTrayModule.cs",
-          "sha256": "86d04d477ca42d54cb59d32e8f35335e1c704db16fec2078d1766b4ea9f8e182"
-        }
-      ]
     }
   ],
   "scaffoldFiles": [

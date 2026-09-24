@@ -2,6 +2,7 @@ using Spectre.Console;
 using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
+using XamlNexus.Common.Recipes;
 using XamlNexus.Common.Utils;
 using XamlNexus.Utils;
 
@@ -20,7 +21,7 @@ namespace XamlNexus {
             try {
                 XamlNexusProjectContext current = XamlNexusProjectLocator.Locate(projectPath);
                 string targetVersion = GetVersion();
-                int versionComparison = CompareToolVersions(
+                int versionComparison = XamlNexusRecipeVersion.Compare(
                     targetVersion,
                     current.Manifest.GeneratorVersion);
                 if (versionComparison < 0) {
@@ -222,21 +223,6 @@ namespace XamlNexus {
                 AnsiConsole.MarkupLine($"  [grey]{message}[/]");
             }
             AnsiConsole.MarkupLine("[yellow]Dry run:[/] no project files were changed.");
-        }
-
-        /// <summary>
-        /// 先比较数字版本，再区分正式版和预发布版；同类同数字版本按完整版本字符串的序号顺序比较
-        /// </summary>
-        private static int CompareToolVersions(string left, string right) {
-            Version leftVersion = Version.Parse(left.Split('-', 2)[0]);
-            Version rightVersion = Version.Parse(right.Split('-', 2)[0]);
-            int core = leftVersion.CompareTo(rightVersion);
-            if (core != 0) return core;
-            bool leftPreview = left.Contains('-', StringComparison.Ordinal);
-            bool rightPreview = right.Contains('-', StringComparison.Ordinal);
-            if (leftPreview == rightPreview)
-                return string.CompareOrdinal(left, right);
-            return leftPreview ? -1 : 1;
         }
 
     }

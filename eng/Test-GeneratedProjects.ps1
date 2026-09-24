@@ -101,6 +101,8 @@ try {
         Test-Build $name $root 'baseline'
         Invoke-Checked "$name-page" @($cli, 'page', 'add', 'Workspace', '--project', $root, '--json') | Out-Null
         Invoke-Checked "$name-list-page" @($cli, 'page', 'add', 'Projects', '--kind', 'list', '--project', $root, '--json') | Out-Null
+        Invoke-Checked "$name-details-page" @($cli, 'page', 'add', 'ProjectDetails', '--kind', 'details', '--project', $root, '--json') | Out-Null
+        Invoke-Checked "$name-form-page" @($cli, 'page', 'add', 'ProjectEditor', '--kind', 'form', '--project', $root, '--json') | Out-Null
         $features = if ($Profile -eq 'basic') { 'settings,sqlite' } else { 'sqlite' }
         Invoke-Checked "$name-add" @($cli, 'add', $features, '--project', $root, '--json') | Out-Null
         Test-Build $name $root 'composed'

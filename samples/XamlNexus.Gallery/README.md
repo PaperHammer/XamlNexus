@@ -6,13 +6,13 @@ See [Architecture](../../docs/architecture.md) for shared UI maintenance. Galler
 
 这是独立的 XamlNexus Gallery 应用，提供可交互示例、Tips 和源码模板浏览。
 Gallery 与 CLI 默认项目模板分开维护，不会随 `xamlnexus new` 生成到用户项目。包含纯 WinUI 3、SQLite Recipe、
-EF Core Migration、WAL、数据增删改查、托盘及用户触发通知。
+EF Core Migration、WAL、数据增删改查、备份与恢复。
 默认运行路径为 x64 非打包应用。
 
 ## 内容与导航 / Content and navigation
 
 - **概览**：产品定位、基础设施 / Recipe / 可审查变更三组亮点、按“窗口与导航 / 列表与数据”筛选的交互示例，以及创建 → 扩展 → 维护的学习路径。
-- **工具指南**：工程起点（WinUI / hybrid、standard / basic）、五种 Recipe（settings、sqlite、tray、updater、editorconfig）和项目维护（doctor、validate、update、upgrade）。每项说明适用条件，并提供可复制命令。
+- **工具指南**：工程起点（WinUI / hybrid、standard / basic）、四种页面模板、五种 Recipe（settings、sqlite、tray、updater、editorconfig）和项目维护（status、doctor、validate、update --all、upgrade）。页面模板页签可切换 blank/list/details/form，实际体验详情加载、失败重试、表单校验与脏状态，并浏览 CLI 使用的真实源码。
 - **快速开始**：安装检查 → 创建运行 → 修改与生成列表页 → 添加存储与检查。Gallery 只展示和复制命令，不执行命令。
 - **窗口与导航 / 列表与数据**：保留真实交互、源码浏览与接入步骤。SQLite Recipe 提供数据层，Gallery 的业务 CRUD、备份与恢复界面属于定制演示。
 
@@ -60,7 +60,7 @@ SQLite 示例页可以保存、查看、删除键值数据，并执行 SQLite �
 操作期间禁止重复提交，成功及异常日志位于 `%LOCALAPPDATA%\XamlNexus.Gallery\logs\UI`。
 
 业务实现和接入步骤见 [第一个业务页面](../../docs/user-guide/business-page.zh-CN.md)。
-设置页切换中英文立即生效，业务页和托盘菜单跟随选择；重启恢复保存的语言。
+设置页切换中英文立即生效，业务页会同步更新；重启恢复保存的语言。
 主题、窗口材质和语言设置在保存失败时回退；Gallery 不提供开机启动或存储目录切换入口。
 
 ## 数据备份与恢复
@@ -71,17 +71,6 @@ SQLite 示例页可以保存、查看、删除键值数据，并执行 SQLite �
 将已完成的 `.db` 备份复制到其他位置即可导出；导入时放入该目录并点击“刷新”。
 恢复仅接受与当前应用迁移版本匹配的备份。操作会替换当前数据库内容，不影响主题和语言设置。
 本入口要求应用能够正常启动，不承担无法启动时的离线数据库修复。
-
-## 托盘与提醒
-
-- 点击托盘图标可隐藏或恢复窗口；右键菜单提供“显示 / 隐藏”和“退出”。
-- 点击 SQLite 示例页“发送提醒”，通过托盘请求显示当前列表记录数；应用不会在启动时主动弹通知。
-- 页面提示“已请求显示提醒”只代表调用完成。Windows 通知权限、勿扰模式等会影响最终显示。
-- 关闭主窗口会退出应用；需要常驻时使用托盘隐藏窗口。
-
-页面依赖 Models 中的 `INotificationService`，由 UI 的 SystemTrayService 实现，
-避免 MainPanel 反向引用 UI 工程。服务在按钮操作时取得，此时托盘已经初始化。
-该示例对 Recipe 生成的托盘模块增加了本地化与接口适配；移除或更新 Recipe 时需保留这些自定义内容。
 
 ## 便携发布 / Portable build
 

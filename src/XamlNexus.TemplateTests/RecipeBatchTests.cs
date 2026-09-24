@@ -91,6 +91,29 @@ public sealed class RecipeBatchTests : IDisposable {
         Assert.Throws<XamlNexusRecipeException>(() => CompositionPlanner.Resolve("winui", "standard", ["one"], conflicting, installed));
     }
 
+    [Fact]
+    public void BatchUpdatePreviewsAndCommitsAllRecipesAtomically() {
+        var installed = XamlNexusRecipeTransaction.PrepareApplyBatch(Context, [
+            new VersionedRecipe("one", "1.0.0", "one-v1"),
+            new VersionedRecipe("two", "1.0.0", "two-v1"),
+        ]);
+        XamlNexusRecipeTransaction.ApplyBatch(Context, installed);
+
+        var before = Snapshot();
+        var update = XamlNexusRecipeTransaction.PrepareUpdateBatch(Context, [
+            new VersionedRecipe("one", "2.0.0", "one-v2"),
+            new VersionedRecipe("two", "2.0.0", "two-v2"),
+        ]);
+        AssertSnapshot(before);
+        Assert.All(update.Recipes, recipe => Assert.Equal("update", recipe.Operation));
+        Assert.All(update.Recipes, recipe => Assert.Equal("1.0.0", recipe.FromVersion));
+
+        XamlNexusRecipeTransaction.ApplyBatch(Context, update);
+        Assert.Equal("one-v2", File.ReadAllText(Path.Combine(root, "one/service.txt")));
+        Assert.Equal("two-v2", File.ReadAllText(Path.Combine(root, "two/service.txt")));
+        Assert.All(Context.Manifest.Modules.Where(module => module.Source == "recipe"), module => Assert.Equal("2.0.0", module.Version));
+    }
+
     [Theory]
     [InlineData("one,two", true)]
     [InlineData("one", true)]
@@ -110,6 +133,19 @@ public sealed class RecipeBatchTests : IDisposable {
                 Changes = [XamlNexusRecipeFileChange.CreateText(id + "/service.txt", id)],
                 ProjectOperations = [new AddPackageReferenceOperation(ProjectPath, "Package." + id, "1.0.0")],
             };
+    }
+
+    private sealed class VersionedRecipe(string id, string version, string content) : IXamlNexusRecipe {
+        public XamlNexusRecipeDescriptor Descriptor { get; } = new() {
+            Id = id,
+            Version = version,
+            DisplayName = id,
+            SupportedPresets = ["winui"],
+        };
+
+        public XamlNexusRecipePlan CreatePlan(XamlNexusRecipeContext context) => new() {
+            Changes = [XamlNexusRecipeFileChange.CreateText(id + "/service.txt", content)],
+        };
     }
     public void Dispose() => Directory.Delete(root, recursive: true);
 }

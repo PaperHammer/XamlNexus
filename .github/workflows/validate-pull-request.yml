@@ -93,3 +93,26 @@ jobs:
             .artifacts/generated-build-*/*.log
             .artifacts/generated-build-*/*.binlog
             .artifacts/generated-build-*/results.json
+
+  package-acceptance:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Install packed tool, generate projects and run startup smoke tests
+        shell: pwsh
+        run: ./eng/Test-ToolPackage.ps1 -RunGuiSmoke
+      - name: Upload package acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-acceptance
+          include-hidden-files: true
+          path: .artifacts/package-acceptance-*/**

@@ -140,6 +140,24 @@ public sealed class ProjectUpgradeTests {
     }
 
     [Fact]
+    public void CreatePlan_UnparseableSolutionKeepsTextConflict() {
+        string parent = CreateTemporaryDirectory();
+        try {
+            const string baseline = "header\nshared=old\nfooter\n";
+            var current = CreateProject(Path.Combine(parent, "current"), "1.0.0",
+                new Dictionary<string, string> { ["UpgradeApp.sln"] = baseline });
+            var target = CreateProject(Path.Combine(parent, "target"), "2.0.0",
+                new Dictionary<string, string> { ["UpgradeApp.sln"] = "header\nshared=target\nfooter\n" });
+            File.WriteAllText(Path.Combine(current.RootDirectory, "UpgradeApp.sln"),
+                "header\nshared=local\nfooter\n");
+
+            var conflict = Assert.Single(XamlNexusProjectUpgrade.CreatePlan(current, target).Conflicts);
+            Assert.Equal(ProjectUpgradeErrors.TextMergeConflict.GetMessage(), conflict.Message);
+        }
+        finally { Directory.Delete(parent, recursive: true); }
+    }
+
+    [Fact]
     public void Apply_ThreeWayMergesNonOverlappingUserAndTemplateEdits() {
         string parent = CreateTemporaryDirectory();
         try {

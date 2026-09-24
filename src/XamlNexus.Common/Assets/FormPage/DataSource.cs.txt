@@ -1,0 +1,25 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace __APP__.MainPanel.Services;
+
+public sealed record __NAME__Draft(string? Id, string Name, string Description);
+
+public interface I__NAME__DataSource {
+    Task<__NAME__Draft?> GetAsync(string id, CancellationToken cancellationToken);
+    Task<__NAME__Draft> SaveAsync(__NAME__Draft draft, CancellationToken cancellationToken);
+}
+
+/// <summary>Runnable in-memory sample. Replace with an application service. / 可运行的内存示例；接入业务时请替换为应用服务。</summary>
+public sealed class __NAME__SampleDataSource : I__NAME__DataSource {
+    public async Task<__NAME__Draft?> GetAsync(string id, CancellationToken cancellationToken) {
+        await Task.Delay(200, cancellationToken);
+        return new(id, "__NAME__ " + id, "Edit the generated form and save it.");
+    }
+
+    public async Task<__NAME__Draft> SaveAsync(__NAME__Draft draft, CancellationToken cancellationToken) {
+        await Task.Delay(250, cancellationToken);
+        return draft with { Id = draft.Id ?? Guid.NewGuid().ToString("N") };
+    }
+}

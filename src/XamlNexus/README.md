@@ -46,6 +46,8 @@ Edit `MyApp.MainPanel/MainPage.xaml` for the home layout and
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
 xamlnexus page add Projects --kind list
+xamlnexus page add ProjectDetails --kind details
+xamlnexus page add ProjectEditor --kind form
 xamlnexus run
 ```
 
@@ -99,14 +101,16 @@ Run from the generated project directory, or use `--project <directory>`:
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus doctor
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 xamlnexus --help
 ```
 
-`update sqlite` applies to projects with SQLite installed.
+`status` summarizes project health and available maintenance actions. `update sqlite` applies to projects with SQLite installed; `update --all` updates all outdated Recipes atomically.
 The generated `xamlnexus.json` records architecture, starting profile and installed capabilities.
 Publication and signing are separate from development and remain maintainer-controlled.
 

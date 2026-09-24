@@ -34,6 +34,13 @@ public sealed class CliParserTests {
     }
 
     [Theory]
+    [InlineData(new string[] { "page", "add" }, "A page name is required.")]
+    [InlineData(new string[] { "page", "add", "Orders", "Customers" }, "Only one page name can be specified.")]
+    public void Parse_PageErrorsUsePageTerminology(string[] args, string expectedError) {
+        Assert.Equal(expectedError, CliParser.Parse(args, WorkingDirectory).Error);
+    }
+
+    [Theory]
     [InlineData("app-update,app-update,editorconfig, system-tray")]
     [InlineData("app-update , app-update , editorconfig , system-tray")]
     [InlineData("app-update,  app-update,  editorconfig  ,system-tray")]
@@ -121,6 +128,7 @@ public sealed class CliParserTests {
 
     [Theory]
     [InlineData("list", CliCommand.List)]
+    [InlineData("status", CliCommand.Status)]
     [InlineData("validate", CliCommand.Validate)]
     public void Parse_ProjectCommand_DefaultsToCurrentDirectory(
         string command,
@@ -198,6 +206,21 @@ public sealed class CliParserTests {
     }
 
     [Fact]
+    public void Parse_UpdateAll_UsesProjectTransactionMode() {
+        CliParseResult result = CliParser.Parse(
+            ["update", "--all", "--project", "projects/SampleApp", "--dry-run", "--json"],
+            WorkingDirectory);
+
+        Assert.True(result.Success);
+        Assert.Equal(CliCommand.Update, result.Options!.Command);
+        Assert.True(result.Options.UpdateAll);
+        Assert.Null(result.Options.RecipeId);
+        Assert.True(result.Options.DryRun);
+        Assert.True(result.Options.JsonOutput);
+        Assert.Equal(Path.Combine(WorkingDirectory, "projects", "SampleApp"), result.Options.ProjectPath);
+    }
+
+    [Fact]
     public void Parse_RecipeChangeFlags_EnableDryRunAndJson() {
         CliParseResult result = CliParser.Parse(
             ["remove", "sqlite", "--dry-run", "--json"],
@@ -269,6 +292,7 @@ public sealed class CliParserTests {
     [InlineData("remove one two", "Only one Recipe id")]
     [InlineData("update", "Recipe id is required")]
     [InlineData("update one two", "Only one Recipe id")]
+    [InlineData("update --all --all", "only be specified once")]
     [InlineData("add one --dry-run --dry-run", "only be specified once")]
     [InlineData("remove one --json --json", "only be specified once")]
     [InlineData("upgrade --dry-run --dry-run", "only be specified once")]

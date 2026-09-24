@@ -7,9 +7,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64;x86;ARM64</Platforms>
     <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x86'">win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
 	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	<OutputPath>bin\$(Configuration)\</OutputPath>
+	<OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
 	<UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
 	<!-- Windows App SDK generates obsolete formatter-serialization reflection checks in XamlTypeInfo.g.cs. -->
@@ -93,8 +96,8 @@
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <!-- WinUI XAML, module discovery, JSON settings and System.Management still require runtime metadata. -->
+    <PublishTrimmed>False</PublishTrimmed>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 </Project>

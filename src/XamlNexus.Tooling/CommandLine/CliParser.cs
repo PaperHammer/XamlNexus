@@ -11,6 +11,7 @@ public enum CliCommand {
     Gallery,
     PageAdd,
     List,
+    Status,
     Validate,
     Recipes,
     Add,
@@ -37,7 +38,8 @@ public sealed record CliOptions(
     bool NoBuild = false,
     string? ResolveFromPath = null,
     bool EnvironmentOnly = false,
-    string PageKind = "blank");
+    string PageKind = "blank",
+    bool UpdateAll = false);
 
 public sealed record CliParseResult(CliOptions? Options, string? Error) {
     public bool Success => Options is not null;
@@ -64,11 +66,8 @@ public static class CliParser {
         if (args[0].Equals("page", StringComparison.OrdinalIgnoreCase)) {
             if (args.Skip(1).Any(IsHelp)) return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
             if (args.Length < 2 || !args[1].Equals("add", StringComparison.OrdinalIgnoreCase))
-                return CliParseResult.Failed("Usage: xamlnexus page add Orders [--project <directory>] [--kind blank|list] [--no-navigation] [--dry-run] [--json]");
-            var parsed = ParseRecipeCommand(CliCommand.PageAdd, ["page", .. args.Skip(2)], currentDirectory);
-            return parsed.Success
-                ? CliParseResult.Parsed(parsed.Options! with { PageName = parsed.Options.RecipeId, RecipeId = null })
-                : CliParseResult.Failed(parsed.Error!.Replace("Recipe id", "page name"));
+                return CliParseResult.Failed("Usage: xamlnexus page add Orders [--project <directory>] [--kind blank|list|details|form] [--no-navigation] [--dry-run] [--json]");
+            return ParseNamedCommand(CliCommand.PageAdd, args, currentDirectory, startIndex: 2);
         }
 
         if (args.Length == 1) {
@@ -81,6 +80,9 @@ public static class CliParser {
 
         if (args[0].Equals("list", StringComparison.OrdinalIgnoreCase))
             return ParseProjectCommand(CliCommand.List, args, currentDirectory);
+
+        if (args[0].Equals("status", StringComparison.OrdinalIgnoreCase))
+            return ParseProjectCommand(CliCommand.Status, args, currentDirectory);
 
         if (args[0].Equals("run", StringComparison.OrdinalIgnoreCase)) {
             if (args.Skip(1).Any(IsHelp)) return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
@@ -118,13 +120,13 @@ public static class CliParser {
             return ParseRecipesCommand(args);
 
         if (args[0].Equals("add", StringComparison.OrdinalIgnoreCase))
-            return ParseRecipeCommand(CliCommand.Add, args, currentDirectory);
+            return ParseNamedCommand(CliCommand.Add, args, currentDirectory);
 
         if (args[0].Equals("remove", StringComparison.OrdinalIgnoreCase))
-            return ParseRecipeCommand(CliCommand.Remove, args, currentDirectory);
+            return ParseNamedCommand(CliCommand.Remove, args, currentDirectory);
 
         if (args[0].Equals("update", StringComparison.OrdinalIgnoreCase))
-            return ParseRecipeCommand(CliCommand.Update, args, currentDirectory);
+            return ParseUpdateCommand(args, currentDirectory);
 
         if (!args[0].Equals("new", StringComparison.OrdinalIgnoreCase))
             return CliParseResult.Failed($"Unknown command '{args[0]}'.");
@@ -248,12 +250,14 @@ public static class CliParser {
     private static CliParseResult ParseProjectCommand(
         CliCommand command,
         string[] args,
-        string currentDirectory) {
+        string currentDirectory,
+        bool allowDryRun = false) {
         if (args.Skip(1).Any(IsHelp))
             return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
 
         string? projectPath = null;
         bool jsonOutput = false;
+        bool dryRun = false;
         for (int index = 1; index < args.Length; index++) {
             string argument = args[index];
             if (argument is "--project" or "-p") {
@@ -265,6 +269,10 @@ public static class CliParser {
             else if (argument.Equals("--json", StringComparison.OrdinalIgnoreCase)) {
                 if (jsonOutput) return CliParseResult.Failed("The --json option can only be specified once.");
                 jsonOutput = true;
+            }
+            else if (allowDryRun && argument.Equals("--dry-run", StringComparison.OrdinalIgnoreCase)) {
+                if (dryRun) return CliParseResult.Failed("The --dry-run option can only be specified once.");
+                dryRun = true;
             }
             else if (argument.StartsWith('-')) {
                 return CliParseResult.Failed($"Unknown option '{argument}'.");
@@ -287,7 +295,8 @@ public static class CliParser {
         return CliParseResult.Parsed(new CliOptions(
             command,
             ProjectPath: projectPath,
-            JsonOutput: jsonOutput));
+            JsonOutput: jsonOutput,
+            DryRun: dryRun));
     }
 
     private static CliParseResult ParseRecipesCommand(string[] args) {
@@ -311,20 +320,21 @@ public static class CliParser {
             JsonOutput: jsonOutput));
     }
 
-    private static CliParseResult ParseRecipeCommand(
+    private static CliParseResult ParseNamedCommand(
         CliCommand command,
         string[] args,
-        string currentDirectory) {
-        if (args.Skip(1).Any(IsHelp))
+        string currentDirectory,
+        int startIndex = 1) {
+        if (args.Skip(startIndex).Any(IsHelp))
             return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
 
-        string? recipeId = null;
+        string? name = null;
         string? projectPath = null;
         bool jsonOutput = false;
         bool dryRun = false;
         bool skipNavigation = false;
         string? pageKind = null;
-        for (int index = 1; index < args.Length; index++) {
+        for (int index = startIndex; index < args.Length; index++) {
             string argument = args[index];
             if (argument is "--project" or "-p") {
                 if (projectPath is not null)
@@ -344,8 +354,8 @@ public static class CliParser {
                 if (pageKind is not null) return CliParseResult.Failed("The --kind option can only be specified once.");
                 if (!TryReadValue(args, ref index, argument, out pageKind, out string? kindError))
                     return CliParseResult.Failed(kindError!);
-                if (pageKind is not ("blank" or "list"))
-                    return CliParseResult.Failed("Page kind must be blank or list.");
+                if (pageKind is not ("blank" or "list" or "details" or "form"))
+                    return CliParseResult.Failed("Page kind must be blank, list, details or form.");
             }
             else if (command == CliCommand.PageAdd && argument.Equals("--no-navigation", StringComparison.OrdinalIgnoreCase)) {
                 if (skipNavigation) return CliParseResult.Failed("The --no-navigation option can only be specified once.");
@@ -354,22 +364,26 @@ public static class CliParser {
             else if (argument.StartsWith('-')) {
                 return CliParseResult.Failed($"Unknown option '{argument}'.");
             }
-            else if (recipeId is not null) {
+            else if (name is not null) {
                 if (command == CliCommand.Add &&
-                    (recipeId.TrimEnd().EndsWith(',') || argument.TrimStart().StartsWith(',')))
-                    recipeId += argument.Trim();
+                    (name.TrimEnd().EndsWith(',') || argument.TrimStart().StartsWith(',')))
+                    name += argument.Trim();
                 else
-                    return CliParseResult.Failed("Only one Recipe id can be specified.");
+                    return CliParseResult.Failed(command == CliCommand.PageAdd
+                        ? "Only one page name can be specified."
+                        : "Only one Recipe id can be specified.");
             }
             else {
-                recipeId = argument;
+                name = argument;
             }
         }
 
-        if (string.IsNullOrWhiteSpace(recipeId))
-            return CliParseResult.Failed("A Recipe id is required. Run 'xamlnexus recipes' to list available Recipes.");
+        if (string.IsNullOrWhiteSpace(name))
+            return CliParseResult.Failed(command == CliCommand.PageAdd
+                ? "A page name is required."
+                : "A Recipe id is required. Run 'xamlnexus recipes' to list available Recipes.");
 
-        if (command == CliCommand.Add && recipeId.Split(',').Any(string.IsNullOrWhiteSpace))
+        if (command == CliCommand.Add && name.Split(',').Any(string.IsNullOrWhiteSpace))
             return CliParseResult.Failed("Use a comma-separated list of nonempty Recipe ids.");
 
         try {
@@ -382,11 +396,28 @@ public static class CliParser {
         return CliParseResult.Parsed(new CliOptions(
             command,
             ProjectPath: projectPath,
-            RecipeId: command == CliCommand.PageAdd ? recipeId
-                : string.Join(",", recipeId.Split(',').Select(RecipeCommandNames.ToRecipeId)),
+            RecipeId: command == CliCommand.PageAdd ? null
+                : string.Join(",", name.Split(',').Select(RecipeCommandNames.ToRecipeId)),
+            PageName: command == CliCommand.PageAdd ? name : null,
             JsonOutput: jsonOutput,
             DryRun: dryRun,
             SkipNavigation: skipNavigation, PageKind: pageKind ?? "blank"));
+    }
+
+    private static CliParseResult ParseUpdateCommand(string[] args, string currentDirectory) {
+        if (args.Skip(1).Any(IsHelp))
+            return CliParseResult.Parsed(new CliOptions(CliCommand.Help));
+
+        bool updateAll = args.Skip(1).Any(argument => argument.Equals("--all", StringComparison.OrdinalIgnoreCase));
+        if (!updateAll)
+            return ParseNamedCommand(CliCommand.Update, args, currentDirectory);
+
+        if (args.Skip(1).Count(argument => argument.Equals("--all", StringComparison.OrdinalIgnoreCase)) > 1)
+            return CliParseResult.Failed("The --all option can only be specified once.");
+
+        string[] remaining = args.Where(argument => !argument.Equals("--all", StringComparison.OrdinalIgnoreCase)).ToArray();
+        var parsed = ParseProjectCommand(CliCommand.Update, remaining, currentDirectory, allowDryRun: true);
+        return parsed.Success ? CliParseResult.Parsed(parsed.Options! with { UpdateAll = true }) : parsed;
     }
 
     private static CliParseResult ParseUpgradeCommand(string[] args, string currentDirectory) {

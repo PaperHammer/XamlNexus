@@ -57,7 +57,6 @@
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Button x:Name="RefreshButton" l:Uids.Uid="Showcase_Refresh" Click="Refresh_Click"/>
                             <Button x:Name="DeleteButton" l:Uids.Uid="Showcase_Delete" Click="Delete_Click"/>
-                            <Button x:Name="NotifyButton" l:Uids.Uid="Showcase_Notify" Click="Notify_Click"/>
                             <Button x:Name="IntegrityButton" l:Uids.Uid="Showcase_Integrity" Click="Integrity_Click"/>
                         </StackPanel>
                     </StackPanel>

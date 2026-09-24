@@ -114,10 +114,7 @@ namespace XamlNexus {
                     skippedRecipes = skipped.Select(RecipeCommandNames.ToCommandName),
                     changedFiles = result.ChangedFiles,
                 });
-                else {
-                    AnsiConsole.MarkupLine($"[green]Installed Recipe:[/] {Markup.Escape(RecipeCommandNames.ToCommandName(result.RecipeId))} {Markup.Escape(result.RecipeVersion)}");
-                    foreach (string file in result.ChangedFiles) AnsiConsole.WriteLine($"  {file}");
-                }
+                else ShowAppliedRecipe("Installed Recipe", result);
                 return SuccessExitCode;
             }
             catch (Exception exception) {
@@ -172,9 +169,7 @@ namespace XamlNexus {
                     });
                     return SuccessExitCode;
                 }
-                AnsiConsole.MarkupLine($"[green]Removed Recipe:[/] {Markup.Escape(RecipeCommandNames.ToCommandName(result.RecipeId))} {Markup.Escape(result.RecipeVersion)}");
-                foreach (string file in result.ChangedFiles)
-                    AnsiConsole.MarkupLine($"  [grey]-[/] {Markup.Escape(file)}");
+                ShowAppliedRecipe("Removed Recipe", result, "-");
                 return SuccessExitCode;
             }
             catch (Exception exception) {
@@ -234,10 +229,84 @@ namespace XamlNexus {
                     });
                     return SuccessExitCode;
                 }
-                AnsiConsole.MarkupLine(
-                    $"[green]Updated Recipe:[/] {Markup.Escape(RecipeCommandNames.ToCommandName(result.RecipeId))} {Markup.Escape(result.RecipeVersion)}");
-                foreach (string file in result.ChangedFiles)
-                    AnsiConsole.MarkupLine($"  [grey]~[/] {Markup.Escape(file)}");
+                ShowAppliedRecipe("Updated Recipe", result, "~");
+                return SuccessExitCode;
+            }
+            catch (Exception exception) {
+                ShowCommandError("update", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), jsonOutput, GetErrorCode(exception));
+                return GenerationFailureExitCode;
+            }
+        }
+
+        /// <summary>发现全部可升级的已安装 Recipe，在临时副本中演练后以单个事务提交。</summary>
+        private static int UpdateAllRecipes(string projectPath, bool dryRun, bool jsonOutput) {
+            try {
+                IXamlNexusRecipeCatalog catalog = BuiltInRecipeCatalog.Create();
+                XamlNexusProjectContext context = XamlNexusProjectLocator.Locate(projectPath);
+                if (!XamlNexusProjectValidator.Validate(context).IsValid) {
+                    ShowCommandError("update", "The project is not structurally valid. Run 'xamlnexus validate' before updating Recipes.", jsonOutput);
+                    return GenerationFailureExitCode;
+                }
+
+                var unavailable = new List<string>();
+                var toolOlder = new List<string>();
+                var updates = new List<IXamlNexusRecipe>();
+                foreach (XamlNexusManagedModule module in context.Manifest.Modules
+                             .Where(module => module.Source.Equals("recipe", StringComparison.OrdinalIgnoreCase))) {
+                    IXamlNexusRecipe? recipe = catalog.Find(module.Id);
+                    if (recipe is null) {
+                        unavailable.Add(RecipeCommandNames.ToCommandName(module.Id));
+                        continue;
+                    }
+                    if (!XamlNexusRecipeVersion.TryCompare(recipe.Descriptor.Version, module.Version, out int comparison)) {
+                        ShowCommandError("update", $"Cannot compare Recipe versions for '{RecipeCommandNames.ToCommandName(module.Id)}': installed {module.Version}, available {recipe.Descriptor.Version}.", jsonOutput);
+                        return GenerationFailureExitCode;
+                    }
+                    if (comparison > 0) updates.Add(recipe);
+                    else if (comparison < 0) toolOlder.Add(RecipeCommandNames.ToCommandName(module.Id));
+                }
+
+                if (updates.Count == 0) {
+                    if (jsonOutput) WriteJson(new {
+                        operation = "update",
+                        status = "upToDate",
+                        all = true,
+                        dryRun,
+                        unavailableRecipes = unavailable,
+                        toolOlderRecipes = toolOlder,
+                        changedFiles = Array.Empty<string>(),
+                    });
+                    else {
+                        AnsiConsole.MarkupLine("[green]All available Recipes are up to date.[/]");
+                        foreach (string id in unavailable) AnsiConsole.WriteLine($"Unavailable in this tool: {id}");
+                        foreach (string id in toolOlder) AnsiConsole.WriteLine($"Installed version is newer than this tool: {id}");
+                    }
+                    return SuccessExitCode;
+                }
+
+                XamlNexusRecipeBatchPlan plan = XamlNexusRecipeTransaction.PrepareUpdateBatch(context, updates);
+                IReadOnlyList<string> files = dryRun
+                    ? plan.ChangedFiles
+                    : XamlNexusRecipeTransaction.ApplyBatch(context, plan);
+                if (jsonOutput) WriteJson(new {
+                    operation = "update",
+                    status = dryRun ? "preview" : "applied",
+                    all = true,
+                    dryRun,
+                    recipes = plan.Recipes.Select(item => item with { RecipeId = RecipeCommandNames.ToCommandName(item.RecipeId) }),
+                    unavailableRecipes = unavailable,
+                    toolOlderRecipes = toolOlder,
+                    changedFiles = files,
+                });
+                else {
+                    AnsiConsole.WriteLine(dryRun ? "Recipe update preview:" : "Updated Recipes:");
+                    foreach (XamlNexusRecipePreview recipe in plan.Recipes)
+                        AnsiConsole.WriteLine($"  {RecipeCommandNames.ToCommandName(recipe.RecipeId)} {recipe.FromVersion} -> {recipe.ToVersion}");
+                    foreach (string file in files)
+                        AnsiConsole.MarkupLine($"  [grey]~[/] {Markup.Escape(file)}");
+                    foreach (string id in unavailable) AnsiConsole.WriteLine($"Unavailable in this tool: {id}");
+                    foreach (string id in toolOlder) AnsiConsole.WriteLine($"Installed version is newer than this tool: {id}");
+                }
                 return SuccessExitCode;
             }
             catch (Exception exception) {

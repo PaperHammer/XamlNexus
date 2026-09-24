@@ -62,11 +62,26 @@ public sealed class PageGeneratorTests : IDisposable {
         var parsed = CliParser.Parse(["page", "add", "Orders", "--kind", "list"], root);
         Assert.True(parsed.Success);
         Assert.Equal("list", parsed.Options!.PageKind);
-        Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind", "form"], root).Success);
+        Assert.True(CliParser.Parse(["page", "add", "Orders", "--kind", "details"], root).Success);
+        Assert.True(CliParser.Parse(["page", "add", "Orders", "--kind", "form"], root).Success);
         Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind"], root).Success);
         Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind", "list", "--kind", "blank"], root).Success);
         Assert.False(CliParser.Parse(["add", "sqlite", "--kind", "list"], root).Success);
         Assert.Throws<ArgumentException>(() => PageGenerator.Add(Project, "Orders", kind: "unknown"));
+    }
+
+    [Theory]
+    [InlineData("details", "GetAsync", "TryGet<string>(\"id\"")]
+    [InlineData("form", "SaveAsync", "HasUnsavedChanges")]
+    public void BusinessPageKindsGenerateRunnableContracts(string kind, string serviceMember, string pageMember) {
+        IReadOnlyList<string> preview = PageGenerator.Add(Project, "Orders", dryRun: true, kind: kind);
+        Assert.Equal(5, preview.Count);
+        Assert.False(File.Exists(Path.Combine(root, "PageTest.MainPanel/OrdersPage.xaml")));
+
+        PageGenerator.Add(Project, "Orders", kind: kind);
+        Assert.Contains(serviceMember, Read("PageTest.MainPanel/Services/OrdersDataSource.cs"));
+        Assert.Contains(pageMember, Read("PageTest.MainPanel/OrdersPage.xaml.cs") + Read("PageTest.MainPanel/ViewModels/OrdersViewModel.cs"));
+        Assert.Contains("OrdersNavigation", string.Join("\n", Directory.GetFiles(Path.Combine(root, "PageTest.UI/Navigation")).Select(Path.GetFileName)));
     }
 
     [Theory]

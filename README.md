@@ -54,6 +54,8 @@ Add a page, then run the application:
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
 xamlnexus page add Projects --kind list
+xamlnexus page add ProjectDetails --kind details
+xamlnexus page add ProjectEditor --kind form
 xamlnexus run
 ```
 
@@ -101,14 +103,17 @@ Run these commands from the project directory, or specify `--project <directory>
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus doctor
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 xamlnexus --help
 ```
 
-- `update <id>` updates an installed component; `upgrade` updates scaffold infrastructure. Updating the CLI does not update existing projects.
+- `status` summarizes environment, managed files, scaffold and Recipe updates, then suggests the next commands.
+- `update <id>` updates one component, `update --all` updates every outdated component in one transaction, and `upgrade` updates scaffold infrastructure. Updating the CLI does not update existing projects.
 - Generated files are editable. Component update/removal checks tracked files; scaffold upgrades report merge conflicts.
 - `--dry-run` previews changes. `--json` only changes the output format and does not prevent writes.
 - Installer creation, signing, and update distribution are configured separately in the generated publishing files.

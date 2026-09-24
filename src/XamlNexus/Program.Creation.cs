@@ -22,6 +22,7 @@ namespace XamlNexus {
                 if (options.JsonOutput) WriteJson(new {
                     operation = "page-add",
                     status = options.DryRun ? "preview" : "created",
+                    kind = options.PageKind,
                     files = changed,
                     navigation = navigationAdded ? "automatic" : "manual",
                     message = notice

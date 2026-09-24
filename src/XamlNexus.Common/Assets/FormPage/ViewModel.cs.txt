@@ -1,0 +1,189 @@
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using __APP__.MainPanel.Services;
+
+namespace __APP__.MainPanel.ViewModels;
+
+public sealed class __NAME__ViewModel : INotifyPropertyChanged {
+    private readonly I__NAME__DataSource source;
+    private readonly FormAction save;
+    private readonly FormAction reset;
+    private CancellationTokenSource? operation;
+    private __NAME__Draft original = new(null, string.Empty, string.Empty);
+    private string? id;
+    private string name = string.Empty;
+    private string description = string.Empty;
+    private string nameError = string.Empty;
+    private string error = string.Empty;
+    private bool active;
+    private bool busy;
+    private bool saved;
+    private bool updating;
+
+    public __NAME__ViewModel() : this(new __NAME__SampleDataSource()) { }
+    public __NAME__ViewModel(I__NAME__DataSource source) {
+        this.source = source ?? throw new ArgumentNullException(nameof(source));
+        save = new FormAction(SaveAsync, () => active && !busy && HasUnsavedChanges);
+        reset = new FormAction(ResetAsync, () => active && !busy && HasUnsavedChanges);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public ICommand SaveCommand => save;
+    public ICommand ResetCommand => reset;
+    public string FormTitle => id is null ? "Create __NAME__" : "Edit __NAME__";
+    public string SaveText => "Save";
+    public string ResetText => "Reset";
+    public string ErrorTitle => "Could not save the form";
+    public string ErrorMessage => error;
+    public string NameError => nameError;
+    public bool HasNameError => nameError.Length > 0;
+    public bool HasError => error.Length > 0;
+    public bool IsBusy => busy;
+    public bool CanEdit => active && !busy;
+    public bool HasUnsavedChanges => name != original.Name || description != original.Description;
+    public string StateText => busy ? "Working…" : saved ? "Saved" : HasUnsavedChanges ? "Unsaved changes" : string.Empty;
+
+    public string Name {
+        get => name;
+        set {
+            value ??= string.Empty;
+            if (name == value) return;
+            name = value;
+            if (!updating) saved = false;
+            Notify();
+            NotifyEditState();
+        }
+    }
+
+    public string Description {
+        get => description;
+        set {
+            value ??= string.Empty;
+            if (description == value) return;
+            description = value;
+            if (!updating) saved = false;
+            Notify();
+            NotifyEditState();
+        }
+    }
+
+    public async Task ActivateAsync(string? itemId) {
+        Deactivate();
+        active = true;
+        id = string.IsNullOrWhiteSpace(itemId) ? null : itemId;
+        error = string.Empty;
+        nameError = string.Empty;
+        saved = false;
+        if (id is null) {
+            Apply(new(null, string.Empty, string.Empty));
+            NotifyState();
+            return;
+        }
+
+        using var request = new CancellationTokenSource();
+        operation = request;
+        busy = true;
+        NotifyState();
+        try {
+            __NAME__Draft? draft = await source.GetAsync(id, request.Token);
+            if (ReferenceEquals(operation, request) && !request.IsCancellationRequested)
+                Apply(draft ?? throw new InvalidOperationException("The requested item was not found."));
+        }
+        catch (OperationCanceledException) when (request.IsCancellationRequested) { }
+        catch (Exception exception) {
+            if (ReferenceEquals(operation, request)) error = exception.Message;
+        }
+        finally {
+            Complete(request);
+        }
+    }
+
+    public void Deactivate() {
+        active = false;
+        CancellationTokenSource? previous = operation;
+        operation = null;
+        previous?.Cancel();
+        busy = false;
+        NotifyState();
+    }
+
+    private bool Validate() {
+        nameError = string.IsNullOrWhiteSpace(name) ? "Name is required." : string.Empty;
+        Notify(nameof(NameError));
+        Notify(nameof(HasNameError));
+        return nameError.Length == 0;
+    }
+
+    private async Task SaveAsync() {
+        if (!Validate() || !active || busy) return;
+        using var request = new CancellationTokenSource();
+        operation = request;
+        busy = true;
+        error = string.Empty;
+        NotifyState();
+        try {
+            __NAME__Draft result = await source.SaveAsync(new(id, name.Trim(), description.Trim()), request.Token);
+            if (ReferenceEquals(operation, request) && !request.IsCancellationRequested) {
+                id = result.Id;
+                Apply(result);
+                saved = true;
+            }
+        }
+        catch (OperationCanceledException) when (request.IsCancellationRequested) { }
+        catch (Exception exception) {
+            if (ReferenceEquals(operation, request)) error = exception.Message;
+        }
+        finally {
+            Complete(request);
+        }
+    }
+
+    private Task ResetAsync() {
+        Apply(original);
+        saved = false;
+        NotifyState();
+        return Task.CompletedTask;
+    }
+
+    private void Apply(__NAME__Draft draft) {
+        updating = true;
+        id = draft.Id;
+        Name = draft.Name;
+        Description = draft.Description;
+        original = draft;
+        updating = false;
+        Notify(nameof(FormTitle));
+        NotifyEditState();
+    }
+
+    private void Complete(CancellationTokenSource request) {
+        if (!ReferenceEquals(operation, request)) return;
+        operation = null;
+        busy = false;
+        NotifyState();
+    }
+
+    private void NotifyEditState() {
+        Notify(nameof(HasUnsavedChanges));
+        Notify(nameof(StateText));
+        save.RaiseCanExecuteChanged();
+        reset.RaiseCanExecuteChanged();
+    }
+    private void NotifyState() {
+        foreach (string property in new[] { nameof(FormTitle), nameof(ErrorMessage), nameof(HasError), nameof(IsBusy), nameof(CanEdit), nameof(StateText) })
+            Notify(property);
+        NotifyEditState();
+    }
+    private void Notify([CallerMemberName] string? property = null) => PropertyChanged?.Invoke(this, new(property));
+
+    private sealed class FormAction(Func<Task> execute, Func<bool> canExecute) : ICommand {
+        public event EventHandler? CanExecuteChanged;
+        public bool CanExecute(object? parameter) => canExecute();
+        public async void Execute(object? parameter) => await execute();
+        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
+}

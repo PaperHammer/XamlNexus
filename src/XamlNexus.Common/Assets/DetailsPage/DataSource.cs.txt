@@ -1,0 +1,21 @@
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace __APP__.MainPanel.Services;
+
+public sealed record __NAME__Details(string Id, string Title, string Description);
+
+public interface I__NAME__DataSource {
+    Task<__NAME__Details> GetAsync(string id, CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Runnable sample data. Replace with an application service. / 可运行示例；接入业务时请替换为应用服务。
+/// Hybrid applications should call the host through a client. / 混合应用应通过客户端调用宿主。
+/// </summary>
+public sealed class __NAME__SampleDataSource : I__NAME__DataSource {
+    public async Task<__NAME__Details> GetAsync(string id, CancellationToken cancellationToken) {
+        await Task.Delay(250, cancellationToken);
+        return new(id, "__NAME__ " + id, "Loaded from the navigation payload. Replace this source with your data service.");
+    }
+}
