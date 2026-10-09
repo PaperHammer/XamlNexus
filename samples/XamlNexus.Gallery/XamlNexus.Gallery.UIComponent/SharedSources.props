@@ -12,6 +12,7 @@
     <GallerySharedCompile Include="Feedback/Loading.xaml.cs" />
     <GallerySharedCompile Include="Input/Button/ArcButton.cs" />
     <GallerySharedPage Include="Input/Button/ArcButton.xaml" />
+    <GallerySharedCompile Include="Navigation/ArcLeaveRequest.cs" />
     <GallerySharedCompile Include="Navigation/RootView/ArcNavigationContentView.xaml.cs" />
     <GallerySharedCompile Include="Navigation/RootView/ArcNavigationView.cs" />
     <GallerySharedPage Include="Navigation/RootView/ArcNavigationviewStyle.xaml" />

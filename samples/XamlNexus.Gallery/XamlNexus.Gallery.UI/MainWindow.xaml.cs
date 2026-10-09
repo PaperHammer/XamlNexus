@@ -1,3 +1,4 @@
+using XamlNexus.Gallery.UIComponent.Navigation;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -27,7 +28,9 @@ namespace XamlNexus.Gallery.UI {
         private readonly Stack<NavigationViewItem> navigationHistory = new();
         private NavigationViewItem? currentItem;
         private bool goingBack;
+        private bool restoringNavigationSelection;
         public override NavigationView AppNavView => this.NavigationViewControl;
+        public override ArcNavigationContentView NavigationContent => NaviContent;
         public override bool IsMainWindow => true;
         public override ArcWindowManagerKey Key => _windowKey;
 
@@ -48,9 +51,9 @@ namespace XamlNexus.Gallery.UI {
             MainHost.Back.Click += (_, _) => {
                 if (navigationHistory.Count == 0) return;
                 goingBack = true;
-                NavigationViewControl.SelectedItem = navigationHistory.Pop();
+                NavigationViewControl.SelectedItem = navigationHistory.Peek();
             };
-            this.AppWindow.Closing += (_, _) => this.Hide();
+            this.AppWindow.Closing += (_, args) => { if (!args.Cancel) this.Hide(); };
             this.Closed += MainWindow_Closed;
             GalleryCatalog.NavigationRequested += NavigateToSample;
             LanguageUtil.LanguageUpdated += GalleryLanguageChanged;
@@ -68,7 +71,9 @@ namespace XamlNexus.Gallery.UI {
             AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
             AppWindow.Move(new Windows.Graphics.PointInt32(area.X + (area.Width - width) / 2, area.Y + (area.Height - height) / 2));
         }
+
         private void TitleBarRootChanged(XamlRoot sender, XamlRootChangedEventArgs args) => UpdateTitleBarRegions();
+
         private void UpdateTitleBarRegions() {
             if (!ExtendsContentIntoTitleBar || MainHost.XamlRoot is null) return;
             double scale = MainHost.XamlRoot.RasterizationScale;
@@ -98,23 +103,28 @@ namespace XamlNexus.Gallery.UI {
         }
 
         #region navigation control
-        private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+        private async void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+            if (restoringNavigationSelection) return;
+            var targetItem = args.SelectedItemContainer as NavigationViewItem;
+            string? id = targetItem?.Tag as string;
+            Type? pageType = id switch {
+                "home" => typeof(GalleryHomePage),
+                "settings" => typeof(GallerySettingsPage),
+                _ => GalleryCatalog.Entries.FirstOrDefault(entry => entry.Id == id)?.PageType,
+            };
+            bool requestedBack = goingBack;
+            goingBack = false;
+            if (pageType is null) return;
+            RestoreNavigationSelection(currentItem);
             try {
-                string? id = args.SelectedItemContainer?.Tag as string;
-                Type? pageType = id switch {
-                    "home" => typeof(GalleryHomePage),
-                    "settings" => typeof(GallerySettingsPage),
-                    _ => GalleryCatalog.Entries.FirstOrDefault(entry => entry.Id == id)?.PageType,
-                };
-                if (pageType is null)
-                    return;
-
-                if (id is not null) GalleryCatalog.RecordVisit(id);
-                NaviContent.Navigate(pageType);
-                if (!goingBack && currentItem is not null && currentItem != args.SelectedItemContainer)
+                if (!await NaviContent.NavigateAsync(pageType)) return;
+                if (requestedBack && navigationHistory.Count > 0 && navigationHistory.Peek() == targetItem)
+                    navigationHistory.Pop();
+                else if (!requestedBack && currentItem is not null && currentItem != targetItem)
                     navigationHistory.Push(currentItem);
-                goingBack = false;
-                currentItem = args.SelectedItemContainer as NavigationViewItem;
+                currentItem = targetItem;
+                RestoreNavigationSelection(currentItem);
+                if (id is not null) GalleryCatalog.RecordVisit(id);
                 MainHost.Back.IsEnabled = navigationHistory.Count > 0;
             }
             catch (Exception ex) {
@@ -122,9 +132,16 @@ namespace XamlNexus.Gallery.UI {
                 ArcLog.GetLogger<MainWindow>().Error(ex);
             }
         }
+
+        private void RestoreNavigationSelection(NavigationViewItem? item) {
+            restoringNavigationSelection = true;
+            try { NavigationViewControl.SelectedItem = item; }
+            finally { restoringNavigationSelection = false; }
+        }
         #endregion
 
         private void GalleryLanguageChanged(object? sender, EventArgs args) => UpdateGalleryLabels();
+
         private void UpdateGalleryLabels() {
             Nav_Home.Content = GalleryStrings.Get("NavigationOverview");
             Nav_Fundamentals.Content = GalleryStrings.Get("NavigationFundamentals");
@@ -143,7 +160,9 @@ namespace XamlNexus.Gallery.UI {
                 }
             }
         }
+
         private IEnumerable<NavigationViewItem> SampleItems() => new[] { Nav_Home, Nav_ToolGuide, Nav_GettingStarted, Nav_BusinessPages, Nav_Components, Nav_Evolution, Nav_ArcWindow, Nav_ArcPage, Nav_Lifetime, Nav_List, Nav_MainPage };
+
         private void NavigateToSample(string id) {
             var item = id == "settings" ? Nav_AppSettings : SampleItems().FirstOrDefault(item => item.Tag as string == id);
             if (item is null) return;
@@ -151,6 +170,7 @@ namespace XamlNexus.Gallery.UI {
                 Nav_Fundamentals.IsExpanded = NavigationViewControl.DisplayMode == NavigationViewDisplayMode.Expanded || NavigationViewControl.IsPaneOpen;
             NavigationViewControl.SelectedItem = item;
         }
+
         private void SampleSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args) {
             if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
             string query = sender.Text.Trim();
@@ -158,6 +178,7 @@ namespace XamlNexus.Gallery.UI {
                 (entry.Title + " " + entry.NavigationTitle + " " + entry.Description + " " + entry.Keywords)
                     .Contains(query, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
+
         private void SampleSearch_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args) {
             var entry = args.ChosenSuggestion as GalleryEntry ?? GalleryCatalog.Entries.FirstOrDefault(entry =>
                 entry.Title.Equals(args.QueryText.Trim(), StringComparison.OrdinalIgnoreCase) ||

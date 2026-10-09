@@ -24,6 +24,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
     public sealed partial class MainWindow : ArcWindow {
         public override ArcWindowHost ContentHost => this.MainHost;
         public override NavigationView AppNavView => this.NavigationViewControl;
+        public override ArcNavigationContentView NavigationContent => NaviContent;
         public override bool IsMainWindow => true;
         public override ArcWindowManagerKey Key => _windowKey;
 
@@ -39,7 +40,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             _userSettings = userSettings;
             _commandsClient = commandsClient;
             _commandsClient.UIRecieveCmd += CommandsClient_UIRecieveCmd;
-            this.AppWindow.Closing += (_, _) => this.Hide();
+            this.AppWindow.Closing += (_, args) => { if (!args.Cancel) this.Hide(); };
             this.Closed += MainWindow_Closed;
         }
 
@@ -54,19 +55,31 @@ namespace Winui3_Wpf_XamlNexus.UI {
         }
 
         #region navigation control
-        private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+        private object? selectedNavigationItem;
+        private bool restoringNavigationSelection;
+        private async void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+            if (restoringNavigationSelection) return;
+            object? targetItem = sender.SelectedItem;
+            Type? pageType = args.SelectedItemContainer?.Tag is string route
+                ? NavigationRegistry.Default.Resolve(route) : null;
+            if (pageType is null) return;
+            RestoreNavigationSelection(sender, selectedNavigationItem);
             try {
-                Type? pageType = args.SelectedItemContainer?.Tag is string route
-                    ? NavigationRegistry.Default.Resolve(route) : null;
-                if (pageType is null)
-                    return;
-
-                NaviContent.Navigate(pageType);
+                if (await NaviContent.NavigateAsync(pageType)) {
+                    selectedNavigationItem = targetItem;
+                    RestoreNavigationSelection(sender, targetItem);
+                }
             }
             catch (Exception ex) {
                 GlobalMessageUtil.ShowException(ex, ArcWindowManager.GetArcWindow(Key));
                 ArcLog.GetLogger<MainWindow>().Error(ex);
             }
+        }
+
+        private void RestoreNavigationSelection(NavigationView sender, object? item) {
+            restoringNavigationSelection = true;
+            try { sender.SelectedItem = item; }
+            finally { restoringNavigationSelection = false; }
         }
         #endregion
 

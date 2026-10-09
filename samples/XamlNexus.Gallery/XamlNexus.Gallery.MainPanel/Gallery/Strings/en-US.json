@@ -551,9 +551,10 @@
   "BusinessRecordMissing": "This record no longer exists. Return to the list and refresh.",
   "BusinessSaved": "Saved to SQLite",
   "BusinessUnsavedTitle": "Discard unsaved changes?",
-  "BusinessUnsavedBody": "Save your changes before leaving, or discard them to continue.",
+  "BusinessUnsavedBody": "This form has unsaved changes. Save and leave, discard the changes, or keep editing.",
   "BusinessDiscard": "Discard changes",
   "BusinessKeepEditing": "Keep editing",
   "BusinessNoRecords": "No records to show. Create a record, or change the search.",
-  "BusinessSourceDescription": "Inspect the Gallery adapter and SQLite service that connect the generated ViewModels into a working business flow."
+  "BusinessSourceDescription": "Inspect the Gallery adapter and SQLite service that connect the generated ViewModels into a working business flow.",
+  "BusinessSaveAndLeave": "Save and leave"
 }

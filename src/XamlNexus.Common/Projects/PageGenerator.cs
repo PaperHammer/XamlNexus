@@ -30,6 +30,8 @@ public static class PageGenerator {
             throw new InvalidOperationException("The standard MainPanel project is required.");
         SafePath("xamlnexus.json");
         bool supportsInjection = File.Exists(SafePath($"{app}.Common/Utils/DI/AppObjectFactory.cs"));
+        string arcPagePath = SafePath($"{app}.UIComponent/Templates/ArcPage.cs");
+        bool supportsLeaveConfirmation = File.Exists(arcPagePath) && File.ReadAllText(arcPagePath).Contains("CanLeaveAsync(", StringComparison.Ordinal);
         string viewModelCreation = supportsInjection ? $"AppObjectFactory.Create<{vm}>()" : "new()";
         var navigationChanges = new List<XamlNexusRecipeFileChange>();
         if (!skipNavigation && File.Exists(SafePath($"{app}.UIComponent/Navigation/INavigationRegistry.cs"))) {
@@ -87,7 +89,7 @@ public static class PageGenerator {
             "blank" => CreateBlankPage(),
             "list" => CreatePageFromAssets("ListPage", app, name),
             "details" => CreatePageFromAssets("DetailsPage", app, name),
-            "form" => CreatePageFromAssets("FormPage", app, name),
+            "form" => CreatePageFromAssets("FormPage", app, name, supportsLeaveConfirmation),
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
         var plan = new XamlNexusRecipePlan { Changes = [.. pageChanges, .. navigationChanges] };
@@ -95,7 +97,7 @@ public static class PageGenerator {
         return XamlNexusRecipeTransaction.ApplyPageChanges(project, plan, dryRun);
     }
 
-    private static IEnumerable<XamlNexusRecipeFileChange> CreatePageFromAssets(string assetDirectory, string app, string name) {
+    private static IEnumerable<XamlNexusRecipeFileChange> CreatePageFromAssets(string assetDirectory, string app, string name, bool supportsLeaveConfirmation = true) {
         foreach (var (asset, relative) in new[] {
             ("Page.xaml", $"{app}.MainPanel/{name}Page.xaml"),
             ("Page.xaml.cs", $"{app}.MainPanel/{name}Page.xaml.cs"),
@@ -106,8 +108,12 @@ public static class PageGenerator {
                 $"XamlNexus.Common.Assets.{assetDirectory}.{asset}.txt")
                 ?? throw new InvalidOperationException($"Missing {assetDirectory} asset: {asset}");
             using var reader = new StreamReader(stream);
-            yield return XamlNexusRecipeFileChange.CreateText(relative, reader.ReadToEnd()
-                .Replace("__APP__", app).Replace("__NAME__", name));
+            string content = reader.ReadToEnd().Replace("__APP__", app).Replace("__NAME__", name);
+            if (!supportsLeaveConfirmation && asset == "Page.xaml.cs") {
+                // Old/custom ArcPage implementations still support adding a form without the new hook.
+                content = Regex.Replace(content, @"    // <leave-confirmation>[\s\S]*?    // </leave-confirmation>\r?\n", string.Empty);
+            }
+            yield return XamlNexusRecipeFileChange.CreateText(relative, content);
         }
     }
 }

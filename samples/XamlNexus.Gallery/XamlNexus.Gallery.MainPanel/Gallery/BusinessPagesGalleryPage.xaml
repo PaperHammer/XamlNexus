@@ -9,7 +9,7 @@
     <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
             <g:GalleryPageHeader Title="{Binding [BusinessPagesTitle], Source={StaticResource Strings}}" Description="{Binding [BusinessPagesDescription], Source={StaticResource Strings}}"/>
-            <g:PageTemplateShowcaseView/>
+            <g:PageTemplateShowcaseView x:Name="BusinessWorkflow"/>
         </StackPanel>
     </ScrollViewer>
 </arc:ArcPage>

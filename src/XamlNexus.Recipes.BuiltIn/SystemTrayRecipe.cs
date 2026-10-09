@@ -14,10 +14,12 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
     public XamlNexusRecipePlan CreatePlan(XamlNexusRecipeContext context) {
         EnsureCloseBehaviorSupport(context);
         string projectName = context.Manifest.Project.Name;
+        string windowSource = Path.Combine(context.RootDirectory, projectName + ".UIComponent", "Templates", "ArcWindow.cs");
+        bool supportsLeaveGuard = File.Exists(windowSource) && File.ReadAllText(windowSource).Contains("RequestCloseAsync(", StringComparison.Ordinal);
         return new XamlNexusRecipePlan {
             Changes = [XamlNexusRecipeFileChange.CreateText(
                 $"{projectName}.UI/Modules/SystemTrayModule.cs",
-                CreateModule(projectName)), .. RecipeReadmeResources.CreatePair("Tray", "tray", projectName)],
+                CreateModule(projectName, supportsLeaveGuard)), .. RecipeReadmeResources.CreatePair("Tray", "tray", projectName)],
             ProjectOperations = [new EnsurePackageReferenceOperation(
                 $"{projectName}.UI/{projectName}.UI.csproj",
                 "H.NotifyIcon.WinUI",
@@ -43,7 +45,7 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
             "H.NotifyIcon.WinUI", "2.3.2")
     ];
 
-    private static string CreateModule(string projectName) => $$"""
+    private static string CreateModule(string projectName, bool supportsLeaveGuard) => $$"""
         using System;
         using System.Runtime.CompilerServices;
         using System.Threading;
@@ -186,15 +188,7 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
 
             private void QueueExit() => mainWindow.DispatcherQueue.TryEnqueue(ExitApplication);
 
-            private void ExitApplication() {
-                if (_exiting || _disposed) return;
-                _exiting = true;
-                // Hide immediately so service and native tray cleanup cannot leave a frozen window visible.
-                mainWindow.Hide();
-                _closeDialog?.Hide();
-                // The host performs its normal Closed cleanup and releases the DI-owned tray icon.
-                mainWindow.Close();
-            }
+            {{CreateExitMethod(supportsLeaveGuard)}}
 
             public void Dispose() {
                 if (_disposed) return;
@@ -216,6 +210,35 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
             private bool _exiting;
             private bool _dialogOpen;
             private ContentDialog? _closeDialog;
+        }
+        """;
+
+    private static string CreateExitMethod(bool supportsLeaveGuard) => supportsLeaveGuard
+        ? """
+        private bool _exitPending;
+        private async void ExitApplication() {
+            if (_exiting || _disposed || _exitPending) return;
+            _exitPending = true;
+            try {
+                _closeDialog?.Hide();
+                // A refused page leave must keep both the application and window alive.
+                await mainWindow.RequestCloseAsync(beforeClose: () => _exiting = true);
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<SystemTrayService>().Error("Could not confirm application exit", exception);
+            }
+            finally { _exitPending = false; }
+        }
+        """
+        : """
+        private void ExitApplication() {
+            if (_exiting || _disposed) return;
+            _exiting = true;
+            // Hide immediately so service and native tray cleanup cannot leave a frozen window visible.
+            mainWindow.Hide();
+            _closeDialog?.Hide();
+            // The host performs its normal Closed cleanup and releases the DI-owned tray icon.
+            mainWindow.Close();
         }
         """;
 }

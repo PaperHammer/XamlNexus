@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_XamlNexus.UIComponent.Attributes;
+using Winui3_XamlNexus.UIComponent.Navigation;
 using Winui3_XamlNexus.UIComponent.Context;
 using Winui3_XamlNexus.UIComponent.Utils;
 
@@ -38,48 +39,63 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
 
         protected void ArcPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) {
-            OnDestroy();
+            DestroyOnce();
         }
+
+        /// <summary>Called before navigation or window close changes page state. Return false to retain the page.</summary>
+        public virtual Task<bool> CanLeaveAsync(ArcLeaveReason reason, CancellationToken cancellationToken = default) => Task.FromResult(true);
 
         #region async life-cycle hooks
         public void NavigateEnter(FrameworkPayload? payload) {
+            _exitCts?.Cancel();
             Volatile.Write(ref _isPreLeaved, 0);
             OnEnter(payload);
         }
 
+        // Compatibility entry point for existing navigation callers.
         public async void NavigateExit(Action? beforeLeave = null, Action? afterDestoried = null) {
-            _exitCts?.Cancel(); //以此防范极其罕见的并发
-            _exitCts = new CancellationTokenSource();
-            var token = _exitCts.Token;
-
             try {
-                Status = ArcPageStatus.BackgroundRunning;
-                await OnPreLeaveAsync();
-
-                if (!KeepAlive) {
-                    beforeLeave?.Invoke();
-
-                    if (token.IsCancellationRequested) return;
-
-                    await OnLeaveAsync();
-                    OnDestroy();
-
-                    if (token.IsCancellationRequested) return;
-
-                    afterDestoried?.Invoke();
-                }
-            }
-            catch (OperationCanceledException) {
-                // 被复活，忽略退出逻辑 / The page has been reactivated; skip leaving logic.
+                await NavigateExitAsync(beforeLeave, afterDestoried);
             }
             catch (Exception ex) {
                 ArcLog.GetLogger<ArcPage>().Error(ex);
             }
-            finally {
-                if (_exitCts != null && !_exitCts.IsCancellationRequested) {
-                    _exitCts.Dispose();
-                    _exitCts = null;
+        }
+
+        /// <summary>
+        /// Await page exit on the UI thread. Returns false when re-entry or a newer exit supersedes it.
+        /// Hook failures propagate to the caller; retained pages remain in the visual tree.
+        /// </summary>
+        public async Task<bool> NavigateExitAsync(Action? beforeLeave = null, Action? afterDestoried = null) {
+            _exitCts?.Cancel();
+            var exit = new CancellationTokenSource();
+            _exitCts = exit;
+            var token = exit.Token;
+            try {
+                if (Volatile.Read(ref _isDestroyed) != 0) return false;
+                Status = ArcPageStatus.BackgroundRunning;
+                await OnPreLeaveAsync(token).WaitAsync(token);
+                token.ThrowIfCancellationRequested();
+                if (Volatile.Read(ref _isDestroyed) != 0) return false;
+                Volatile.Write(ref _isPreLeaved, 1);
+
+                if (!KeepAlive) {
+                    // Leave hooks still have their context and data before visual-tree removal.
+                    await OnLeaveAsync(token).WaitAsync(token);
+                    token.ThrowIfCancellationRequested();
+                    if (Volatile.Read(ref _isDestroyed) != 0) return false;
+                    beforeLeave?.Invoke();
+                    DestroyOnce();
+                    afterDestoried?.Invoke();
                 }
+                return true;
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) {
+                return false;
+            }
+            finally {
+                if (ReferenceEquals(_exitCts, exit)) _exitCts = null;
+                exit.Dispose();
             }
         }
 
@@ -87,20 +103,18 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         /// 页面进入 / The page is entering.
         /// </summary>
         protected virtual void OnEnter(FrameworkPayload? payload) {
-            if (_exitCts != null) {
-                _exitCts.Cancel();
-                _exitCts.Dispose();
-                _exitCts = null;
-            }
-
             CrossThreadInvoker.InvokeOnUIThread(() => {
                 Status = ArcPageStatus.PreActive;
                 this.Translation = new System.Numerics.Vector3(0, 0, 0);
                 this.Opacity = 1;
                 this.IsHitTestVisible = true;
                 this.Payload = payload;
+                if (ArcContext != null) ArcContext.IsActive = true;
             });
         }
+
+        /// <summary>Override to propagate exit cancellation into page operations; legacy overrides remain supported.</summary>
+        protected virtual Task OnPreLeaveAsync(CancellationToken cancellationToken) => OnPreLeaveAsync();
 
         protected virtual async Task OnPreLeaveAsync() {
             CrossThreadInvoker.InvokeOnUIThread(() => {
@@ -114,14 +128,13 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
                 ArcContext.IsActive = false;
                 await ArcContext.KeepAliveBlocking.WaitAsync();
             }
-
-            // 避免 JIT 优化代码顺序 / Prevent JIT optimization from reordering this code.
-            Volatile.Write(ref _isPreLeaved, 1);
         }
 
         /// <summary>
         /// 页面离开 / The page is leaving.
         /// </summary>
+        protected virtual Task OnLeaveAsync(CancellationToken cancellationToken) => OnLeaveAsync();
+
         protected virtual Task OnLeaveAsync() {
             return Task.CompletedTask;
         }
@@ -130,7 +143,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         /// 页面销毁 / Page cleanup.
         /// </summary>
         protected virtual void OnDestroy() {
-            Status = ArcPageStatus.Stopped;            
+            Status = ArcPageStatus.Stopped;
             Payload = null;
             DataContext = null;
             UnregisterContext();
@@ -176,6 +189,11 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         }
         #endregion
 
+        private void DestroyOnce() {
+            if (Interlocked.Exchange(ref _isDestroyed, 1) == 0) OnDestroy();
+        }
+
+        private int _isDestroyed;
         private int _isPreLeaved;
         private readonly long _timeSpan = DateTime.UtcNow.Ticks;
         private readonly Lazy<bool> _keepAlive;

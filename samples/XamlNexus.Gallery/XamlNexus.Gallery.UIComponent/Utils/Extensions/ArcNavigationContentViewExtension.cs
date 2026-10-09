@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using XamlNexus.Gallery.Common.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
 using XamlNexus.Gallery.Common.Utils.ThreadContext;
@@ -10,23 +14,58 @@ using XamlNexus.Gallery.UIComponent.Templates;
 
 namespace XamlNexus.Gallery.UIComponent.Utils.Extensions {
     public static class ArcNavigationContentViewExtension {
-        public static void ArcNavigate(
-            this ArcNavigationContentView navView,
-            Type targetPageType,
-            FrameworkPayload? payload = null,
-            ArcNavigationOptions? options = null) {
-            CrossThreadInvoker.InvokeOnUIThread(() => {
-                if (!typeof(ArcPage).IsAssignableFrom(targetPageType))
-                    throw new InvalidOperationException($"{targetPageType.Name} is not ArcPage");
-
-                ArcPage? oldPage = GetActivePage(navView.PageMap);
-                ArcPage newPage = GetBackgroundPage(navView.PageMap, targetPageType) ?? ResolvePageInstance(targetPageType);
-                payload = payload.Merge(newPage.Payload);
-
-                bool useAnimation = options != null;
-                if (!useAnimation) NavigateRootWithoutAnimation(navView, oldPage, newPage, payload);
-                else NavigateRootWithAnimation(navView, oldPage, newPage, payload, options!.Transition);
+        public static void ArcNavigate(this ArcNavigationContentView navView, Type targetPageType,
+            FrameworkPayload? payload = null, ArcNavigationOptions? options = null) {
+            CrossThreadInvoker.InvokeOnUIThread(async () => {
+                try { await navView.ArcNavigateAsync(targetPageType, payload, options); }
+                catch (Exception ex) { ArcLog.GetLogger<ArcNavigationContentView>().Error(ex); }
             });
+        }
+
+        public static async Task<bool> ArcNavigateAsync(this ArcNavigationContentView navView, Type targetPageType,
+            FrameworkPayload? payload = null, ArcNavigationOptions? options = null, CancellationToken cancellationToken = default) {
+            ArgumentNullException.ThrowIfNull(navView);
+            ArgumentNullException.ThrowIfNull(targetPageType);
+            if (!typeof(ArcPage).IsAssignableFrom(targetPageType) || targetPageType.IsAbstract)
+                throw new ArgumentException("The target must be a concrete ArcPage.", nameof(targetPageType));
+            bool accepted = false;
+            await navView.DispatcherQueue.EnqueueOrInvokeAsync(async () => {
+                accepted = await navView.LeaveRequest.TryRunAsync(async () => {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var oldPage = GetActivePage(navView.PageMap);
+                    if (oldPage?.ArcType == targetPageType && payload is null) return true;
+                    if (oldPage != null && !await oldPage.CanLeaveAsync(ArcLeaveReason.Navigation, cancellationToken)) return false;
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!ReferenceEquals(oldPage, GetActivePage(navView.PageMap))) return false;
+                    // Construct and activate the target only after leave approval.
+                    var newPage = oldPage?.ArcType == targetPageType ? oldPage
+                        : GetBackgroundPage(navView.PageMap, targetPageType) ?? ResolvePageInstance(targetPageType);
+                    var nextPayload = payload.Merge(newPage.Payload);
+                    if (options is null) NavigateRootWithoutAnimation(navView, oldPage, newPage, nextPayload);
+                    else NavigateRootWithAnimation(navView, oldPage, newPage, nextPayload, options.Transition);
+                    return true;
+                });
+            });
+            return accepted;
+        }
+
+        public static async Task<bool> ArcCanLeaveAsync(this ArcNavigationContentView navView, ArcLeaveReason reason,
+            CancellationToken cancellationToken = default) {
+            bool accepted = false;
+            await navView.DispatcherQueue.EnqueueOrInvokeAsync(async () => {
+                accepted = await navView.LeaveRequest.TryRunAsync(async () => {
+                    var pages = reason == ArcLeaveReason.WindowClose
+                        ? navView.PageMap.Values.Where(page => page.Status != ArcPageStatus.Stopped).Distinct().ToArray()
+                        : new[] { GetActivePage(navView.PageMap) }.OfType<ArcPage>().ToArray();
+                    foreach (var page in pages) {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        if (!await page.CanLeaveAsync(reason, cancellationToken)) return false;
+                    }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return true;
+                });
+            });
+            return accepted;
         }
 
         private static void NavigateRootWithoutAnimation(
@@ -64,19 +103,13 @@ namespace XamlNexus.Gallery.UIComponent.Utils.Extensions {
         }
 
         private static void HandlePageStatus(ArcNavigationContentView navView, ArcPage? oldPage, ArcPage newPage) {
-            if (oldPage == null) {
-                newPage.SetActiveStatus();
-                return;
-            }
-
-            if (ReferenceEquals(oldPage, newPage)) {
-                newPage.SetActiveStatus();
-                return;
-            }
+            // Activation belongs to this navigation, not to a previous page's delayed exit.
+            newPage.SetActiveStatus();
+            if (oldPage == null || ReferenceEquals(oldPage, newPage)) return;
 
             oldPage.NavigateExit(
                 beforeLeave: () => {
-                    // 如果在等待期间 oldPage 被复活（变为 PreActive 或 Active），不能移除
+                    // 如果在等待期间 oldPage 被复活（变为 PreActive 或 Active），不能移除 / Do not remove oldPage if it was reactivated as PreActive or Active while awaiting.
                     if (oldPage.Status == ArcPageStatus.Active || oldPage.Status == ArcPageStatus.PreActive) {
                         return;
                     }
@@ -87,9 +120,6 @@ namespace XamlNexus.Gallery.UIComponent.Utils.Extensions {
                             navView.ContentGrid.Children.Remove(oldPage);
                         }
                     });
-                },
-                afterDestoried: () => {
-                    newPage.SetActiveStatus();
                 });
         }
 
@@ -131,7 +161,7 @@ namespace XamlNexus.Gallery.UIComponent.Utils.Extensions {
 
         private static ArcPage? GetActivePage(Dictionary<Type, ArcPage> map) {
             foreach (var kvp in map) {
-                // 在快速切换时，上一个页面可能还处于 PreActive（动画中），它也应该被视为 oldPage
+                // 在快速切换时，上一个页面可能还处于 PreActive（动画中），它也应该被视为 oldPage / During rapid navigation, the previous page may still be PreActive (animating); treat it as oldPage too.
                 if (kvp.Value.Status == ArcPageStatus.Active || kvp.Value.Status == ArcPageStatus.PreActive) {
                     return kvp.Value;
                 }
@@ -153,7 +183,7 @@ namespace XamlNexus.Gallery.UIComponent.Utils.Extensions {
 
     public enum ArcNavigationTransition {
         Fade,
-        // Slide, DrillIn ...
+        // Slide, DrillIn ... / 滑动、钻入等过渡效果。
     }
 
     public record ArcNavigationOptions(ArcNavigationTransition Transition);

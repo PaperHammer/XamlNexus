@@ -102,6 +102,6 @@ Automated tests cover persistence, identity, cancellation and data isolation. Ve
 1. 新建记录，填写名称与备注并保存；返回列表，搜索并打开详情。 / Create, save, search and open a record.
 2. 编辑记录并保存；返回列表，确认内容更新且记录没有重复。 / Edit and verify the refreshed list.
 3. 体验加载失败，再重试；确认恢复显示记录。 / Trigger a read failure and retry.
-4. 修改表单后切换标签；选择继续编辑保留草稿，选择放弃修改后确认数据库原值保留。 / Verify discard and keep-editing behavior.
+4. 修改表单后切换标签、侧栏页面或关闭窗口；继续编辑应保留草稿及原侧栏选中项，放弃修改应保留数据库原值。保存并离开必须等待成功，必填字段错误或写入失败应留在原页。 / Test tab, sidebar and window-close guards: keep editing preserves state, discard leaves stored data intact, and save-and-leave only proceeds after a successful save.
 5. 重启 Gallery；确认记录仍在，并可再次编辑。 / Restart and edit the persisted record.
 6. 切换中英文、浅深主题及窄窗口；检查按钮、标题与离线业务接入源码。 / Check languages, themes, narrow layout and offline integration source.

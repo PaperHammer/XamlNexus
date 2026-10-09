@@ -52,7 +52,29 @@ Generated user projects remain self-contained. Building Gallery requires the rep
 
 Gallery MainPanel 直接引用 `XamlNexus.Recipes.BuiltIn` 及其 Common 依赖。组件页调用生产组合规划器，项目演进页调用生产三方合并器；二者只进行内存预览，不调用 CLI 或写入项目。不要把 Gallery 的展示文案或业务演示反向加入 Common。
 
-Gallery compiles page template models and interfaces directly from Common resources with substituted names. Its own sample services provide demonstration data. MainPanel references BuiltIn recipes and Common to preview the production composition planner and three-way merger in memory, without command execution or project writes.
+Gallery compiles page template models and interfaces directly from Common resources with substituted names. Its own adapter persists business records in SQLite. MainPanel references BuiltIn recipes and Common to preview the production composition planner and three-way merger in memory, without command execution or project writes.
+
+## 页面退出与异步调度 / Page exit and async dispatch
+
+WinUI 与 WinUI/WPF 模板保持同一语义。UI 线程上调用 `ArcPage.NavigateExitAsync` 可等待退出：正常完成返回 `true`，重新进入或更新的退出请求取代旧请求时返回 `false`；生命周期钩子异常传回调用方。现有 `NavigateExit` 入口仍记录异常，兼容原有导航代码。
+
+退出钩子在移出视觉树之前运行，仍可访问页面上下文与 DataContext。退出请求独立持有并释放取消源；页面销毁只执行一次。覆写带 `CancellationToken` 的 `OnPreLeaveAsync` / `OnLeaveAsync` 可把取消传给业务操作；原有无参数覆写继续有效。目标页面由当前导航立即激活，旧页面延迟退出不会改变后续导航的活动页面。
+
+`DispatcherQueue.EnqueueOrInvokeAsync` 保留异步操作的成功、异常与取消状态；队列拒绝工作时返回失败任务，调用方不会无限等待。
+
+Both templates expose awaitable `NavigateExitAsync` on the UI thread. It returns false for superseded exits and propagates hook failures. The existing void entry point logs failures for compatibility. Leave hooks retain their context until visual-tree removal; each exit owns its cancellation source and destruction runs once. Token-aware hook overloads support cooperative cancellation while existing overrides remain valid. Navigation activates its target immediately, without relying on an earlier page's delayed cleanup. Dispatcher tasks preserve failure and cancellation, and rejected enqueue attempts fail promptly.
+
+The headless behavior tests compile the actual template sources with UI boundary doubles; Gallery builds and startup checks cover real WinUI integration separately.
+
+## 导航与窗口离开拦截 / Navigation and window leave guards
+
+页面覆写 `CanLeaveAsync(ArcLeaveReason, CancellationToken)`，返回 `false` 时保留页面、Payload、DataContext 和上下文。使用 `ArcNavigationContentView.NavigateAsync` 获取导航是否成功的结果，宿主只在成功后更新侧栏选中项和返回历史。现有 `Navigate` 入口也经过拦截；重复选择当前页面不会重新加载草稿。
+
+窗口通过 `NavigationContent` 指定导航宿主。`ArcWindow` 同步取消首次原生关闭，在 UI 队列中等待所有仍保留的页面确认，再重放关闭。确认期间保持窗口可见；`CanCloseAsync` 可覆写以检查窗口自己的数据，`RequestCloseAsync` 支持程序发起同一套关闭流程。其他 Closing 处理器必须先检查 `args.Cancel`，不得提前隐藏窗口。导航和关闭共享互斥的离开请求，不会叠加确认框。
+
+新生成的表单与 Gallery 提供“保存并离开 / 放弃修改 / 继续编辑”。`TrySaveAsync` 仅在保存成功且草稿干净时允许离开；校验失败、服务异常和过期保存结果均保留草稿。旧工程的 ArcPage 没有新钩子时，页面生成器保留旧表单行为；要启用拦截，需要升级框架与宿主接入代码。
+
+Override `ArcPage.CanLeaveAsync` to veto navigation or window close before state changes. Await `NavigateAsync` and update shell selection/history only after success. Windows expose their root navigation host through `NavigationContent`; the first native close is cancelled synchronously, confirmation runs on the UI queue, and only approved requests replay close. Other native close handlers must respect `args.Cancel`. Retained background pages are checked on window close as well. Duplicate leave requests are rejected while confirmation is pending. Generated forms offer save, discard and cancel; validation or save failure prevents leaving. Old ArcPage contracts keep compatible form generation until upgraded.
 
 ## 验证 / Validation
 

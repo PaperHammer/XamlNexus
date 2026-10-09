@@ -1,5 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using System.Threading;
+using Microsoft.UI.Xaml.Controls;
+using __APP__.UIComponent.Navigation;
 using Microsoft.UI.Xaml;
 using __APP__.MainPanel.ViewModels;
 using __APP__.UIComponent.Templates;
@@ -23,9 +26,36 @@ public sealed partial class __NAME__Page : ArcPage {
         await ViewModel.ActivateAsync(id);
     }
 
+    // <leave-confirmation>
+    private bool confirmingLeave;
+    public override async Task<bool> CanLeaveAsync(ArcLeaveReason reason, CancellationToken cancellationToken = default) {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (confirmingLeave || ViewModel.IsBusy) return false;
+        if (!ViewModel.HasUnsavedChanges) return true;
+        confirmingLeave = true;
+        try {
+            bool chinese = LanguageUtil.CurrentLanguage?.StartsWith("zh", StringComparison.OrdinalIgnoreCase) == true;
+            var dialog = new ContentDialog {
+                XamlRoot = XamlRoot,
+                RequestedTheme = ActualTheme,
+                Title = chinese ? "有未保存修改" : "Unsaved changes",
+                Content = chinese ? "可以保存并离开、放弃修改，或继续编辑。" : "Save and leave, discard your changes, or keep editing.",
+                PrimaryButtonText = chinese ? "保存并离开" : "Save and leave",
+                SecondaryButtonText = chinese ? "放弃修改" : "Discard changes",
+                CloseButtonText = chinese ? "继续编辑" : "Keep editing",
+                DefaultButton = ContentDialogButton.Close,
+            };
+            using var registration = cancellationToken.Register(() => DispatcherQueue.TryEnqueue(() => dialog.Hide()));
+            var result = await dialog.ShowAsync();
+            cancellationToken.ThrowIfCancellationRequested();
+            if (result == ContentDialogResult.Secondary) return true;
+            return result == ContentDialogResult.Primary && await ViewModel.TrySaveAsync();
+        }
+        finally { confirmingLeave = false; }
+    }
+    // </leave-confirmation>
+
     protected override async Task OnPreLeaveAsync() {
-        // Read ViewModel.HasUnsavedChanges before navigation when the shell supports a leave-confirmation prompt.
-        // 导航外壳支持离开确认时，可在导航前读取 ViewModel.HasUnsavedChanges。
         ViewModel.Deactivate();
         await base.OnPreLeaveAsync();
     }

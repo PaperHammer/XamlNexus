@@ -551,9 +551,10 @@
   "BusinessRecordMissing": "记录已不存在，请返回列表并刷新。",
   "BusinessSaved": "已保存到 SQLite",
   "BusinessUnsavedTitle": "放弃未保存的修改？",
-  "BusinessUnsavedBody": "可以先保存修改再离开，也可以放弃修改继续。",
+  "BusinessUnsavedBody": "表单有未保存修改。可以保存并离开、放弃修改，或继续编辑。",
   "BusinessDiscard": "放弃修改",
   "BusinessKeepEditing": "继续编辑",
   "BusinessNoRecords": "暂无可显示的记录，可以新建记录或修改搜索条件。",
-  "BusinessSourceDescription": "查看 Gallery 数据适配器和 SQLite 服务，了解如何把生成的 ViewModel 串成完整业务流程。"
+  "BusinessSourceDescription": "查看 Gallery 数据适配器和 SQLite 服务，了解如何把生成的 ViewModel 串成完整业务流程。",
+  "BusinessSaveAndLeave": "保存并离开"
 }

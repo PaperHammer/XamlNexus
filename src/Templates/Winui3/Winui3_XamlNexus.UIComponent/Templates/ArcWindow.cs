@@ -11,12 +11,14 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.UIComponent.Utils;
+using Winui3_XamlNexus.UIComponent.Navigation;
 using Winui3_XamlNexus.UIComponent.Utils.Extensions;
 using WinUIEx;
 
 namespace Winui3_XamlNexus.UIComponent.Templates {
     public abstract partial class ArcWindow : WindowEx {
         public virtual NavigationView? AppNavView { get; }
+        public virtual ArcNavigationContentView? NavigationContent => null;
         public virtual bool IsMainWindow => false;
         protected virtual bool IsNeedTrack => true;
         public abstract ArcWindowHost ContentHost { get; }
@@ -35,6 +37,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
             this.Closed += (_, _) => _isClosed = true;
             this.Activated += ArcWindow_Activated;
             this.Closed += ArcWindow_Closed;
+            this.AppWindow.Closing += ArcWindow_Closing;
         }
 
         private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
@@ -47,6 +50,7 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
 
         // Closing can be cancelled by tray behavior; release resources only after a real close. / 托盘行为可能取消关闭；仅在窗口实际关闭后释放资源。
         private void ArcWindow_Closed(object sender, WindowEventArgs args) {
+            this.AppWindow.Closing -= ArcWindow_Closing;
             this.Activated -= ArcWindow_Activated;
             this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
             this.ContentHost.AppRoot.ActualThemeChanged -= Host_ActualThemeChanged;
@@ -55,6 +59,30 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
                 ArcWindowManager.Cleanup();
                 ArcThemeUtil.Cleanup();
             }
+        }
+
+        private readonly ArcCloseRequest closeRequest = new();
+
+        protected virtual Task<bool> CanCloseAsync(CancellationToken cancellationToken) =>
+            NavigationContent?.CanLeaveAsync(ArcLeaveReason.WindowClose, cancellationToken) ?? Task.FromResult(true);
+
+        /// <summary>Request guarded close. Additional native handlers (for example tray policy) may still cancel it.</summary>
+        public Task<bool> RequestCloseAsync(Action? beforeClose = null, CancellationToken cancellationToken = default) =>
+            closeRequest.TryCloseAsync(CanCloseAsync, () => {
+                if (_isClosed) return;
+                beforeClose?.Invoke();
+                Close();
+            }, cancellationToken);
+
+        private void ArcWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+            if (_isClosed || args.Cancel || closeRequest.IsReplaying) return;
+            // Cancel synchronously and return from the native event before replaying Close().
+            args.Cancel = true;
+            DispatcherQueue.TryEnqueue(async () => {
+                if (_isClosed) return;
+                try { await RequestCloseAsync(); }
+                catch (Exception ex) { ArcLog.GetLogger<ArcWindow>().Error("Window leave confirmation failed", ex); }
+            });
         }
 
         private void AppRoot_Loaded(object sender, RoutedEventArgs e) {

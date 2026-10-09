@@ -118,6 +118,12 @@ public sealed class __NAME__ViewModel : INotifyPropertyChanged {
         return nameError.Length == 0;
     }
 
+    // Await saving before allowing navigation or window close; failed/invalid saves retain the draft.
+    public async Task<bool> TrySaveAsync() {
+        await SaveAsync();
+        return active && !busy && !HasUnsavedChanges && !HasNameError && !HasError;
+    }
+
     private async Task SaveAsync() {
         if (!Validate() || !active || busy) return;
         using var request = new CancellationTokenSource();

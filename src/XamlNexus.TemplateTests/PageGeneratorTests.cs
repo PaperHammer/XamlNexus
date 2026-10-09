@@ -294,5 +294,16 @@ public sealed class PageGeneratorTests : IDisposable {
         PageGenerator.Add(Project, "Orders");
         Assert.Contains("ViewModel { get; } = new();", Read("PageTest.MainPanel/OrdersPage.xaml.cs"));
     }
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Form_leave_confirmation_matches_the_projects_actual_ArcPage_contract(bool supportsGuard) {
+        Write("PageTest.UIComponent/Templates/ArcPage.cs", supportsGuard ? "Task<bool> CanLeaveAsync(" : "class ArcPage { }");
+        PageGenerator.Add(Project, "GuardedForm", kind: "form");
+        string page = Read("PageTest.MainPanel/GuardedFormPage.xaml.cs");
+        Assert.Equal(supportsGuard, page.Contains("override async Task<bool> CanLeaveAsync"));
+        if (supportsGuard) Assert.Contains("ViewModel.TrySaveAsync()", page);
+        Assert.Contains("public async Task<bool> TrySaveAsync", Read("PageTest.MainPanel/ViewModels/GuardedFormViewModel.cs"));
+    }
+
     public void Dispose() => Directory.Delete(root, recursive: true);
 }
