@@ -135,6 +135,19 @@ public sealed class GeneratorRootAssetsTests {
             Assert.True(generator.Generate(config));
             var generatedRoot = Path.Combine(outputParent, appName);
             AssertReleaseSolution(generatedRoot, appName, config.SlnType);
+            string entryPoint = Path.Combine(generatedRoot, appName + ".UI", "Program.cs");
+            if (!hybrid) {
+                Assert.True(File.Exists(entryPoint));
+                Assert.DoesNotContain("Winui3_XamlNexus", File.ReadAllText(entryPoint));
+                XDocument uiProject = XDocument.Load(Path.Combine(generatedRoot,
+                    appName + ".UI", appName + ".UI.csproj"));
+                Assert.Contains(uiProject.Descendants("DefineConstants"),
+                    element => element.Value.Split(';').Contains("DISABLE_XAML_GENERATED_MAIN"));
+                Assert.Contains(XamlNexusProjectManifestStore.Load(
+                    Path.Combine(generatedRoot, "xamlnexus.json")).ScaffoldFiles!,
+                    file => file.Path == appName + ".UI/Program.cs");
+            }
+            else Assert.False(File.Exists(entryPoint));
             AssertPanelGrouping(generatedRoot, appName, config.SlnType, includesSettings: true);
 
             Assert.True(File.Exists(Path.Combine(generatedRoot, "Directory.Build.props")));

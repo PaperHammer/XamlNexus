@@ -62,5 +62,8 @@
     <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Navigation/ArcLeaveRequest.cs" Link="TemplateSources/Winui3/ArcLeaveRequest.cs" />
     <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Navigation/ArcLeaveRequest.cs" Link="TemplateSources/Winui3_Wpf/ArcLeaveRequest.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UI/Activation/ActivationQueue.cs" Link="TemplateSources/Winui3/ActivationQueue.cs" />
+  </ItemGroup>
   <Import Project="../../samples/XamlNexus.Gallery/XamlNexus.Gallery.MainPanel/Gallery/GalleryPageModels.targets" />
 </Project>
