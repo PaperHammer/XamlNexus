@@ -1,41 +1,23 @@
 using System;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using XamlNexus.Gallery.UIComponent.Templates;
 namespace XamlNexus.Gallery.MainPanel.Gallery;
-
-public sealed partial class ToolGuidePage : ArcPage
-{
+public sealed partial class ToolGuidePage : ArcPage {
     public override Type ArcType => typeof(ToolGuidePage);
-    public ToolGuidePage()
-    {
+    public ToolGuidePage() {
         InitializeComponent();
-        WinuiCode.SetSource("xamlnexus new MyApp --preset winui", "commands");
-        HybridCode.SetSource("xamlnexus new HybridApp --preset hybrid", "commands");
-        BasicCode.SetSource("xamlnexus new MinimalApp --profile basic\nxamlnexus new DataApp --profile basic --features settings,sqlite", "commands");
-        RecipeListCode.SetSource("xamlnexus recipes\nxamlnexus list\nxamlnexus add settings,sqlite --dry-run", "commands");
-        SettingsCode.SetSource("xamlnexus add settings --dry-run", "commands");
-        SqliteCode.SetSource("xamlnexus add sqlite --dry-run", "commands");
-        TrayCode.SetSource("xamlnexus add tray --dry-run", "commands");
-        UpdaterCode.SetSource("xamlnexus add updater --dry-run", "commands");
-        EditorCode.SetSource("xamlnexus add editorconfig --dry-run", "commands");
-        InspectCode.SetSource("xamlnexus doctor --environment\nxamlnexus status\nxamlnexus validate\nxamlnexus doctor", "commands");
-        ComponentCode.SetSource("xamlnexus update --all --dry-run\nxamlnexus update --all\nxamlnexus remove sqlite --dry-run", "commands");
-        ScaffoldCode.SetSource("xamlnexus upgrade --dry-run", "commands");
-        CreateOptionsCode.SetSource("xamlnexus\nxamlnexus new MyApp --preset winui --profile standard --language zh-CN --solution-format slnx --output D:\\Projects", "commands");
-        PageCommandCode.SetSource("xamlnexus page add Dashboard --kind blank --dry-run\nxamlnexus page add Projects --kind list\nxamlnexus page add OrderDetails --kind details\nxamlnexus page add OrderEditor --kind form", "commands");
-        RunCommandCode.SetSource("xamlnexus run --dry-run\nxamlnexus run\nxamlnexus run --no-build", "commands");
-        AutomationCode.SetSource("xamlnexus status --project . --json\nxamlnexus update --all --project . --dry-run --json\nxamlnexus validate --project . --json\nxamlnexus upgrade --project . --dry-run --json", "commands");
-        GalleryCommandCode.SetSource("xamlnexus --version\nxamlnexus gallery", "commands");
+        WinuiCode.SetSource("xamlnexus new MyApp --preset winui", "PowerShell");
+        HybridCode.SetSource("xamlnexus new HybridApp --preset hybrid", "PowerShell");
+        BasicCode.SetSource("xamlnexus new MinimalApp --profile basic", "PowerShell");
+        CreateOptionsCode.SetSource("xamlnexus new MyApp\nxamlnexus new DataApp --profile basic --features settings,sqlite\nxamlnexus new XmlApp --solution-format slnx", "PowerShell");
+        PageCommandCode.SetSource("xamlnexus page add Dashboard --kind blank\nxamlnexus page add Projects --kind list\nxamlnexus page add OrderDetails --kind details\nxamlnexus page add OrderEditor --kind form", "PowerShell");
+        RunCommandCode.SetSource("xamlnexus run --dry-run\nxamlnexus run\nxamlnexus run --no-build", "PowerShell");
+        InspectCode.SetSource("xamlnexus doctor --environment\nxamlnexus status\nxamlnexus validate\nxamlnexus doctor", "PowerShell");
+        ComponentMaintenanceCode.SetSource("xamlnexus add settings,sqlite --dry-run\nxamlnexus add settings,sqlite\nxamlnexus remove sqlite --dry-run\nxamlnexus update --all --dry-run", "PowerShell");
+        ScaffoldMaintenanceCode.SetSource("xamlnexus upgrade --dry-run", "PowerShell");
+        AutomationCode.SetSource("xamlnexus status --project . --json\nxamlnexus update --all --project . --dry-run --json\nxamlnexus validate --project . --json\nxamlnexus upgrade --project . --dry-run --json", "PowerShell");
+        GalleryCommandCode.SetSource("xamlnexus --version\nxamlnexus gallery", "PowerShell");
     }
-    private void GuideTabs_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
-    {
-        if (ArchitecturePanel is null || PagesPanel is null || RecipesPanel is null || MaintenancePanel is null || CommandsPanel is null) return;
-        string? tab = sender.SelectedItem?.Tag as string;
-        ArchitecturePanel.Visibility = tab == "architecture" ? Visibility.Visible : Visibility.Collapsed;
-        PagesPanel.Visibility = tab == "pages" ? Visibility.Visible : Visibility.Collapsed;
-        RecipesPanel.Visibility = tab == "recipes" ? Visibility.Visible : Visibility.Collapsed;
-        MaintenancePanel.Visibility = tab == "maintenance" ? Visibility.Visible : Visibility.Collapsed;
-        CommandsPanel.Visibility = tab == "commands" ? Visibility.Visible : Visibility.Collapsed;
-    }
+    private void Navigate_Click(object sender, RoutedEventArgs e) => GalleryCatalog.Navigate((string)((ButtonBase)sender).Tag);
 }

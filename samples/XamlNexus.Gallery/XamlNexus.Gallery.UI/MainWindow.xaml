@@ -18,30 +18,31 @@
         </local:GalleryShell.SearchContent>
         <Grid x:Name="MainGrid" Background="Transparent">
             <NavigationView x:Name="NavigationViewControl" PaneDisplayMode="Auto" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                OpenPaneLength="280" CompactPaneLength="48" IsBackButtonVisible="Collapsed"
+                OpenPaneLength="252" CompactPaneLength="48" IsBackButtonVisible="Collapsed"
                 IsPaneToggleButtonVisible="False" IsSettingsVisible="False" IsTitleBarAutoPaddingEnabled="False"
                 SelectionChanged="OnNavigationViewSelectionChanged">
                 <NavigationView.MenuItems>
-                    <NavigationViewItem x:Name="Nav_Home" Tag="home" Icon="Home" />
-                    <NavigationViewItem x:Name="Nav_ToolGuide" Tag="tool-guide"><NavigationViewItem.Icon><FontIcon Glyph="&#xE82D;"/></NavigationViewItem.Icon></NavigationViewItem>
-                    <NavigationViewItem x:Name="Nav_GettingStarted" Tag="getting-started"><NavigationViewItem.Icon><FontIcon Glyph="&#xE768;"/></NavigationViewItem.Icon></NavigationViewItem>
+                    <NavigationViewItem x:Name="Nav_Home" Tag="home" Icon="Home"/>
+                    <NavigationViewItem x:Name="Nav_GettingStarted" Tag="getting-started" Icon="Play"/>
                     <NavigationViewItemSeparator/>
-                    <NavigationViewItem x:Name="Nav_Fundamentals" Tag="fundamentals" IsExpanded="True" Icon="Library">
+                    <NavigationViewItemHeader x:Name="Nav_WorkflowsHeader"/>
+                    <NavigationViewItem x:Name="Nav_BusinessPages" Tag="business-pages" Icon="Page"/>
+                    <NavigationViewItem x:Name="Nav_Components" Tag="components" Icon="Add"/>
+                    <NavigationViewItem x:Name="Nav_Evolution" Tag="evolution" Icon="Sync"/>
+                    <NavigationViewItem x:Name="Nav_MainPage" Tag="sqlite" Icon="Save"/>
+                    <NavigationViewItemSeparator/>
+                    <NavigationViewItem x:Name="Nav_Fundamentals" SelectsOnInvoked="False" IsExpanded="False" Icon="Library">
                         <NavigationViewItem.MenuItems>
-                            <NavigationViewItem x:Name="Nav_ArcWindow" Tag="arc-window"><NavigationViewItem.Icon><FontIcon Glyph="&#xE737;"/></NavigationViewItem.Icon></NavigationViewItem>
-                            <NavigationViewItem x:Name="Nav_ArcPage" Tag="arc-page"><NavigationViewItem.Icon><FontIcon Glyph="&#xE8A5;"/></NavigationViewItem.Icon></NavigationViewItem>
-                            <NavigationViewItem x:Name="Nav_Lifetime" Tag="keepalive"><NavigationViewItem.Icon><FontIcon Glyph="&#xE81C;"/></NavigationViewItem.Icon></NavigationViewItem>
-                        </NavigationViewItem.MenuItems>
-                    </NavigationViewItem>
-                    <NavigationViewItem x:Name="Nav_Capabilities" Tag="capabilities" IsExpanded="True" Icon="AllApps">
-                        <NavigationViewItem.MenuItems>
-                            <NavigationViewItem x:Name="Nav_List" Tag="list" Icon="List" />
-                            <NavigationViewItem x:Name="Nav_MainPage" Tag="sqlite" Icon="Save" />
+                            <NavigationViewItem x:Name="Nav_List" Tag="list" Icon="List"/>
+                            <NavigationViewItem x:Name="Nav_ArcWindow" Tag="arc-window" Icon="NewWindow"/>
+                            <NavigationViewItem x:Name="Nav_ArcPage" Tag="arc-page" Icon="Switch"/>
+                            <NavigationViewItem x:Name="Nav_Lifetime" Tag="keepalive" Icon="Edit"/>
                         </NavigationViewItem.MenuItems>
                     </NavigationViewItem>
                 </NavigationView.MenuItems>
                 <NavigationView.FooterMenuItems>
-                    <NavigationViewItem x:Name="Nav_AppSettings" Tag="settings" Icon="Setting" />
+                    <NavigationViewItem x:Name="Nav_ToolGuide" Tag="tool-guide" Icon="Document"/>
+                    <NavigationViewItem x:Name="Nav_AppSettings" Tag="settings" Icon="Setting"/>
                 </NavigationView.FooterMenuItems>
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8,0,0,0"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1,1,0,0">

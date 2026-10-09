@@ -1,8 +1,4 @@
-<UserControl
-    x:Class="XamlNexus.Gallery.MainPanel.Gallery.PageTemplateShowcaseView"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery">
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.PageTemplateShowcaseView">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -10,103 +6,94 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <StackPanel Spacing="20">
-        <StackPanel Spacing="8">
-            <TextBlock Text="{Binding [PageTemplatesIntro], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
-            <TextBlock Text="{Binding [PageTemplatesHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-        </StackPanel>
-
+    <StackPanel Spacing="24">
         <SelectorBar x:Name="TemplateSelector" SelectionChanged="TemplateSelector_SelectionChanged">
-            <SelectorBarItem Text="Blank" Tag="blank" IsSelected="True"/>
-            <SelectorBarItem Text="List" Tag="list"/>
-            <SelectorBarItem Text="Details" Tag="details"/>
-            <SelectorBarItem Text="Form" Tag="form"/>
+            <SelectorBarItem Text="{Binding [TemplateList], Source={StaticResource Strings}}" Tag="list" IsSelected="True"/>
+            <SelectorBarItem Text="{Binding [TemplateDetails], Source={StaticResource Strings}}" Tag="details"/>
+            <SelectorBarItem Text="{Binding [TemplateForm], Source={StaticResource Strings}}" Tag="form"/>
+            <SelectorBarItem Text="{Binding [TemplateBlank], Source={StaticResource Strings}}" Tag="blank"/>
         </SelectorBar>
-
-        <Border Style="{StaticResource Card}">
+        <StackPanel Spacing="6">
+            <TextBlock x:Name="SelectedTitle" Style="{StaticResource SectionTitle}"/>
+            <TextBlock x:Name="SelectedBody" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+        <Border Style="{StaticResource Card}" Background="{ThemeResource GalleryMutedSurfaceBrush}">
             <StackPanel Spacing="16">
-                <StackPanel Spacing="6">
-                    <TextBlock x:Name="SelectedKind" Style="{StaticResource Eyebrow}"/>
-                    <TextBlock x:Name="SelectedTitle" Style="{StaticResource CardTitle}"/>
-                    <TextBlock x:Name="SelectedBody" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                </StackPanel>
-
-                <Border Style="{StaticResource CompactCard}" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="{Binding [PageTemplatePreview], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
-
-                        <StackPanel x:Name="BlankPreview" Spacing="12">
-                            <TextBlock Text="Workspace" FontSize="24" FontWeight="SemiBold"/>
-                            <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-                            <TextBlock Text="{Binding [BlankPreviewBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-
-                        <StackPanel x:Name="ListPreview" Spacing="12" Visibility="Collapsed">
-                            <TextBlock Text="{Binding [ListTemplatePreviewBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
-                            <Button Content="{Binding [OpenListExample], Source={StaticResource Strings}}" Click="OpenListExample_Click" HorizontalAlignment="Left"/>
-                        </StackPanel>
-
-                        <StackPanel x:Name="DetailsPreview" Spacing="12" Visibility="Collapsed">
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox x:Name="DetailId" Header="{Binding [DetailsIdLabel], Source={StaticResource Strings}}" Text="A-1042"/>
-                                <Button x:Name="LoadDetailsButton" Grid.Column="1" Content="{Binding [LoadDetails], Source={StaticResource Strings}}" Click="LoadDetails_Click" VerticalAlignment="Bottom"/>
-                            </Grid>
-                            <TextBlock Text="{Binding [DetailsFailureHint], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            <ProgressBar x:Name="DetailsProgress" IsIndeterminate="True" Visibility="Collapsed"/>
-                            <InfoBar x:Name="DetailsError" Severity="Error" IsClosable="False" IsOpen="False" Title="{Binding [DetailsErrorTitle], Source={StaticResource Strings}}" Message="{Binding [DetailsErrorMessage], Source={StaticResource Strings}}">
-                                <InfoBar.ActionButton>
-                                    <Button Content="{Binding [Retry], Source={StaticResource Strings}}" Click="LoadDetails_Click"/>
-                                </InfoBar.ActionButton>
-                            </InfoBar>
-                            <Border x:Name="DetailsResult" Padding="16" CornerRadius="6" BorderThickness="1" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Visibility="Collapsed">
-                                <StackPanel Spacing="6">
-                                    <TextBlock x:Name="DetailsResultTitle" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="DetailsResultDescription" Style="{StaticResource BodyText}" TextWrapping="Wrap"/>
-                                    <TextBlock x:Name="DetailsResultId" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Text="{Binding [BusinessWorkflowHint], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                <StackPanel x:Name="ListPreview" Spacing="12">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox PlaceholderText="{Binding [SearchItems], Source={StaticResource Strings}}" AutomationProperties.Name="{Binding [SearchItems], Source={StaticResource Strings}}" Text="{x:Bind ListModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Grid.Column="1" Content="{Binding [Refresh], Source={StaticResource Strings}}" Command="{x:Bind ListModel.RefreshCommand}"/>
+                    </Grid>
+                    <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ToVisibility(ListModel.IsBusy), Mode=OneWay}"/>
+                    <InfoBar Severity="Error" IsClosable="False" IsOpen="{x:Bind ListModel.HasError, Mode=OneWay}" Message="{x:Bind ListModel.ErrorMessage, Mode=OneWay}"/>
+                    <ListView ItemsSource="{x:Bind ListModel.Items}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="Record_Click" AutomationProperties.Name="{Binding [BusinessRecords], Source={StaticResource Strings}}" MaxHeight="260">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Spacing="4" Padding="8,10">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
-                            </Border>
-                        </StackPanel>
-
-                        <StackPanel x:Name="FormPreview" Spacing="12" Visibility="Collapsed">
-                            <TextBox x:Name="FormName" Header="{Binding [FormNameLabel], Source={StaticResource Strings}}" Text="Northwind" TextChanged="FormField_TextChanged"/>
-                            <TextBlock x:Name="FormNameError" Text="{Binding [FormNameRequired], Source={StaticResource Strings}}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Visibility="Collapsed"/>
-                            <TextBox x:Name="FormDescription" Header="{Binding [FormDescriptionLabel], Source={StaticResource Strings}}" Text="Desktop customer workspace" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="88" TextChanged="FormField_TextChanged"/>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button x:Name="SaveFormButton" Content="{Binding [Save], Source={StaticResource Strings}}" Click="SaveForm_Click"/>
-                                <Button x:Name="ResetFormButton" Content="{Binding [Reset], Source={StaticResource Strings}}" Click="ResetForm_Click"/>
-                                <TextBlock x:Name="FormState" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            </StackPanel>
-                        </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <TextBlock Text="{Binding [BusinessNoRecords], Source={StaticResource Strings}}" Visibility="{x:Bind ToVisibility(ListModel.IsEmpty), Mode=OneWay}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="12"><Button Content="{Binding [BusinessNewRecord], Source={StaticResource Strings}}" Click="NewRecord_Click" Style="{StaticResource AccentButtonStyle}"/><Button Content="{Binding [OpenListExample], Source={StaticResource Strings}}" Click="OpenListExample_Click"/></StackPanel>
+                </StackPanel>
+                <StackPanel x:Name="DetailsPreview" Spacing="12" Visibility="Collapsed">
+                    <TextBox x:Name="DetailId" Header="{Binding [DetailsIdLabel], Source={StaticResource Strings}}" IsReadOnly="True"/>
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button x:Name="EditRecordButton" Content="{Binding [BusinessEditRecord], Source={StaticResource Strings}}" Click="EditRecord_Click" Style="{StaticResource AccentButtonStyle}"/>
+                        <Button Content="{Binding [BusinessBackToList], Source={StaticResource Strings}}" Click="BackToList_Click"/>
+                        <Button x:Name="FailReadButton" Content="{Binding [BusinessFailRead], Source={StaticResource Strings}}" Click="FailRead_Click"/>
                     </StackPanel>
-                </Border>
-
-                <Grid ColumnSpacing="16" RowSpacing="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="{Binding [GeneratedFiles], Source={StaticResource Strings}}" FontWeight="SemiBold"/>
-                    <TextBlock x:Name="SelectedFiles" Grid.Column="1" Style="{StaticResource BodyText}"/>
-                    <TextBlock Grid.Row="1" Text="{Binding [RuntimeFlow], Source={StaticResource Strings}}" FontWeight="SemiBold"/>
-                    <TextBlock x:Name="SelectedFlow" Grid.Row="1" Grid.Column="1" Style="{StaticResource BodyText}"/>
-                </Grid>
-
-                <g:GalleryCodeView x:Name="TemplateCommand"/>
+                    <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ToVisibility(DetailsModel.IsBusy), Mode=OneWay}"/>
+                    <InfoBar Severity="Error" IsClosable="False" IsOpen="{x:Bind DetailsModel.HasError, Mode=OneWay}" Message="{x:Bind DetailsModel.ErrorMessage, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <Button Content="{Binding [Retry], Source={StaticResource Strings}}" Command="{x:Bind DetailsModel.RetryCommand}"/>
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                    <StackPanel Spacing="6" Visibility="{x:Bind ToVisibility(DetailsModel.HasItem), Mode=OneWay}">
+                        <TextBlock Text="{x:Bind DetailsModel.Title, Mode=OneWay}" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="{x:Bind DetailsModel.Description, Mode=OneWay}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{x:Bind DetailsModel.Identifier, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel x:Name="FormPreview" Spacing="12" Visibility="Collapsed">
+                    <TextBox Header="{Binding [FormNameLabel], Source={StaticResource Strings}}" Text="{x:Bind FormModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind FormModel.CanEdit, Mode=OneWay}"/>
+                    <TextBlock Text="{Binding [FormNameRequired], Source={StaticResource Strings}}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Visibility="{x:Bind ToVisibility(FormModel.HasNameError), Mode=OneWay}"/>
+                    <TextBox Header="{Binding [FormDescriptionLabel], Source={StaticResource Strings}}" Text="{x:Bind FormModel.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind FormModel.CanEdit, Mode=OneWay}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="88"/>
+                    <InfoBar Severity="Error" IsClosable="False" IsOpen="{x:Bind FormModel.HasError, Mode=OneWay}" Message="{x:Bind FormModel.ErrorMessage, Mode=OneWay}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Style="{StaticResource AccentButtonStyle}" Content="{Binding [Save], Source={StaticResource Strings}}" Command="{x:Bind FormModel.SaveCommand}"/>
+                        <Button Content="{Binding [Reset], Source={StaticResource Strings}}" Command="{x:Bind FormModel.ResetCommand}"/>
+                        <TextBlock x:Name="FormState" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+                <Button x:Name="BackToListButton" Content="{Binding [BusinessBackToList], Source={StaticResource Strings}}" Click="BackToList_Click" Visibility="{x:Bind ToVisibility(FormModel.CanEdit), Mode=OneWay}" HorizontalAlignment="Left"/>
+                <StackPanel x:Name="BlankPreview" Spacing="12" Visibility="Collapsed">
+                    <TextBlock Text="Workspace" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [BlankPreviewBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                </StackPanel>
             </StackPanel>
         </Border>
-
-        <g:GalleryCodeView x:Name="BlankSource"/>
-        <g:GallerySourceBrowser x:Name="TemplateSource" Visibility="Collapsed"/>
-        <Border Style="{StaticResource NoteCard}">
-            <TextBlock Text="{Binding [PageTemplateBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
-        </Border>
+        <StackPanel Spacing="12">
+            <TextBlock Text="{Binding [UseInProject], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <g:GalleryCodeView x:Name="TemplateCommand"/>
+            <TextBlock Text="{Binding [PageTemplateBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+        <g:GallerySourceBrowser Kind="Business"/>
+        <Expander Header="{Binding [GeneratedFiles], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+            <StackPanel Spacing="16">
+                <TextBlock x:Name="SelectedFiles" FontFamily="Consolas" TextWrapping="Wrap"/>
+                <TextBlock x:Name="SelectedFlow" Style="{StaticResource BodyText}"/>
+                <g:GalleryCodeView x:Name="BlankSource"/>
+                <g:GallerySourceBrowser x:Name="TemplateSource"/>
+            </StackPanel>
+        </Expander>
     </StackPanel>
 </UserControl>

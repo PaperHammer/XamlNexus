@@ -26,6 +26,7 @@ public sealed partial class GallerySourceBrowser : UserControl
         string? selected = picker.SelectedItem as string;
         picker.ItemsSource = Kind switch
         {
+            "Business" => new[] { "PageTemplateShowcaseView.xaml", "PageTemplateShowcaseView.xaml.cs", "GalleryBusinessDataSource.cs", "GalleryBusinessStore.cs" },
             "Demo" => new[] { "ListExampleView.xaml", "ListExampleView.xaml.cs", "ListGalleryPage.cs", "GalleryItemsViewModel.cs", "GalleryItemsDataSource.cs" },
             "Retention" => new[] { "KeepAliveGalleryPage.xaml", "KeepAliveGalleryPage.xaml.cs", "RegularRetentionPage.xaml", "CachedRetentionPage.xaml", "RetentionExamplePage.cs", "RetentionExampleView.xaml", "RetentionExampleView.xaml.cs", "DepartureRetentionPage.xaml", "DepartureRetentionPage.xaml.cs", "GalleryLifetime.cs" },
             "Window" => new[] { "Framework.ArcWindow.cs", "Framework.ArcWindowHost.xaml", "Framework.ArcWindowManager.cs" },
@@ -45,6 +46,7 @@ public sealed partial class GallerySourceBrowser : UserControl
             "DetailsTemplate" => "DetailsTemplateDescription",
             "FormTemplate" => "FormTemplateDescription",
             "Template" => "TemplateDescription",
+            "Business" => "BusinessSourceDescription",
             "Data" => "DataSourceDescription",
             "Window" or "Page" => "FrameworkSourceHelp",
             _ => "DemoDescription",

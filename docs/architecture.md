@@ -46,6 +46,14 @@ Edit shared behavior in the template. Keep Gallery-specific windows, navigation 
 To specialize a shared file, remove it from the allowlist before adding a local implementation.
 Generated user projects remain self-contained. Building Gallery requires the repository; running its portable package does not.
 
+## Gallery 工作流演示 / Gallery workflows
+
+页面模板演示通过 `Gallery/GalleryPageModels.targets` 从 Common 的 ListPage、DetailsPage 和 FormPage 资源编译 ViewModel 与数据接口，只替换应用与页面名称。Gallery 通过专用适配器把模型接入 SQLite 业务存储，不复制模型行为；生成源码仍嵌入发布包用于离线浏览。
+
+Gallery MainPanel 直接引用 `XamlNexus.Recipes.BuiltIn` 及其 Common 依赖。组件页调用生产组合规划器，项目演进页调用生产三方合并器；二者只进行内存预览，不调用 CLI 或写入项目。不要把 Gallery 的展示文案或业务演示反向加入 Common。
+
+Gallery compiles page template models and interfaces directly from Common resources with substituted names. Its own sample services provide demonstration data. MainPanel references BuiltIn recipes and Common to preview the production composition planner and three-way merger in memory, without command execution or project writes.
+
 ## 验证 / Validation
 
 - `dotnet test src/XamlNexus.TemplateTests/XamlNexus.TemplateTests.csproj`

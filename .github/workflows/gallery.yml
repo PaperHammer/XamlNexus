@@ -5,7 +5,9 @@ on:
   pull_request:
     paths:
       - 'samples/XamlNexus.Gallery/**'
-      - 'src/XamlNexus.Common/Assets/ListPage/**'
+      - 'src/XamlNexus.TemplateTests/GalleryBusinessStoreTests.cs'
+      - 'src/XamlNexus.Common/**'
+      - 'src/XamlNexus.Recipes.BuiltIn/**'
       - 'eng/Publish-Gallery.ps1'
       - 'eng/release/*Gallery*.ps1'
       - 'eng/release/Test-ReleasePackage.ps1'
@@ -31,6 +33,8 @@ jobs:
           dotnet-version: |
             8.0.x
             10.0.x
+      - name: Test persistent Gallery business workflow
+        run: dotnet test src/XamlNexus.TemplateTests/XamlNexus.TemplateTests.csproj -c Release --filter FullyQualifiedName~GalleryBusinessStoreTests -p:UseSharedCompilation=false -p:NuGetAudit=false
       - name: Build portable Gallery
         shell: pwsh
         run: ./eng/Publish-Gallery.ps1 -Architecture x64

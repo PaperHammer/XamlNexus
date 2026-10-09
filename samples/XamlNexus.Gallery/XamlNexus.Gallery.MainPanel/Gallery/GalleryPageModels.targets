@@ -1,0 +1,58 @@
+<Project>
+  <!-- Compile the same models that the CLI generates; no behavior copies. -->
+  <PropertyGroup>
+    <GalleryModelRoot>$(MSBuildThisFileDirectory)../../../../src/XamlNexus.Common/Assets/</GalleryModelRoot>
+    <GalleryModelOutput>$(BaseIntermediateOutputPath)GalleryModels/$(Configuration)/$(Platform)/$(TargetFramework)/$(RuntimeIdentifier)/</GalleryModelOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <GalleryModel Include="ListPage/ViewModel.cs.txt">
+      <GeneratedFile>GalleryListViewModel.cs</GeneratedFile>
+      <TemplateName>GalleryList</TemplateName>
+    </GalleryModel>
+    <GalleryModel Include="ListPage/DataSource.cs.txt">
+      <GeneratedFile>GalleryListDataSource.cs</GeneratedFile>
+      <TemplateName>GalleryList</TemplateName>
+    </GalleryModel>
+    <GalleryModel Include="DetailsPage/ViewModel.cs.txt">
+      <GeneratedFile>GalleryDetailsViewModel.cs</GeneratedFile>
+      <TemplateName>GalleryDetails</TemplateName>
+    </GalleryModel>
+    <GalleryModel Include="DetailsPage/DataSource.cs.txt">
+      <GeneratedFile>GalleryDetailsDataSource.cs</GeneratedFile>
+      <TemplateName>GalleryDetails</TemplateName>
+    </GalleryModel>
+    <GalleryModel Include="FormPage/ViewModel.cs.txt">
+      <GeneratedFile>GalleryFormViewModel.cs</GeneratedFile>
+      <TemplateName>GalleryForm</TemplateName>
+    </GalleryModel>
+    <GalleryModel Include="FormPage/DataSource.cs.txt">
+      <GeneratedFile>GalleryFormDataSource.cs</GeneratedFile>
+      <TemplateName>GalleryForm</TemplateName>
+    </GalleryModel>
+    <Compile Include="@(GalleryModel->'$(GalleryModelOutput)%(GeneratedFile)')"/>
+  </ItemGroup>
+  <UsingTask TaskName="GenerateGalleryPageModels" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Sources ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true"/>
+      <SourceRoot ParameterType="System.String" Required="true"/>
+      <OutputRoot ParameterType="System.String" Required="true"/>
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO"/>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+    foreach (var source in Sources) {
+      var content = File.ReadAllText(Path.Combine(SourceRoot, source.ItemSpec)).Replace("__APP__", "XamlNexus.Gallery").Replace("__NAME__", source.GetMetadata("TemplateName"));
+      var path = Path.Combine(OutputRoot, source.GetMetadata("GeneratedFile"));
+      Directory.CreateDirectory(Path.GetDirectoryName(path));
+      if (!File.Exists(path) || File.ReadAllText(path) != content) File.WriteAllText(path, content);
+    }
+  ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="GenerateGalleryPageModelSources" BeforeTargets="PrepareForBuild">
+    <GenerateGalleryPageModels Sources="@(GalleryModel)" SourceRoot="$(GalleryModelRoot)" OutputRoot="$(GalleryModelOutput)"/>
+    <ItemGroup>
+      <FileWrites Include="@(GalleryModel->'$(GalleryModelOutput)%(GeneratedFile)')"/>
+    </ItemGroup>
+  </Target>
+</Project>

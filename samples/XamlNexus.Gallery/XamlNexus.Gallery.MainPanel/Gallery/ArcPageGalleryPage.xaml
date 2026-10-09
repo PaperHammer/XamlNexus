@@ -8,7 +8,7 @@
     </arc:ArcPage.Resources>
     <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
-            <g:GalleryPageHeader Title="ArcPage" Description="{Binding [PageDescription], Source={StaticResource Strings}}"/>
+            <g:GalleryPageHeader Title="{Binding [PageCard], Source={StaticResource Strings}}" Description="{Binding [PageDescription], Source={StaticResource Strings}}"/>
 
             <Border Style="{StaticResource Card}">
                 <StackPanel Spacing="16">
@@ -58,7 +58,7 @@
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="{Binding [PageLifecycleTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+            <Expander Header="{Binding [PageLifecycleTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}"><StackPanel Spacing="16"><TextBlock Text="{Binding [PageLifecycleTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
             <Border Style="{StaticResource Card}">
                 <StackPanel Spacing="16">
                     <TextBlock Text="{Binding [PageRegularFlowTitle], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
@@ -82,7 +82,7 @@
                     <Expander Header="{Binding [PageLifecycleCodeTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
                         <g:GalleryCodeView x:Name="LifecycleCode"/>
                     </Expander>
-                    <Expander Header="{Binding [PageBlockingTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}" IsExpanded="True">
+                    <Expander Header="{Binding [PageBlockingTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}" IsExpanded="False">
                         <StackPanel Spacing="14">
                             <TextBlock Text="{Binding [PageBlockingDetail], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                             <Border Style="{StaticResource CompactCard}">
@@ -95,6 +95,7 @@
                 </StackPanel>
             </Border>
 
+            </StackPanel></Expander>
             <g:GallerySourceBrowser Kind="Page"/>
         </StackPanel>
     </ScrollViewer>

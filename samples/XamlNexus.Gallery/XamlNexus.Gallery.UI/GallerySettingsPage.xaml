@@ -8,9 +8,9 @@
     </arc:ArcPage.Resources>
     <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Left">
         <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
-            <TextBlock Text="{Binding [Settings], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="28" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding [Settings], Source={StaticResource Strings}}" Style="{StaticResource PageTitle}"/>
             <StackPanel Spacing="6" Margin="0,8,0,0">
-                <TextBlock Margin="0,0,0,6" Text="{Binding [Appearance], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="14" FontWeight="SemiBold"/>
+                <TextBlock Margin="0,0,0,6" Text="{Binding [Appearance], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
                 <g:GallerySettingRow Glyph="" Title="{Binding [AppTheme], Source={StaticResource Strings}}" Description="{Binding [ThemeHelp], Source={StaticResource Strings}}">
                     <ComboBox x:Name="theme" Width="200" AutomationProperties.Name="{Binding [AppTheme], Source={StaticResource Strings}}" SelectionChanged="ThemeChanged"/>
                 </g:GallerySettingRow>
@@ -22,7 +22,7 @@
                 </g:GallerySettingRow>
             </StackPanel>
             <StackPanel Spacing="6" Margin="0,8,0,0">
-                <TextBlock Text="{Binding [Preferences], Source={StaticResource Strings}}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <TextBlock Text="{Binding [Preferences], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}" Margin="0,0,0,6"/>
                 <g:GallerySettingRow Glyph="" Title="{Binding [Language], Source={StaticResource Strings}}" Description="{Binding [LanguageHelp], Source={StaticResource Strings}}">
                     <ComboBox x:Name="language" Width="200" AutomationProperties.Name="{Binding [Language], Source={StaticResource Strings}}" SelectionChanged="LanguageChanged">
                         <ComboBoxItem Content="简体中文"/>
@@ -31,7 +31,7 @@
                 </g:GallerySettingRow>
             </StackPanel>
             <StackPanel Spacing="6" Margin="0,8,0,0">
-                <TextBlock Margin="0,0,0,6" Text="{Binding [About], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" FontSize="14" FontWeight="SemiBold"/>
+                <TextBlock Margin="0,0,0,6" Text="{Binding [About], Source={StaticResource Strings}}" Style="{StaticResource SubsectionTitle}"/>
                 <g:GallerySettingRow Glyph="" Title="XamlNexus Gallery" Description="{Binding [AboutDescription], Source={StaticResource Strings}}">
                     <TextBlock x:Name="Version" VerticalAlignment="Center"/>
                 </g:GallerySettingRow>

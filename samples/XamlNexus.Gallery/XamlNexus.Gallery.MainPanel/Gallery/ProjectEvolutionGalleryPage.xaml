@@ -1,0 +1,58 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.ProjectEvolutionGalleryPage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="{Binding [EvolutionTitle], Source={StaticResource Strings}}" Description="{Binding [EvolutionDescription], Source={StaticResource Strings}}"/>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [MergeTryTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [MergeTryBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <ComboBox x:Name="Scenario" Header="{Binding [MergeScenario], Source={StaticResource Strings}}" SelectedIndex="0" HorizontalAlignment="Stretch" SelectionChanged="ScenarioChanged">
+                        <ComboBoxItem Content="{Binding [MergeIndependent], Source={StaticResource Strings}}" Tag="independent"/>
+                        <ComboBoxItem Content="{Binding [MergeOverlap], Source={StaticResource Strings}}" Tag="overlap"/>
+                    </ComboBox>
+                    <Grid x:Name="MergeInputs" SizeChanged="Inputs_SizeChanged" ColumnSpacing="16" RowSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition x:Name="TargetColumn"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBox x:Name="LocalText" Header="{Binding [MergeLocal], Source={StaticResource Strings}}" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" MinHeight="180" MaxLength="4096" TextChanged="LocalChanged"/>
+                        <StackPanel x:Name="TargetPane" Grid.Column="1" Spacing="8">
+                            <TextBlock Text="{Binding [MergeTarget], Source={StaticResource Strings}}" FontWeight="SemiBold"/>
+                            <g:GalleryCodeView x:Name="TargetText"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Content="{Binding [MergeReset], Source={StaticResource Strings}}" Click="Reset_Click"/>
+                        <TextBlock Text="{Binding [MergeLive], Source={StaticResource Strings}}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <InfoBar x:Name="MergeStatus" IsOpen="True" IsClosable="False"/>
+                    <g:GalleryCodeView x:Name="MergeResult"/>
+                </StackPanel>
+            </Border>
+            <Expander Header="{Binding [MergeBaseline], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <g:GalleryCodeView x:Name="BaselineText"/>
+            </Expander>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{Binding [EvolutionUseTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [EvolutionUseBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="EvolutionCommands"/>
+                </StackPanel>
+            </Border>
+            <Expander Header="{Binding [EvolutionBoundaryTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <TextBlock Text="{Binding [EvolutionBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>
