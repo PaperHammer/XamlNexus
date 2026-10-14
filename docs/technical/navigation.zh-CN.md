@@ -38,7 +38,7 @@ internal static class OrdersNavigation {
 `INavigationRegistry` 提供 Register、Entries 和 Resolve。默认实现为 NavigationRegistry，
 `NavigationRegistry.Default` 是本进程共用的实例。标准 MainWindow 使用 NavigationMenu
 创建菜单，将路由保存在 NavigationViewItem.Tag 中；选择时 Resolve(route) 得到页面类型，
-再调用 NaviContent.Navigate(pageType)。无需在窗口维护逐页 switch。
+再等待 NaviContent.NavigateAsync(pageType)，通过离开确认后才更新侧栏选中项。无需在窗口维护逐页 switch。
 
 自定义窗口可以复用适配器：
 
@@ -51,6 +51,8 @@ menu.Select("home");
 
 也可以直接遍历 Entries 渲染自己的控件，用 Resolve 解析路由。注册表接口不要求窗口名、
 XAML 布局或菜单控件类型；自定义宿主负责选择处理、标题刷新和页面展示。
+
+业务激活通过 MainWindow.NavigateActivationAsync 复用此导航和未保存拦截。启动参数与 Payload 格式见[应用激活与业务导航](app-activation.zh-CN.md)。
 
 ## 生成与迁移边界
 

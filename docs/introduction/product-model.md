@@ -29,7 +29,9 @@ Basic removes the full settings panel while retaining startup, navigation, MVVM,
 | Logon startup | Core implementation retained | Configurable in settings | No standalone Recipe; registration is not enabled by default |
 | Editor configuration | Optional | Optional | `add editorconfig` |
 | Publishing, installers, signing | Scripts included | Scripts included | Maintainer configuration and execution; separate from development running |
-| Ordinary page generation | `page add` | `page add` | Page, ViewModel, navigation registration; blank/list kinds, no form kind |
+| Ordinary page generation | `page add` | `page add` | Page, ViewModel, navigation registration; blank/list/details/form kinds, sample data sources and unsaved-work guards |
+
+Business activation is a core framework capability: pure WinUI supports initial and redirected routes; hybrid supports initial host arguments. Normal host exit and restart first require UI leave approval; cancellation or save failure retains the business page. See [activation](../technical/app-activation.md) and [hybrid close protection](../technical/hybrid-close.md).
 
 Actual installation state is shown by `xamlnexus list` and `xamlnexus.json` modules. Profile records creation intent; later removals are not undone merely because of the initial profile. Legacy manifests without a profile are treated as standard; preset retains its architecture meaning.
 

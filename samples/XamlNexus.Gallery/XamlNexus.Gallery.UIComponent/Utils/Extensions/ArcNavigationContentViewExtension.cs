@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
 using XamlNexus.Gallery.Common.Utils.ThreadContext;
 using XamlNexus.Gallery.UIComponent.Attributes;
+using XamlNexus.Gallery.UIComponent.Activation;
 using XamlNexus.Gallery.UIComponent.Navigation;
 using XamlNexus.Gallery.UIComponent.Templates;
 
@@ -40,7 +41,10 @@ namespace XamlNexus.Gallery.UIComponent.Utils.Extensions {
                     // Construct and activate the target only after leave approval.
                     var newPage = oldPage?.ArcType == targetPageType ? oldPage
                         : GetBackgroundPage(navView.PageMap, targetPageType) ?? ResolvePageInstance(targetPageType);
-                    var nextPayload = payload.Merge(newPage.Payload);
+                    bool incomingActivation = payload?.ContainsKey(BusinessActivationRequest.PayloadKey) == true;
+                    var nextPayload = payload.Merge(newPage.Payload, overwrite: false);
+                    if (payload is not null && !incomingActivation)
+                        nextPayload.Set(BusinessActivationRequest.PayloadKey, null);
                     if (options is null) NavigateRootWithoutAnimation(navView, oldPage, newPage, nextPayload);
                     else NavigateRootWithAnimation(navView, oldPage, newPage, nextPayload, options.Transition);
                     return true;

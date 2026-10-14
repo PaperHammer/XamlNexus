@@ -75,6 +75,8 @@ Accepts a project path, `--no-build`, `--dry-run`, and `--json`. By default it b
 - `--no-build` runs existing output without compiling recent edits; a previous build is required.
 - Ctrl+C stops this run. Run the command again after editing. There are no watch, hot reload, or Release/MSIX running options.
 
+Business activation options `--route` / `--data` belong to the compiled application, not the run command. Launch the EXE from its output directory; see [opening records from launch arguments](business-page.md#open-a-record-from-launch-arguments).
+
 ## Add a page: `page add`
 
 ```powershell

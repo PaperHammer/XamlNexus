@@ -139,7 +139,8 @@ public partial class App : Application {
 
         try {
             //first run Setup-Wizard show..
-            if (UserSettings.Settings.IsFirstRun || Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
+            if (UserSettings.Settings.IsFirstRun || Environment.GetCommandLineArgs().Contains("--xamlnexus-run") ||
+                Environment.GetCommandLineArgs().Contains("--route") || Environment.GetCommandLineArgs().Contains("--data")) {
                 Services.GetRequiredService<IUIRunnerService>().ShowUI();
             }
         }
@@ -304,7 +305,30 @@ public partial class App : Application {
         _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(ShutDown));
     }
 
-    public static void ShutDown() {
+    internal static bool IsShuttingDown => _isShuttingDown;
+    private static bool _isShuttingDown;
+    private static readonly SemaphoreSlim ShutdownGate = new(1, 1);
+
+    public static async void ShutDown() {
+        try { await RequestShutDownAsync(); }
+        catch (Exception exception) { ArcLog.GetLogger<App>().Error("Host shutdown failed", exception); }
+    }
+
+    public static async Task<bool> RequestShutDownAsync(CancellationToken cancellationToken = default) {
+        if (_isShuttingDown) return true;
+        if (!await ShutdownGate.WaitAsync(0, cancellationToken)) return false;
+        try {
+            IServiceProvider? services = ((App)Current)._serviceProvider;
+            IUIRunnerService? runner = services?.GetService<IUIRunnerService>();
+            if (runner is not null && !await runner.PrepareShutdownAsync(cancellationToken)) return false;
+            _isShuttingDown = true;
+            Current.Dispatcher.Invoke(ShutDownCore);
+            return true;
+        }
+        finally { ShutdownGate.Release(); }
+    }
+
+    private static void ShutDownCore() {
         try {
             _ctsPlayback.Cancel();
             Jobs?.Close();

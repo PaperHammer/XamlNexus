@@ -1,4 +1,7 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Winui3_XamlNexus.UIComponent.Activation;
 using WinUIEx;
 using Microsoft.Extensions.DependencyInjection;
 using Winui3_XamlNexus.Common.Utils.DI;
@@ -77,6 +80,25 @@ namespace Winui3_XamlNexus.UI {
                 GlobalMessageUtil.ShowException(ex, ArcWindowManager.GetArcWindow(Key));
                 ArcLog.GetLogger<MainWindow>().Error(ex);
             }
+        }
+
+        /// <summary>Business activation shares the same leave guard as sidebar navigation.</summary>
+        public async Task<ActivationNavigationResult> NavigateActivationAsync(BusinessActivationRequest request,
+            CancellationToken cancellationToken = default) {
+            var navigator = new BusinessActivationNavigator(NavigationRegistry.Default);
+            var result = await navigator.NavigateAsync(request, async (pageType, payload, token) => {
+                if (!await NaviContent.NavigateAsync(pageType, payload, cancellationToken: token)) return false;
+                restoringNavigationSelection = true;
+                try {
+                    _navigationMenu.Select(request.Route);
+                    selectedNavigationItem = NavigationViewControl.SelectedItem;
+                }
+                finally { restoringNavigationSelection = false; }
+                return true;
+            }, cancellationToken);
+            if (result == ActivationNavigationResult.RouteNotFound)
+                throw new InvalidOperationException($"Unknown business route '{request.Route}'.");
+            return result;
         }
 
         private void RestoreNavigationSelection(NavigationView sender, object? item) {

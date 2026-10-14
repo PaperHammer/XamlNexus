@@ -71,7 +71,7 @@ public sealed class PageGeneratorTests : IDisposable {
     }
 
     [Theory]
-    [InlineData("details", "GetAsync", "TryGet<string>(\"id\"")]
+    [InlineData("details", "GetAsync", "GetBusinessString(\"id\")")]
     [InlineData("form", "SaveAsync", "HasUnsavedChanges")]
     public void BusinessPageKindsGenerateRunnableContracts(string kind, string serviceMember, string pageMember) {
         IReadOnlyList<string> preview = PageGenerator.Add(Project, "Orders", dryRun: true, kind: kind);

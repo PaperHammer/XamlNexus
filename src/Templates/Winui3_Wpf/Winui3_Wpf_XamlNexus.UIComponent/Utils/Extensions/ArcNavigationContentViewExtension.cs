@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
 using Winui3_Wpf_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_Wpf_XamlNexus.UIComponent.Attributes;
+using Winui3_Wpf_XamlNexus.UIComponent.Activation;
 using Winui3_Wpf_XamlNexus.UIComponent.Navigation;
 using Winui3_Wpf_XamlNexus.UIComponent.Templates;
 
@@ -41,7 +42,12 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Utils.Extensions {
                     // Construct and activate the target only after leave approval.
                     var newPage = oldPage?.ArcType == targetPageType ? oldPage
                         : GetBackgroundPage(navView.PageMap, targetPageType) ?? ResolvePageInstance(targetPageType);
-                    var nextPayload = payload.Merge(newPage.Payload);
+                    // Incoming keys win; merge only after approval, preserving the cached payload.
+                    bool incomingActivation = payload?.ContainsKey(BusinessActivationRequest.PayloadKey) == true;
+                    var nextPayload = payload.Merge(newPage.Payload, overwrite: false);
+                    // An explicit in-app request supersedes any cached external activation.
+                    if (payload is not null && !incomingActivation)
+                        nextPayload.Set(BusinessActivationRequest.PayloadKey, null);
                     if (options is null) NavigateRootWithoutAnimation(navView, oldPage, newPage, nextPayload);
                     else NavigateRootWithAnimation(navView, oldPage, newPage, nextPayload, options.Transition);
                     return true;

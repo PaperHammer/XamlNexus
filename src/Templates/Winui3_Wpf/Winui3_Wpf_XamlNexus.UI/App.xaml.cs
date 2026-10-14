@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using Winui3_Wpf_XamlNexus.UIComponent.Activation;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,8 @@ using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Common.Utils;
 using Winui3_Wpf_XamlNexus.Common.Utils.DI;
 using Winui3_Wpf_XamlNexus.Common.Utils.Files;
+using Winui3_Wpf_XamlNexus.Common.Utils.IPC;
+using Winui3_Wpf_XamlNexus.UIComponent.Utils.Extensions;
 using Winui3_Wpf_XamlNexus.Common.Utils.PInvoke;
 using Winui3_Wpf_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_Wpf_XamlNexus.Grpc.Client;
@@ -119,6 +123,29 @@ namespace Winui3_Wpf_XamlNexus.UI {
 
             var m_window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
             m_window.Show();
+            _hostControlTask = Task.Run(async () => {
+                try {
+                    await UIHostControl.ListenAsync(Console.In, Console.Out, async token => {
+                        bool approved = false;
+                        await m_window.DispatcherQueue.EnqueueOrInvokeAsync(async () => {
+                            approved = await m_window.RequestCloseAsync(cancellationToken: token);
+                        });
+                        return approved;
+                    }, exception => ArcLog.GetLogger<App>().Error("Host close request failed", exception), _hostControlCancellation.Token);
+                }
+                catch (OperationCanceledException) when (_hostControlCancellation.IsCancellationRequested) { }
+                catch (Exception exception) { ArcLog.GetLogger<App>().Error("Host control channel failed", exception); }
+            });
+            try {
+                var request = BusinessActivationRequest.FromArguments(Environment.GetCommandLineArgs().Skip(1).ToArray());
+                if (request is not null)
+                    await m_window.NavigateActivationAsync(request, _hostControlCancellation.Token);
+            }
+            catch (OperationCanceledException) when (_hostControlCancellation.IsCancellationRequested) { }
+            catch (Exception exception) {
+                ArcLog.GetLogger<App>().Error("Business activation failed", exception);
+                GlobalMessageUtil.ShowException(exception, m_window);
+            }
         }
 
         private ServiceProvider ConfigureServices() {
@@ -156,6 +183,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
         public static void ShutDown() {
             if (_isShuttingDown) return;
             _isShuttingDown = true;
+            ((App)Current)._hostControlCancellation.Cancel();
             ArcWindowManager.MainWindow?.Hide();
             var cleanupTimer = Stopwatch.StartNew();
             ArcLog.GetLogger<App>().Info("Shutting down UI...");
@@ -171,6 +199,8 @@ namespace Winui3_Wpf_XamlNexus.UI {
             }
         }
 
+        private readonly CancellationTokenSource _hostControlCancellation = new();
+        private Task? _hostControlTask;
         private static bool _isShuttingDown;
         private readonly IUserSettingsClient? _userSettings;
         private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();

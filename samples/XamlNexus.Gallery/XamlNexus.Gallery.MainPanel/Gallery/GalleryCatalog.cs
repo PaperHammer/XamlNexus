@@ -31,7 +31,7 @@ public static class GalleryCatalog {
     };
     public static IReadOnlyList<GalleryEntry> Entries { get; } = new[] {
         new GalleryEntry("getting-started", "GettingStarted", "GettingStartedDescription", "\uE768", typeof(GettingStartedGalleryPage), "reference", "new run install 创建 运行 安装", navigationTitleKey: "NavigationGettingStarted"),
-        new GalleryEntry("business-pages", "BusinessPagesTitle", "BusinessPagesDescription", "\uE8A5", typeof(BusinessPagesGalleryPage), "workflow", "blank list details form 页面 详情 表单", navigationTitleKey: "NavigationBusinessPages"),
+        new GalleryEntry("business-pages", "BusinessPagesTitle", "BusinessPagesDescription", "\uE8A5", typeof(BusinessPagesGalleryPage), "workflow", "blank list details form activation route payload JSON 未保存 激活 参数 页面 详情 表单", navigationTitleKey: "NavigationBusinessPages"),
         new GalleryEntry("components", "ComponentsTitle", "ComponentsDescription", "\uE74C", typeof(ComponentsGalleryPage), "workflow", "recipes settings sqlite tray updater editorconfig 组件", navigationTitleKey: "NavigationComponents"),
         new GalleryEntry("evolution", "EvolutionTitle", "EvolutionDescription", "\uE9F9", typeof(ProjectEvolutionGalleryPage), "workflow", "status update upgrade merge conflict 演进 升级 合并 冲突", navigationTitleKey: "NavigationEvolution"),
         new GalleryEntry("sqlite", "DataTitle", "DataDescription", "\uE8F1", typeof(MainPage), "data", "sqlite backup restore 数据 备份 恢复", navigationTitleKey: "NavigationData"),
@@ -39,7 +39,7 @@ public static class GalleryCatalog {
         new GalleryEntry("arc-window", "WindowCard", "WindowDescription", "\uE737", typeof(ArcWindowGalleryPage), "mechanics", "ArcWindow titlebar window 窗口 标题栏", navigationTitleKey: "NavigationWindow"),
         new GalleryEntry("arc-page", "PageCard", "PageDescription", "\uE8A5", typeof(ArcPageGalleryPage), "mechanics", "ArcPage payload loading lifecycle 导航 加载 生命周期", navigationTitleKey: "NavigationPage"),
         new GalleryEntry("keepalive", "LifetimeTitle", "LifetimeDescription", "\uE81C", typeof(KeepAliveGalleryPage), "mechanics", "KeepAlive retention draft 草稿 保活", navigationTitleKey: "NavigationRetention"),
-        new GalleryEntry("tool-guide", "ToolGuide", "ToolGuideDescription", "\uE82D", typeof(ToolGuidePage), "reference", "cli commands hybrid profile 参数 命令 架构", navigationTitleKey: "NavigationCommands"),
+        new GalleryEntry("tool-guide", "ToolGuide", "ToolGuideDescription", "\uE82D", typeof(ToolGuidePage), "reference", "cli commands hybrid profile activation single instance close 单实例 激活 关闭 参数 命令 架构", navigationTitleKey: "NavigationCommands"),
     };
     private static readonly List<GalleryEntry> recent = new();
     public static IReadOnlyList<GalleryEntry> Recent => recent;

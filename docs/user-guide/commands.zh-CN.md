@@ -75,6 +75,8 @@ xamlnexus run --no-build
 - `--no-build` 运行已有输出，不编译最近修改；需要已有构建结果。
 - Ctrl+C 停止本次运行。修改后重新执行 `run`；目前没有 watch、热重载或 Release/MSIX 运行参数。
 
+业务激活参数 `--route` / `--data` 属于编译后的应用，不是 run 的选项。请在构建输出目录直接启动 EXE，见[从启动参数打开业务记录](business-page.zh-CN.md#从启动参数打开业务记录)。
+
 ## 添加页面：`page add`
 
 ```powershell

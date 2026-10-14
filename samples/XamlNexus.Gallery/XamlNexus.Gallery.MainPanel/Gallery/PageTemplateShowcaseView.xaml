@@ -81,6 +81,25 @@
                 </StackPanel>
             </StackPanel>
         </Border>
+        <Border Style="{StaticResource Card}">
+            <StackPanel Spacing="14">
+                <TextBlock Text="{Binding [ActivationDemoTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                <TextBlock Text="{Binding [ActivationDemoBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                <TextBlock Text="{Binding [ActivationPreviewBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBox x:Name="ActivationRoute" Header="{Binding [ActivationRouteLabel], Source={StaticResource Strings}}" Text="OrderEditor"/>
+                <TextBox x:Name="ActivationData" Header="{Binding [ActivationDataLabel], Source={StaticResource Strings}}" Text="{}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="72" MaxHeight="180" FontFamily="Consolas"/>
+                <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="3">
+                    <Button x:Name="ActivationDetailsButton" Tag="OrderDetails" Click="ActivationSelectedRecord_Click" Content="{Binding [ActivationSelectedDetails], Source={StaticResource Strings}}" Margin="0,0,12,8"/>
+                    <Button x:Name="ActivationEditorButton" Tag="OrderEditor" Click="ActivationSelectedRecord_Click" Content="{Binding [ActivationSelectedEditor], Source={StaticResource Strings}}" Margin="0,0,12,8"/>
+                    <Button x:Name="ActivationApplyButton" Click="ActivationApply_Click" Content="{Binding [ActivationApply], Source={StaticResource Strings}}" Style="{StaticResource AccentButtonStyle}" Margin="0,0,0,8"/>
+                </VariableSizedWrapGrid>
+                <InfoBar x:Name="ActivationFeedback" IsOpen="False" IsClosable="False"/>
+                <TextBlock Text="{Binding [ActivationDemoCheck], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                <Expander Header="{Binding [ActivationCommandTitle], Source={StaticResource Strings}}">
+                    <g:GalleryCodeView x:Name="ActivationCommand"/>
+                </Expander>
+            </StackPanel>
+        </Border>
         <StackPanel Spacing="12">
             <TextBlock Text="{Binding [UseInProject], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
             <g:GalleryCodeView x:Name="TemplateCommand"/>

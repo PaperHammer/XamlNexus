@@ -26,6 +26,7 @@ public sealed partial class GallerySourceBrowser : UserControl
         string? selected = picker.SelectedItem as string;
         picker.ItemsSource = Kind switch
         {
+            "Activation" => new[] { "Activation.BusinessActivationRequest.cs", "Activation.BusinessActivationNavigator.cs", "Activation.ActivationCommandLine.cs", "Activation.Program.cs", "Activation.ActivationQueue.cs", "Activation.CanonicalAppLaunch.cs", "Activation.ActivationRedirector.cs", "Hybrid.UIHostControl.cs", "Hybrid.UICloseCoordinator.cs" },
             "Business" => new[] { "PageTemplateShowcaseView.xaml", "PageTemplateShowcaseView.xaml.cs", "GalleryBusinessDataSource.cs", "GalleryBusinessStore.cs" },
             "Demo" => new[] { "ListExampleView.xaml", "ListExampleView.xaml.cs", "ListGalleryPage.cs", "GalleryItemsViewModel.cs", "GalleryItemsDataSource.cs" },
             "Retention" => new[] { "KeepAliveGalleryPage.xaml", "KeepAliveGalleryPage.xaml.cs", "RegularRetentionPage.xaml", "CachedRetentionPage.xaml", "RetentionExamplePage.cs", "RetentionExampleView.xaml", "RetentionExampleView.xaml.cs", "DepartureRetentionPage.xaml", "DepartureRetentionPage.xaml.cs", "GalleryLifetime.cs" },
@@ -41,12 +42,13 @@ public sealed partial class GallerySourceBrowser : UserControl
     }
     private void UpdateLabels()
     {
-        SourceExpander.Header = GalleryStrings.Get(IsTemplateKind ? "TemplateSource" : Kind == "Data" ? "DataSource" : Kind is "Window" or "Page" ? "FrameworkSource" : "DemoSource");
+        SourceExpander.Header = GalleryStrings.Get(IsTemplateKind ? "TemplateSource" : Kind == "Data" ? "DataSource" : Kind is "Window" or "Page" or "Activation" ? "FrameworkSource" : "DemoSource");
         Description.Text = GalleryStrings.Get(Kind switch {
             "DetailsTemplate" => "DetailsTemplateDescription",
             "FormTemplate" => "FormTemplateDescription",
             "Template" => "TemplateDescription",
             "Business" => "BusinessSourceDescription",
+            "Activation" => "ActivationSourceDescription",
             "Data" => "DataSourceDescription",
             "Window" or "Page" => "FrameworkSourceHelp",
             _ => "DemoDescription",

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using __APP__.MainPanel.ViewModels;
 using __APP__.UIComponent.Templates;
+using __APP__.UIComponent.Activation;
 using __APP__.UIComponent.Utils;
 
 namespace __APP__.MainPanel;
@@ -17,9 +18,7 @@ public sealed partial class __NAME__Page : ArcPage {
 
     protected override async void OnEnter(FrameworkPayload? payload) {
         base.OnEnter(payload);
-        string id = payload is not null && payload.TryGet<string>("id", out string payloadId)
-            ? payloadId
-            : "sample";
+        string id = payload.GetBusinessString("id") ?? "sample";
         await ViewModel.LoadAsync(id);
     }
 

@@ -9,6 +9,9 @@ namespace Winui3_Wpf_XamlNexus.Services.Interfaces {
         void ShowUI();
         void CloseUI();
         void RestartUI();
+        Task<bool> PrepareShutdownAsync(CancellationToken cancellationToken = default);
+        Task<bool> CloseUIAsync(CancellationToken cancellationToken = default);
+        Task<bool> RestartUIAsync(CancellationToken cancellationToken = default);
         nint GetUIHwnd();
     }
 }

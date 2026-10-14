@@ -52,3 +52,5 @@
 生成的源码和配置都可以修改。内容差异会产生提示；自动移除或升级可能覆盖用户修改时，会报告冲突并停止写入。详情见[产品模型](../introduction/product-model.zh-CN.md)。
 
 [列表页面模板](list-page.zh-CN.md)：搜索、异步加载、取消与替换数据源。
+
+业务参数导航与未保存保护见[业务页面](business-page.zh-CN.md#从启动参数打开业务记录)；单实例与安全退出见[应用激活](../technical/app-activation.zh-CN.md)和[混合宿主关闭保护](../technical/hybrid-close.zh-CN.md)。

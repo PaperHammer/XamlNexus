@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Text.Json;
+using XamlNexus.Gallery.UIComponent.Activation;
 using XamlNexus.Gallery.UIComponent.Navigation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,13 +28,23 @@ public sealed partial class PageTemplateShowcaseView : UserControl {
     private bool ready;
     private bool switching;
     private bool confirmingLeave;
+    private readonly BusinessActivationNavigator activationNavigator;
+    private CancellationTokenSource? activationCancellation;
+    private string? activationStatusKey;
+    private string? activationError;
 
     public PageTemplateShowcaseView() {
         source = new(new GalleryBusinessStore(AppServiceLocator.Services.GetRequiredService<IDbContextFactory<AppDbContext>>()));
         ListModel = new(source);
         DetailsModel = new(source);
         FormModel = new(source);
+        var activationRoutes = new NavigationRegistry();
+        // The Gallery adapts these registered example routes to its existing details/form preview.
+        activationRoutes.Register(new("OrderDetails", typeof(BusinessPagesGalleryPage), "Details"));
+        activationRoutes.Register(new("OrderEditor", typeof(BusinessPagesGalleryPage), "Editor"));
+        activationNavigator = new(activationRoutes);
         InitializeComponent();
+        ActivationCommand.SetSource("& .\\MyApp.UI.exe --route OrderEditor --data '{}'", "PowerShell 7");
         BlankSource.SetSource("<arc:ArcPage x:Class=\"MyApp.MainPanel.WorkspacePage\">\n    <!-- Add page content here. -->\n</arc:ArcPage>", "WorkspacePage.xaml");
         ready = true;
         UpdateSelection("list");
@@ -41,6 +53,8 @@ public sealed partial class PageTemplateShowcaseView : UserControl {
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e) {
+        activationCancellation ??= new();
+        ActivationApplyButton.IsEnabled = true;
         LanguageUtil.LanguageUpdated -= LanguageChanged;
         LanguageUtil.LanguageUpdated += LanguageChanged;
         FormModel.PropertyChanged -= FormChanged;
@@ -50,12 +64,15 @@ public sealed partial class PageTemplateShowcaseView : UserControl {
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e) {
+        activationCancellation?.Cancel();
+        activationCancellation?.Dispose();
+        activationCancellation = null;
         LanguageUtil.LanguageUpdated -= LanguageChanged;
         FormModel.PropertyChanged -= FormChanged;
         Deactivate();
     }
 
-    private void LanguageChanged(object? sender, EventArgs e) { UpdateSelection(selectedKind); UpdateFormState(); }
+    private void LanguageChanged(object? sender, EventArgs e) { UpdateSelection(selectedKind); UpdateFormState(); UpdateActivationStatus(); }
 
     private void FormChanged(object? sender, PropertyChangedEventArgs e) {
         if (FormModel.StateText == "Saved") selectedRecordId = editingRecordId = source.LastSavedId;
@@ -112,18 +129,76 @@ public sealed partial class PageTemplateShowcaseView : UserControl {
         ready = true;
     }
 
-    private async Task SelectAsync(string kind, string? editId = null) {
-        if (switching) return;
+    private async Task<bool> SelectAsync(string kind, string? editId = null,
+        string? recordId = null, CancellationToken cancellationToken = default) {
+        if (switching) return false;
         switching = true;
         try {
-            if (!await ConfirmDiscardAsync()) return;
+            if (!await ConfirmDiscardAsync(cancellationToken)) return false;
+            cancellationToken.ThrowIfCancellationRequested();
             Deactivate();
+            if (recordId is not null) selectedRecordId = recordId;
             editingRecordId = editId;
             UpdateSelection(kind);
             RestoreSelector();
             await ActivateSelectionAsync();
+            return true;
         }
         finally { switching = false; }
+    }
+
+    private void ActivationSelectedRecord_Click(object sender, RoutedEventArgs e) {
+        if (selectedRecordId is null) return;
+        ActivationRoute.Text = (string)((Button)sender).Tag;
+        ActivationData.Text = JsonSerializer.Serialize(new { id = selectedRecordId }, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    private async void ActivationApply_Click(object sender, RoutedEventArgs e) {
+        var lifetime = activationCancellation;
+        if (lifetime is null || switching || !ActivationApplyButton.IsEnabled) return;
+        ActivationApplyButton.IsEnabled = false;
+        try {
+            var request = BusinessActivationRequest.FromArguments(new[] { "--route", ActivationRoute.Text, "--data", ActivationData.Text })!;
+            // Copyable command only: never launch a process or run the CLI from the Gallery.
+            string Quote(string text) => "'" + text.Replace("'", "''") + "'";
+            ActivationCommand.SetSource("& .\\MyApp.UI.exe --route " + Quote(request.Route) + " --data " + Quote(request.Data.GetRawText()), "PowerShell 7");
+            var result = await activationNavigator.NavigateAsync(request, async (_, payload, token) => {
+                string? id = payload.GetBusinessString("id");
+                if (request.Route == "OrderDetails" && string.IsNullOrWhiteSpace(id))
+                    throw new FormatException(GalleryStrings.Get("ActivationNeedsId"));
+                return await SelectAsync(request.Route == "OrderDetails" ? "details" : "form",
+                    editId: id, recordId: id, cancellationToken: token);
+            }, lifetime.Token);
+            if (!ReferenceEquals(lifetime, activationCancellation)) return;
+            activationStatusKey = result switch {
+                ActivationNavigationResult.Navigated => "ActivationNavigated",
+                ActivationNavigationResult.Cancelled => "ActivationCancelled",
+                _ => "ActivationUnknownRoute",
+            };
+            activationError = null;
+            ActivationFeedback.Severity = result == ActivationNavigationResult.RouteNotFound
+                ? InfoBarSeverity.Error : InfoBarSeverity.Informational;
+            UpdateActivationStatus();
+        }
+        catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
+        catch (Exception exception) {
+            if (!ReferenceEquals(lifetime, activationCancellation)) return;
+            activationStatusKey = "ActivationInvalid";
+            activationError = exception.Message;
+            ActivationFeedback.Severity = InfoBarSeverity.Error;
+            UpdateActivationStatus();
+        }
+        finally {
+            if (ReferenceEquals(lifetime, activationCancellation)) ActivationApplyButton.IsEnabled = true;
+        }
+    }
+
+    private void UpdateActivationStatus() {
+        ActivationFeedback.IsOpen = activationStatusKey is not null;
+        if (activationStatusKey is not null) {
+            ActivationFeedback.Title = GalleryStrings.Get(activationStatusKey);
+            ActivationFeedback.Message = activationError ?? string.Empty;
+        }
     }
 
     private Task ActivateSelectionAsync() => selectedKind switch {
@@ -186,6 +261,7 @@ public sealed partial class PageTemplateShowcaseView : UserControl {
     private void OpenListExample_Click(object sender, RoutedEventArgs e) => GalleryCatalog.Navigate("list");
 
     private void UpdateFormState() {
+        ActivationDetailsButton.IsEnabled = ActivationEditorButton.IsEnabled = selectedRecordId is not null;
         FormState.Text = GalleryStrings.Get(FormModel.IsBusy ? "FormSaving" : FormModel.HasUnsavedChanges ? "FormUnsaved" : FormModel.StateText == "Saved" ? "BusinessSaved" : "FormUnchanged");
         BackToListButton.IsEnabled = !FormModel.IsBusy;
     }

@@ -41,6 +41,26 @@
                     <Button Tag="business-pages" Click="Navigate_Click" HorizontalAlignment="Left" Content="{Binding [BusinessPagesTitle], Source={StaticResource Strings}}"/>
                 </StackPanel>
             </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding [LifecycleTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [ActivationLaunchBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="ActivationLaunchCode"/>
+                    <Button Tag="business-pages" Click="Navigate_Click" HorizontalAlignment="Left" Content="{Binding [ActivationOpenDemo], Source={StaticResource Strings}}"/>
+                    <TextBlock Text="{Binding [SingleInstanceTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [SingleInstanceBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [HybridCloseTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [HybridCloseBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [LifecycleSupportBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <Expander Header="{Binding [LifecycleAcceptanceTitle], Source={StaticResource Strings}}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="{Binding [LifecycleAcceptanceBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            <g:GalleryCodeView x:Name="LifecycleAcceptanceCode"/>
+                        </StackPanel>
+                    </Expander>
+                    <g:GallerySourceBrowser Kind="Activation"/>
+                </StackPanel>
+            </Border>
             <Expander Header="{Binding [ToolMaintenance], Source={StaticResource Strings}}" Style="{StaticResource Section}">
                 <StackPanel Spacing="16">
                     <TextBlock Text="{Binding [MaintenanceHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>

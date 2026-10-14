@@ -13,6 +13,14 @@ public sealed partial class ToolGuidePage : ArcPage {
         CreateOptionsCode.SetSource("xamlnexus new MyApp\nxamlnexus new DataApp --profile basic --features settings,sqlite\nxamlnexus new XmlApp --solution-format slnx", "PowerShell");
         PageCommandCode.SetSource("xamlnexus page add Dashboard --kind blank\nxamlnexus page add Projects --kind list\nxamlnexus page add OrderDetails --kind details\nxamlnexus page add OrderEditor --kind form", "PowerShell");
         RunCommandCode.SetSource("xamlnexus run --dry-run\nxamlnexus run\nxamlnexus run --no-build", "PowerShell");
+        ActivationLaunchCode.SetSource("""
+            xamlnexus page add OrderDetails --kind details
+            xamlnexus page add OrderEditor --kind form
+            # PowerShell 7; launch the compiled application
+            & .\MyApp.UI.exe --route OrderDetails --data '{"id":"42"}'
+            & .\MyApp.UI.exe --route OrderEditor --data '{"id":"42"}'
+            """, "PowerShell 7");
+        LifecycleAcceptanceCode.SetSource("pwsh -NoProfile -File eng/Test-AppInstance.ps1 -Repetitions 2\ndotnet run --project eng/diagnostics/HybridCloseProbe/HybridCloseProbe.csproj -c Release", "PowerShell");
         InspectCode.SetSource("xamlnexus doctor --environment\nxamlnexus status\nxamlnexus validate\nxamlnexus doctor", "PowerShell");
         ComponentMaintenanceCode.SetSource("xamlnexus add settings,sqlite --dry-run\nxamlnexus add settings,sqlite\nxamlnexus remove sqlite --dry-run\nxamlnexus update --all --dry-run", "PowerShell");
         ScaffoldMaintenanceCode.SetSource("xamlnexus upgrade --dry-run", "PowerShell");

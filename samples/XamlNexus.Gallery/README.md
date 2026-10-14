@@ -8,15 +8,15 @@ Gallery is an interactive workspace for building applications with XamlNexus. It
 
 - **首页 / Home**：页面模板预览、三条开发流程、可运行示例与最近访问。所有入口直接打开对应体验。
 - **快速开始 / Getting started**：环境检查、创建运行、添加页面和存储。
-- **页面模板 / Page templates**：切换 list、details、form、blank。体验真实模板的列表加载与筛选、详情失败与重试、表单校验与 SQLite 保存；列表记录可打开详情并编辑，保存后返回列表，重启后仍保留；展开查看生成文件、调用流程和 CLI 模板源码。
+- **页面模板 / Page templates**：切换 list、details、form、blank。体验真实模板的列表加载与筛选、详情失败与重试、表单校验与 SQLite 保存；列表记录可打开详情并编辑，保存后返回列表，重启后仍保留；新增路由 / JSON 参数导航预览，打开所选记录的详情或编辑页，取消未保存提示后保留草稿；展开查看生成文件、调用流程和 CLI 模板源码。
 - **组件组合 / Component composition**：选择 WinUI / hybrid、basic / standard 和功能，实时查看实际依赖顺序、自动补充的依赖、已有组件和对应创建命令。
 - **项目演进 / Project evolution**：编辑本地源码，切换独立修改与重叠修改，查看真实三方合并的结果或冲突文档。查看基线与维护命令。
 - **数据与恢复 / Data & recovery**：SQLite 的增删改查、迁移、WAL、完整性检查、备份与恢复。
 - **窗口与页面机制 / Windows and pages**：列表异步加载、窗口打开与管理、导航传参与加载、返回后继续编辑。
-- **命令参考 / Command reference**：可复制的创建、运行、页面生成与维护命令；架构说明和自动化参数按需展开。
+- **命令参考 / Command reference**：可复制的创建、运行、页面生成与维护命令；同时说明单实例激活、混合宿主安全关闭及当前支持边界；框架源码和无界面验收命令按需展开。
 - **设置 / Settings**：Gallery 的主题、窗口材质、语言与关于页面。
 
-搜索支持中英文场景名称、描述和 API / CLI 关键词，例如 KeepAlive、form、merge、sqlite。切换语言立即更新导航与说明；浅色、深色及高对比度使用共享主题资源。宽窗口的组件配置与结果、合并输入并排显示，窄窗口自动堆叠。
+搜索支持中英文场景名称、描述和 API / CLI 关键词，例如 KeepAlive、form、activation、route、单实例、关闭、merge、sqlite。切换语言立即更新导航与说明；浅色、深色及高对比度使用共享主题资源。宽窗口的组件配置与结果、合并输入并排显示，窄窗口自动堆叠。
 
 Search supports scenario names, descriptions and API / CLI keywords in both languages. Configuration/results and merge inputs stack on narrower windows.
 
@@ -25,6 +25,14 @@ Search supports scenario names, descriptions and API / CLI keywords in both lang
 页面模板的 ViewModel 和数据接口由 `Gallery/GalleryPageModels.targets` 在构建时直接从 `src/XamlNexus.Common/Assets/{ListPage,DetailsPage,FormPage}/` 转换命名空间并编译。演示使用这些真实模型，Gallery 注入专用 SQLite 业务数据服务及本地化内容。修改模板后重新构建即可同步运行行为与离线源码。
 
 组件页调用 `CompositionPlanner.ResolveForCreation` 和 `BuiltInRecipeCatalog.Create`；项目演进页调用 `XamlNexusThreeWayTextMerge`。这些页面只在内存中预览，不创建项目、不执行 CLI，也不改写用户文件。编辑框的换行在进入合并前统一到示例基线的 LF 格式。
+
+业务参数演示通过 SharedSources.props 直接编译纯 WinUI 模板的 BusinessActivationRequest、BusinessActivationNavigator、ActivationCommandLine 和导航注册表。Gallery 将示例路由 OrderDetails、OrderEditor 适配到现有详情/表单模型，路由允许后才更新记录与标签；同页切换同样经过保存/放弃/取消确认。输入路由与 JSON 可生成可复制的 PowerShell 7 命令，Gallery 不执行它。
+
+This preview compiles the production parser and router and adapts example routes to its existing business models. Confirmation precedes record and tab changes. Generated launch commands are copyable text and never execute inside Gallery.
+
+Gallery 自身仍使用 Mutex 与独立前台窗口，没有托盘、SDK 激活队列或 WPF 宿主。此演示证明页内业务参数接入；不能替代生成应用的跨进程激活、焦点、MSIX 或混合宿主退出验收。命令参考可离线浏览实际模板的单实例入口、激活队列、兼容处理和关闭协调器，验收命令在 XamlNexus 仓库根目录运行。详见[应用激活](../../docs/technical/app-activation.zh-CN.md)与[混合关闭保护](../../docs/technical/hybrid-close.zh-CN.md)。
+
+Gallery retains its own foreground window and Mutex entry point, without a tray, SDK activation queue or WPF host. Its page preview does not prove cross-process activation or hybrid shutdown. The command guide embeds the actual template lifecycle sources for offline inspection and lists repository acceptance commands.
 
 业务模板提供可运行的页面起点，仍需接入自己的应用服务与导航。CLI 默认模板表单的保存仍是示例服务行为；Gallery 通过 `GalleryBusinessDataSource` 和 `GalleryBusinessStore` 显式接入 SQLite，记录使用 `gallery.business/` 键前缀，与普通数据演示记录分开。SQLite Recipe 提供数据层；Gallery 的 CRUD、备份和恢复界面是独立实现，不会由组件安装自动生成。
 
@@ -104,4 +112,5 @@ Automated tests cover persistence, identity, cancellation and data isolation. Ve
 3. 体验加载失败，再重试；确认恢复显示记录。 / Trigger a read failure and retry.
 4. 修改表单后切换标签、侧栏页面或关闭窗口；继续编辑应保留草稿及原侧栏选中项，放弃修改应保留数据库原值。保存并离开必须等待成功，必填字段错误或写入失败应留在原页。 / Test tab, sidebar and window-close guards: keep editing preserves state, discard leaves stored data intact, and save-and-leave only proceeds after a successful save.
 5. 重启 Gallery；确认记录仍在，并可再次编辑。 / Restart and edit the persisted record.
-6. 切换中英文、浅深主题及窄窗口；检查按钮、标题与离线业务接入源码。 / Check languages, themes, narrow layout and offline integration source.
+6. 选中记录，分别填入详情或编辑路由并应用；修改表单后再次应用同页另一条记录，验证保存/放弃/继续编辑。未知路由、无效 JSON 和详情缺少 ID 不应改变业务页面；检查复制命令包含正确记录 ID。 / Apply record routes and test draft retention, invalid inputs and copied commands.
+7. 切换中英文、浅深主题及窄窗口；检查新演示按钮、反馈、标题和生命周期离线源码。 / Check languages, themes, narrow layout and offline lifecycle source.

@@ -13,5 +13,14 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="$(WindowsAppSdkVersion)" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UI/Activation/ActivationQueue.cs" Link="ActivationQueue.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UI/Activation/CanonicalAppLaunch.cs" Link="CanonicalAppLaunch.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UI/Activation/ActivationRedirector.cs" Link="ActivationRedirector.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/BusinessActivationRequest.cs" Link="BusinessActivationRequest.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/BusinessActivationNavigator.cs" Link="BusinessActivationNavigator.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/ActivationCommandLine.cs" Link="ActivationCommandLine.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Navigation/INavigationRegistry.cs" Link="INavigationRegistry.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Navigation/NavigationRegistry.cs" Link="NavigationRegistry.cs" />
+    <Compile Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Utils/FrameworkPayload.cs" Link="FrameworkPayload.cs" />
   </ItemGroup>
 </Project>

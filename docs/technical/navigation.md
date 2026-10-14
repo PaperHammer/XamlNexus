@@ -49,3 +49,5 @@ Alternatively, enumerate Entries to render your own controls and use Resolve for
 Older projects without the interface receive only the three page-related files and a manual integration notice. `--no-navigation` also generates only those three files. Older windows can keep their existing navigation or migrate explicitly; page add does not rewrite existing windows or the example project. Generated business files are user-maintained, not removable Recipes. Remove the registration file when deleting a page.
 
 Dry runs, file conflict checks, and transactional rollback still apply. Module DI lifecycle and navigation registration govern services and pages separately. Adding navigation requires no database and does not change ViewModel ownership.
+
+Business activation uses MainWindow.NavigateActivationAsync to share guarded navigation and update sidebar selection after success. See [application activation and business navigation](app-activation.md) for launch arguments and payload access.

@@ -9,6 +9,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.Windows.AppLifecycle;
 using Winui3_XamlNexus.UIComponent.Activation;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel.Activation;
 
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Logging;
@@ -125,6 +126,22 @@ namespace Winui3_XamlNexus.UI {
                 presenter.Restore();
             window.Show();
             window.Activate();
+            // Read the event payload, never this primary process's original command line.
+            if (arguments.Kind == ExtendedActivationKind.Launch && arguments.Data is ILaunchActivatedEventArgs launch) {
+                try {
+                    var request = BusinessActivationRequest.FromArguments(ActivationCommandLine.Split(launch.Arguments));
+                    if (request is not null) {
+                        await window.NavigateActivationAsync(request, cancellationToken);
+                        return; // A declined route must not fall through to another handler.
+                    }
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return; }
+                catch (Exception exception) {
+                    ArcLog.GetLogger<App>().Error("Business activation failed", exception);
+                    GlobalMessageUtil.ShowException(exception, window);
+                    return;
+                }
+            }
             foreach (IAppActivationHandler handler in AppServiceLocator.Services.GetServices<IAppActivationHandler>()) {
                 cancellationToken.ThrowIfCancellationRequested();
                 await handler.HandleAsync(arguments, cancellationToken);

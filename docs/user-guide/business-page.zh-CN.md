@@ -39,7 +39,28 @@ JSON 输出的 `navigation` 为 `automatic` 或 `manual`，预览同样显示是
 自定义外壳替代 MainWindow 时允许页面生成，但命令不会修复原外壳或原有 XAML 语法错误。
 生成不会修改 App.xaml.cs，也不要求 SQLite。页面级 ViewModel 由页面持有，通过 AppObjectFactory 创建；构造参数从模块注册的应用服务中解析。
 `--dry-run` 只列出变更文件，`--json` 可用于脚本。添加后执行 `xamlnexus run`。
-默认 `blank` 生成空白 ViewModel 和普通页面骨架。`list` 生成搜索、刷新、取消和异步状态；`details` 从 `FrameworkPayload` 的 `id` 读取记录标识，提供加载与重试；`form` 同时支持无 `id` 的新建模式和带 `id` 的编辑模式，包含校验、脏状态、异步保存与重置。三种业务模板都附带可运行的数据源接口和示例实现，接入实际业务时替换实现即可。
+默认 `blank` 生成空白 ViewModel 和普通页面骨架。`list` 生成搜索、刷新、取消和异步状态；`details` 从激活 JSON 或 `FrameworkPayload` 的 `id` 读取记录标识，提供加载与重试；`form` 同时支持无 `id` 的新建模式和带 `id` 的编辑模式，包含校验、脏状态、异步保存与重置。三种业务模板都附带可运行的数据源接口和示例实现，接入实际业务时替换实现即可。
+
+## 从启动参数打开业务记录
+
+先生成并编译 OrderDetails、OrderEditor 页面，然后在编译产物目录用 PowerShell 7 调用应用：
+
+~~~powershell
+& .\MyApp.UI.exe --route OrderDetails --data '{"id":"42"}'
+& .\MyApp.UI.exe --route OrderEditor --data '{"id":"42"}'
+# 新建模式：没有 id
+& .\MyApp.UI.exe --route OrderEditor --data '{}'
+~~~
+
+路由对应 UI/Navigation 中的注册名称，区分大小写；ID 必须是字符串。两种模板的详情和编辑页调用 `payload.GetBusinessString("id")`，兼容外部激活 JSON 和应用内部 `FrameworkPayload` 的普通 id 键。其他业务字段保存在 `BusinessActivationRequest.Data`，由自己的页面验证并使用，不会展开成框架服务键。
+
+参数导航同样经过 CanLeaveAsync：同一编辑页打开另一条记录也先询问是否保存。继续编辑或保存失败时，原记录、草稿、Payload 和侧栏选中项保持不变。新参数优先于缓存参数；未传 ID 的新建请求不会重用上一条激活记录。
+
+纯 WinUI 支持首次和二次启动，模块就绪后串行消费请求。混合架构首次启动用 `MyApp.exe`（后台宿主），宿主一次性把参数转交 UI；重复启动宿主的参数转交尚未支持。未知路由或无效 JSON 显示错误，不改变当前业务页面。协议和文件关联仍需业务配置。
+
+这些是生成应用的启动参数，当前 `xamlnexus run` 不支持 `--route` / `--data` 透传。既有项目需先审阅脚手架升级，合并新的启动和 UIComponent 代码；page add 不会单独改写旧 App.xaml.cs。完整契约见[应用激活与单实例](../technical/app-activation.zh-CN.md)，宿主退出与重启见[混合关闭保护](../technical/hybrid-close.zh-CN.md)。
+
+Gallery 的“业务页面”提供路由和 JSON 预览，调用实际模板解析器与路由器，再接入现有 SQLite 详情/表单模型。它不启动第二个进程；SDK 转交和混合关闭协议由仓库探针另行验收。
 
 ## 不依赖数据库的页面起点
 
@@ -175,12 +196,9 @@ Loaded 时重新加载数据；本例不持有长期数据库上下文，本地�
 
 示例现在提供中英文资源，XAML 使用 `Uids.Uid`，运行状态保留资源键与参数，
 在 LanguageUpdated 时重新生成译文。页面在 Loaded 订阅、Unloaded 取消订阅，
-托盘服务在 Dispose 时取消订阅。接入方式见 [本地化文档](localization.zh-CN.md)。
+Gallery 没有托盘服务；应用自己的长生命周期服务应在 Dispose 时取消订阅。接入方式见 [本地化文档](localization.zh-CN.md)。
 
-“发送提醒”通过 Models 中的 `INotificationService` 调用 UI 托盘实现。
-MainPanel 不引用 UI 工程；点击时从应用服务容器取得接口，避免窗口构造期间
-提前解析依赖主窗口的托盘服务。成功提示只表示请求完成，Windows 决定最终显示。
-已有设置、日志和数据库操作保持独立，通知失败不会撤销之前保存的数据。
+Gallery 不提供托盘或通知入口。应用需要托盘菜单和通知时，可安装[系统托盘 Recipe](system-tray-recipe.zh-CN.md)，并从业务服务调用它；通知失败不应撤销已保存的数据。
 
 
 ## ViewModel 构造函数注入（新模板）

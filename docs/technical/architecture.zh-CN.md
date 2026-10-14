@@ -36,7 +36,7 @@ flowchart TD
 | [RecipeTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeTransaction.cs) | add／update／remove 的事务执行 |
 | [RecipeBatchTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeBatchTransaction.cs) | 在快照中组合多项安装，再统一提交 |
 | [XamlNexusProjectUpgrade.cs](../../src/XamlNexus.Common/Projects/XamlNexusProjectUpgrade.cs) | 生成文件的三方比较与升级执行 |
-| [DevelopmentRunner.cs](../../src/XamlNexus.Common/Projects/DevelopmentRunner.cs) | Debug／x64／非打包构建、解析可执行文件路径和进程生命周期 |
+| [DevelopmentRunner.cs](../../src/XamlNexus.Tooling/Development/DevelopmentRunner.cs) | Debug／x64／非打包构建、解析可执行文件路径和进程生命周期 |
 
 `preset` 选择进程架构，`profile` 选择初始能力，`features` 指定创建时添加的组件。standard 和 basic 复用同一架构模板；basic 去掉完整设置界面，核心服务仍保留。
 
@@ -82,7 +82,15 @@ flowchart LR
 
 混合架构的前端与宿主各有自己的 DI 容器和模块目录，不共享内存中的服务实例。新增业务 RPC 需要定义协议并分别实现服务端与客户端，`page add` 不自动生成业务协议。
 
-现有跨进程协议使用 gRPC／Protobuf，设置文件使用 JSON；当前模板不使用 MessagePack。修改已有协议时应同时考虑两端契约，不能只修改前端模型。
+常规跨进程 RPC 使用 gRPC／Protobuf；宿主拥有的关闭控制通道使用 UI 子进程 stdin/stdout 的请求与响应，设置文件使用 JSON；当前模板不使用 MessagePack。修改已有协议时应同时考虑两端契约，不能只修改前端模型。
+
+### 激活、业务导航和关闭
+
+纯 WinUI 的 Program 在构造 App 前规范化未打包 EXE 路径，并完成 SDK 实例注册或参数转交。首次和二次启动进入 ActivationQueue，等待模块就绪后解析 `--route` / `--data`，通过注册表和 NavigateAsync 进入业务页。离开确认未通过时不替换记录或侧栏选中项。
+
+混合架构由宿主保留 UI 进程所有权，首次启动参数只转交一次；重复宿主启动仍由 Mutex 拒绝。关闭、重启及宿主退出先通过 UIHostControl 和 UICloseCoordinator 请求 UI 确认，获准后等待真实进程退出，再释放 Job、服务和 RPC。取消或保存失败保留宿主与 UI；超时不等于允许强杀。
+
+接入和验证边界见[应用激活](app-activation.zh-CN.md)、[统一导航](navigation.zh-CN.md)和[混合关闭保护](hybrid-close.zh-CN.md)。
 
 ## 3. 模块启动与页面创建
 

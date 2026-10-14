@@ -29,7 +29,28 @@ If `UIComponent/Navigation/INavigationRegistry.cs` exists, the command creates r
 
 File collisions, invalid structure, and unsafe paths prevent writes. Write failures use transactional rollback. Manually registered duplicate routes are rejected by the startup registry; the CLI does not scan C# registration code. Custom shells may generate pages, but generation does not repair their XAML or the old shell. It does not edit App.xaml.cs or require SQLite. Pages own factory-created ViewModels, whose constructor arguments resolve from application services. Dry runs list files; JSON supports scripts. Run `xamlnexus run` afterward.
 
-The default `blank` kind creates an empty ViewModel and ordinary page. `list` provides search, refresh, cancellation and asynchronous states; `details` reads an `id` from `FrameworkPayload` and includes loading and retry; `form` supports create mode without an `id` and edit mode with an `id`, with validation, dirty tracking, asynchronous save and reset. Each business template includes a runnable data-source interface and sample implementation to replace with an application service.
+The default `blank` kind creates an empty ViewModel and ordinary page. `list` provides search, refresh, cancellation and asynchronous states; `details` reads an `id` from activation JSON or `FrameworkPayload` and includes loading and retry; `form` supports create mode without an `id` and edit mode with an `id`, with validation, dirty tracking, asynchronous save and reset. Each business template includes a runnable data-source interface and sample implementation to replace with an application service.
+
+## Open a record from launch arguments
+
+Generate and build OrderDetails and OrderEditor, then use PowerShell 7 from the compiled application's output directory:
+
+~~~powershell
+& .\MyApp.UI.exe --route OrderDetails --data '{"id":"42"}'
+& .\MyApp.UI.exe --route OrderEditor --data '{"id":"42"}'
+# Create mode: no id
+& .\MyApp.UI.exe --route OrderEditor --data '{}'
+~~~
+
+Routes match case-sensitive registrations in UI/Navigation, and ID is a string. Details and form templates use `payload.GetBusinessString("id")` for both external JSON and legacy in-app FrameworkPayload id values. Other fields remain in BusinessActivationRequest.Data for business validation; they are not expanded into framework service keys.
+
+Activation navigation calls CanLeaveAsync even for another record on the same editor page. Keep editing or save failure preserves the record, draft, payload and sidebar selection. Incoming values take precedence over cached values; a create request without ID never reuses the previous activation's ID.
+
+Pure WinUI supports initial and redirected launches, processed serially after module initialization. Hybrid initial launch uses the background host `MyApp.exe`, which forwards arguments once to its UI; repeated-host argument forwarding is not supported. Unknown routes and invalid JSON report errors without navigating. Protocol and file associations still require business configuration.
+
+These options belong to the generated executable. The current `xamlnexus run` command does not forward `--route` or `--data`. Existing projects must review a scaffold upgrade and merge the new startup and UIComponent code; page add does not replace an older App.xaml.cs. See [application activation](../technical/app-activation.md) and [hybrid close protection](../technical/hybrid-close.md).
+
+Gallery's business-page preview uses the actual template parser and router with its SQLite details/form models. It does not launch a second process; repository probes verify SDK delivery and the hybrid close protocol separately.
 
 ## Start without a database
 
@@ -112,7 +133,7 @@ Pages inherit ArcPage and override ArcType. New navigation creates them through 
 | `IDbContextFactory<AppDbContext>` | Create an independent context per operation |
 | `SqliteDatabaseInitializer` | Run an integrity check on user request |
 
-Do not dispose shared container-owned services. Dispose each operation's DbContext with `await using`; avoid long-lived contexts and tracked entities on a page. This example extends the existing home page. For separate pages, use page add or the registration above. The older Showcase retains manual window navigation; its existing home example still works. No business initialization in App.xaml.cs is required.
+Do not dispose shared container-owned services. Dispose each operation's DbContext with `await using`; avoid long-lived contexts and tracked entities on a page. This example extends the existing home page. For separate pages, use page add or the registration above. Gallery uses its own scenario catalog and shell navigation; its existing data page remains independent. No business initialization in App.xaml.cs is required.
 
 ## Settings and data
 
@@ -138,9 +159,9 @@ A shared RunAsync handler catches failures, shows messages, and restores control
 4. Make the test application's settings file unwritable, toggle sorting, and verify the error, rollback, and restored controls. Restore access and retry successfully.
 5. Delete test data, refresh, confirm integrity_check returns ok, and inspect operation/error logs.
 
-The example provides Chinese and English resources. XAML uses Uids.Uid; runtime status stores resource keys/arguments and regenerates text on LanguageUpdated. The page subscribes on Loaded and unsubscribes on Unloaded; the tray service unsubscribes on Dispose. See [localization](localization.md).
+The example provides Chinese and English resources. XAML uses Uids.Uid; runtime status stores resource keys/arguments and regenerates text on LanguageUpdated. The page subscribes on Loaded and unsubscribes on Unloaded; Gallery has no tray service; application-owned long-lived services should unsubscribe on Dispose. See [localization](localization.md).
 
-Send reminder uses Models INotificationService to reach the UI tray implementation. MainPanel does not reference UI; resolve the interface on click to avoid resolving a main-window-dependent tray during window construction. Success means the request completed; Windows controls actual display. Notification failures do not undo independently saved settings or data.
+Gallery has no tray or notification entry point. Add the [system-tray Recipe](system-tray-recipe.md) when an application needs tray menus and notifications. Notification failures should not undo saved data.
 
 ## ViewModel constructor injection (new templates)
 

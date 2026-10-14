@@ -52,3 +52,5 @@ Run project commands inside the generated project, or supply `--project`. Develo
 All generated source and configuration can be customized. Content differences produce warnings; automatic removal or upgrades stop with a conflict when they cannot protect user changes. See the [product model](../introduction/product-model.md).
 
 [List page template](list-page.md): search, asynchronous loading, cancellation and replacing the data source.
+
+For business activation and unsaved-work guards, see [business pages](business-page.md#open-a-record-from-launch-arguments). Runtime details are in [application activation](../technical/app-activation.md) and [hybrid close protection](../technical/hybrid-close.md).
