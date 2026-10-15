@@ -7,6 +7,7 @@
 1. [Quickstart](quickstart.md): install → create → run → edit the home page → add pages → add components.
 2. [Page development](business-page.md): ordinary Pages, ViewModels, dependency injection, and page lifecycle.
 3. [Settings](settings.md) and [localization](localization.md): persistence, recovery, themes, and live language switching.
+4. [AI development guidance: bundled CLI skills and application architecture/rules.](ai-guidance.md)
 
 ## Add capabilities as needed
 

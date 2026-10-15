@@ -13,7 +13,7 @@
 ~~~powershell
 # 假设通过 page add Orders --kind form 注册了 Orders 路由
 & .\MyApp.UI.exe --route Orders --data '{"id":"42"}'
-# 混合架构首次启动使用后台宿主
+# 混合架构首次及二次启动均使用后台宿主
 & .\MyApp.exe --route Orders --data '{"id":"42"}'
 ~~~
 
@@ -38,9 +38,17 @@ if (payload is not null &&
 
 ID 使用 JSON 字符串。详情页未给 ID 时使用示例 ID，编辑页未给 ID 时创建新记录；不会沿用缓存的旧激活 ID。带新 Payload 的导航以新值优先，带显式 Payload 的应用内部导航会清除旧的外部激活标记。列表页可以通过 request.Data 自行接入查询、筛选等业务参数。
 
-纯 WinUI 已接入首次启动和二次启动。混合架构将宿主首次启动参数通过 ProcessStartInfo.ArgumentList 一次性交给自己的 UI 子进程，并在 UI 就绪后导航；UI 重启不会重放启动路由。混合宿主的重复启动仍由原 Mutex 拒绝，尚未支持从第二个宿主向已有宿主转交业务激活。
+纯 WinUI 已接入首次启动和二次启动。混合架构将宿主首次启动参数通过 ProcessStartInfo.ArgumentList 一次性交给自己的 UI 子进程，并在 UI 就绪后导航；UI 重启不会重放启动路由。混合宿主的二次启动在创建服务或窗口前，通过独立命名管道转交参数并退出。已有宿主在模块初始化完成后处理请求：复用已有 UI，或在 UI 已退出时创建子进程，再通过自有 stdin/stdout 控制通道交给业务导航。普通二次启动只恢复窗口，不切换记录。
 
 Gallery 的业务页面新增路由 / JSON 预览，复用这些模板解析与路由源码，再适配现有 SQLite 表单。Gallery 自身仍使用独立 Mutex；页内预览不代表已验证 SDK 转交或混合宿主退出。示例步骤见 [Gallery 说明](../../samples/XamlNexus.Gallery/README.md#业务流程验收--business-workflow-acceptance)。
+
+## 混合宿主转交契约
+
+Mutex 继续决定宿主唯一性，HybridActivationPipe 负责传输完整参数数组；不把已有 gRPC 数字命令改成携带业务 JSON。监听器在耗时模块初始化前开放，在宿主就绪后开始按接收顺序处理。UI 控制通道将激活与关闭请求串行执行；读取和入队不等待用户的未保存决定，取消导航后仍能处理下一个请求。取消、保存失败以及同页记录替换沿用 MainWindow 的离开拦截。
+
+两个队列分别最多缓存 64 个请求，参数最多 128 项、UTF-8 JSON 总长不超过 64 KiB。宿主回执表示已进入内存队列，UI 回执表示已进入 UI 控制队列，均不等于业务导航成功。宿主连接/回执最多等 15 秒，UI 投递最多等 30 秒；不会限制用户确认或保存的时间。超时可能发生在请求已经接收之后，框架不自动重试或重放。宿主退出会停止监听并丢弃待处理请求；不提供持久化或跨退出的恰好一次保证。UI 在接收前退出时，此次投递失败；下一次新激活可以重新创建 UI。
+
+管道使用 CurrentUserOnly，限定相同 Windows 用户与提权状态，详见 [Microsoft PipeOptions 文档](https://learn.microsoft.com/dotnet/api/system.io.pipes.pipeoptions)。不同权限、宿主退出、初始化失败、队列满或超时不会启动第二个宿主。发送失败返回非零退出码；宿主接收后遇到 UI 投递或导航错误时写日志，业务导航错误在 UI 中显示。直接启动 UI.exe 不走宿主二次激活协议；应使用 MyApp.exe。
 
 ## 注册业务处理器
 
@@ -73,7 +81,7 @@ services.AddSingleton<IAppActivationHandler, BusinessActivationHandler>();
 
 - 此接入适用于新生成的纯 WinUI basic / standard 项目，包含安装或移除托盘 Recipe 后的项目。托盘隐藏的窗口也复用同一个 MainWindow。
 - 接口保留完整 AppActivationArguments，可处理 Launch、Protocol、File 等激活种类；文件关联与协议注册需要业务自行配置，当前模板没有自动注册。
-- 混合架构继续由 WPF 后台宿主、UIRunnerService 和命名管道管理前端进程。此变更不把前端改成独立的应用实例；首次启动业务参数走上述宿主链路；重复启动的参数转交仍未接入。
+- 混合架构继续由 WPF 后台宿主、UIRunnerService 和命名管道管理前端进程。此变更不把前端改成独立的应用实例；首次和二次启动业务参数走上述宿主链路；前端仍是宿主管理的子进程。开发启动标记 --xamlnexus-run 仍拒绝加入已运行宿主。
 - 生成入口使用 DISABLE_XAML_GENERATED_MAIN，保留 STA 和 DispatcherQueueSynchronizationContext。转交期间通过 COM 等待泵保持 STA 可响应，避免直接同步等待 SDK 转交造成死锁。
 - 本次没有为已有生成项目自动替换 App.xaml.cs。项目升级须审阅 scaffold 差异，并合并自己的启动逻辑。
 
@@ -100,3 +108,12 @@ pwsh -NoProfile -File eng/Test-AppInstance.ps1 -Repetitions 2
 激活事件在发布单实例键之前订阅，避免并发启动丢失早期请求。转交等待最多 15 秒，并监听原实例退出；失败明确返回错误，不自动启动第二个 UI。SDK 的注册/查找窗口出现原实例退出时，只有限重试注册。
 
 验收探针直接编译 CanonicalAppLaunch、ActivationRedirector 和 ActivationQueue 的实际模板源码。默认包含路径大小写矩阵、并发启动、初始化期激活、原实例退出和首次启动业务路由。使用 -RawSdk 可跳过路径兼容层重现 SDK 原始行为；此模式在当前版本上预期返回非零。窗口恢复和 MSIX 实际运行仍需要独立验收。
+
+### 混合转交与关闭探针
+
+~~~powershell
+dotnet run --project eng/diagnostics/HybridActivationProbe/HybridActivationProbe.csproj -c Release
+dotnet run --project eng/diagnostics/HybridCloseProbe/HybridCloseProbe.csproj -c Release
+~~~
+
+HybridActivationProbe 在相同用户与提权状态下创建测试自有的二次启动进程和模拟 UI 进程，直接编译模板的 HybridActivationPipe、UIHostControl、UIActivationCoordinator、业务解析器及路由器。覆盖初始化排队、完整 JSON、取消保留模拟草稿、普通启动、8 个并发转交、UI 退出重建和宿主退出后的有界失败。单元测试补充队列满、错误帧、过期/PID 不匹配回执、UI 超时及导航等待期间的关闭串行性。探针不执行真实 WPF App、UIRunnerService、原生窗口或 ContentDialog；生成项目构建检查这些接线能否编译，实际窗口恢复、焦点、弹窗及 MSIX 运行仍需独立验收。

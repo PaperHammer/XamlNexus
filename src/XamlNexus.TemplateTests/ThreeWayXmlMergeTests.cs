@@ -7,6 +7,36 @@ namespace XamlNexus.TemplateTests;
 
 public sealed class ThreeWayXmlMergeTests {
     [Fact]
+    public void Merge_RecipeStyleDeclarationRemovalWithLeadingWhitespacePreservesBothChanges() {
+        const string baseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><ProjectReference Include=\"UI.csproj\" /></ItemGroup></Project>";
+        var localDocument = XDocument.Parse(baseline, LoadOptions.PreserveWhitespace);
+        localDocument.Root!.Element("ItemGroup")!.Add(new XElement("ProjectReference", new XAttribute("Include", "Data.csproj")));
+        // RecipeProjectEditor serializes this way: declaration omitted, following newline retained.
+        string local = localDocument.ToString(SaveOptions.DisableFormatting);
+        string target = baseline.Replace("<Project Sdk=", "<Project ToolsVersion=\"Current\" Sdk=");
+        Assert.True(char.IsWhiteSpace(local[0]));
+        var result = XamlNexusThreeWayXmlMerge.Merge(Bytes(baseline), Bytes(local), Bytes(target));
+        Assert.Equal(XamlNexusMergeStatus.Merged, result.Status);
+        var merged = Parse(result.Content!);
+        Assert.Equal("Current", (string?)merged.Root!.Attribute("ToolsVersion"));
+        Assert.Contains(merged.Descendants("ProjectReference"), item => (string?)item.Attribute("Include") == "Data.csproj");
+        Assert.Contains(merged.Descendants("ProjectReference"), item => (string?)item.Attribute("Include") == "UI.csproj");
+    }
+
+    [Theory]
+    [InlineData("<!-- keep outside-root comment -->")]
+    [InlineData("<?custom keep?>")]
+    public void Merge_DocumentLevelContentStillRequiresManualReview(string content) {
+        string baseline = "\r\n" + content + "\r\n<Project Value=\"old\" />";
+        var result = XamlNexusThreeWayXmlMerge.Merge(Bytes(baseline),
+            Bytes(baseline.Replace("Value=\"old\"", "Value=\"local\"")),
+            Bytes(baseline.Replace("Value=\"old\"", "Value=\"target\"")));
+        Assert.Equal(XamlNexusMergeStatus.Unsupported, result.Status);
+        Assert.Null(result.Content);
+    }
+
+
+    [Fact]
     public void Merge_IndependentAttributesOnSameElementCombinesBothSides() {
         XamlNexusXmlMergeResult result = XamlNexusThreeWayXmlMerge.Merge(
             Bytes("<Project><ItemGroup><PackageReference Include=\"Sample\" Version=\"1.0\" /></ItemGroup></Project>"),

@@ -15,6 +15,7 @@ using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils;
 using Winui3_XamlNexus.Common.Utils.DI;
+using Winui3_XamlNexus.Common.Utils.Lifecycle;
 using Winui3_XamlNexus.Common.Utils.Files;
 using Winui3_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_XamlNexus.UIComponent.Utils;
@@ -96,6 +97,12 @@ namespace Winui3_XamlNexus.UI {
                 await _moduleCatalog.InitializeAsync(AppServiceLocator.Services);
 
                 var window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
+                // Run after module-installed close policies (including tray); keep the window alive during async cleanup.
+                window.AppWindow.Closing += (_, closing) => {
+                    if (closing.Cancel || _isShuttingDown) return;
+                    closing.Cancel = true;
+                    window.DispatcherQueue.TryEnqueue(ShutDown);
+                };
                 window.Show();
                 Program.Activations.Start(
                     (activation, cancellationToken) => HandleActivationAsync(window, activation, cancellationToken),
@@ -178,7 +185,7 @@ namespace Winui3_XamlNexus.UI {
                 LogUnhandledException(e.UnhandledError);
         }
 
-        public static void ShutDown() {
+        public static async void ShutDown() {
             if (_isShuttingDown) return;
             _isShuttingDown = true;
             Program.Activations.Stop();
@@ -187,10 +194,9 @@ namespace Winui3_XamlNexus.UI {
             var cleanupTimer = System.Diagnostics.Stopwatch.StartNew();
             ArcLog.GetLogger<App>().Info("Shutting down UI...");
             try {
-                ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
-            }
-            catch (Exception exception) {
-                ArcLog.GetLogger<App>().Error("Application cleanup failed", exception);
+                await ApplicationCleanup.RunAsync(
+                    exception => ArcLog.GetLogger<App>().Error("Application cleanup failed", exception),
+                    () => ApplicationCleanup.DisposeServicesAsync(AppServiceLocator.Services));
             }
             finally {
                 ArcLog.GetLogger<App>().Info($"UI was closed; service cleanup took {cleanupTimer.ElapsedMilliseconds} ms");

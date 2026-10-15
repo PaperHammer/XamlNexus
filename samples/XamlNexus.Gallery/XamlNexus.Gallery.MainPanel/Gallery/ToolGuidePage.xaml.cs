@@ -20,12 +20,13 @@ public sealed partial class ToolGuidePage : ArcPage {
             & .\MyApp.UI.exe --route OrderDetails --data '{"id":"42"}'
             & .\MyApp.UI.exe --route OrderEditor --data '{"id":"42"}'
             """, "PowerShell 7");
-        LifecycleAcceptanceCode.SetSource("pwsh -NoProfile -File eng/Test-AppInstance.ps1 -Repetitions 2\ndotnet run --project eng/diagnostics/HybridCloseProbe/HybridCloseProbe.csproj -c Release", "PowerShell");
+        LifecycleAcceptanceCode.SetSource("pwsh -NoProfile -File eng/Test-AppInstance.ps1 -Repetitions 2\ndotnet run --project eng/diagnostics/HybridCloseProbe/HybridCloseProbe.csproj -c Release\ndotnet run --project eng/diagnostics/HybridActivationProbe/HybridActivationProbe.csproj -c Release\ndotnet test src/XamlNexus.TemplateTests/XamlNexus.TemplateTests.csproj --filter FullyQualifiedName~ApplicationCleanupTests\ndotnet test src/XamlNexus.TemplateTests/XamlNexus.TemplateTests.csproj --filter FullyQualifiedName~NavigationRollbackTests", "PowerShell");
         InspectCode.SetSource("xamlnexus doctor --environment\nxamlnexus status\nxamlnexus validate\nxamlnexus doctor", "PowerShell");
         ComponentMaintenanceCode.SetSource("xamlnexus add settings,sqlite --dry-run\nxamlnexus add settings,sqlite\nxamlnexus remove sqlite --dry-run\nxamlnexus update --all --dry-run", "PowerShell");
         ScaffoldMaintenanceCode.SetSource("xamlnexus upgrade --dry-run", "PowerShell");
         AutomationCode.SetSource("xamlnexus status --project . --json\nxamlnexus update --all --project . --dry-run --json\nxamlnexus validate --project . --json\nxamlnexus upgrade --project . --dry-run --json", "PowerShell");
         GalleryCommandCode.SetSource("xamlnexus --version\nxamlnexus gallery", "PowerShell");
+        AiGuidanceCode.SetSource("xamlnexus new MyApp --preset winui --profile basic\nxamlnexus new HybridApp --preset hybrid\n# Generated: AGENTS.md, CLAUDE.md, QWEN.md\n# Skills: .agents/skills, .claude/skills, .qwen/skills", "PowerShell");
     }
     private void Navigate_Click(object sender, RoutedEventArgs e) => GalleryCatalog.Navigate((string)((ButtonBase)sender).Tag);
 }

@@ -84,6 +84,32 @@ namespace Winui3_Wpf_XamlNexus.Services {
             }
         }
 
+        public async Task ActivateAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken = default) {
+            _ = UIHostControl.Activation(Guid.Empty, arguments); // Validate before creating a UI.
+            Process process;
+            lock (_processSync) {
+                if (_hostShutdownRequested || App.IsShuttingDown)
+                    throw new InvalidOperationException("The host is closing; activation was rejected.");
+                ShowUI();
+                process = _processUI ?? throw new IOException("Could not create the UI process.");
+            }
+            int processId = process.Id;
+            if (process.HasExited) throw new IOException("The UI exited before activation could be delivered.");
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            deadline.CancelAfter(TimeSpan.FromSeconds(30));
+            await _activationRequests.RequestAsync(processId,
+                id => SendControlAsync(process, UIHostControl.Activation(id, arguments), deadline.Token), deadline.Token);
+        }
+
+        private async Task SendControlAsync(Process process, string line, CancellationToken token) {
+            await _controlWriteGate.WaitAsync(token);
+            try {
+                await process.StandardInput.WriteLineAsync(line.AsMemory(), token);
+                await process.StandardInput.FlushAsync(token);
+            }
+            finally { _controlWriteGate.Release(); }
+        }
+
         public void RestartUI() => RunRequest(RestartUIAsync());
         public void CloseUI() => RunRequest(CloseUIAsync());
 
@@ -104,8 +130,7 @@ namespace Winui3_Wpf_XamlNexus.Services {
             catch (InvalidOperationException) { return true; }
             return await _closeRequests.RequestAsync(processId, async id => {
                 try {
-                    await process.StandardInput.WriteLineAsync(UIHostControl.Request(id));
-                    await process.StandardInput.FlushAsync(cancellationToken);
+                    await SendControlAsync(process, UIHostControl.Request(id), cancellationToken);
                     if (process.HasExited) _closeRequests.ProcessExited(processId);
                 }
                 catch (InvalidOperationException) when (!ReferenceEquals(_processUI, process)) {
@@ -150,7 +175,7 @@ namespace Winui3_Wpf_XamlNexus.Services {
             //When the redirected stream is closed, a null line is sent to the event handler.
             if (!string.IsNullOrEmpty(e.Data)) {
                 if (sender is Process process && _processIds.TryGetValue(process, out int id) &&
-                    _closeRequests.Receive(id, e.Data)) return;
+                    (_closeRequests.Receive(id, e.Data) || _activationRequests.Receive(id, e.Data))) return;
                 //Ref: https://github.com/cyanfish/grpc-dotnet-namedpipes/issues/8
                 ArcLog.GetLogger<UIRunnerService>().Info($"UI: {e.Data}");
             }
@@ -165,6 +190,7 @@ namespace Winui3_Wpf_XamlNexus.Services {
             bool restarting = _restartPending;
             lock (_processSync) { if (ReferenceEquals(_processUI, process)) _processUI = null; }
             _closeRequests.ProcessExited(processId);
+            _activationRequests.ProcessExited(processId);
             _ = Task.Run(async () => {
                 try { await process.WaitForExitAsync(); }
                 finally { _processIds.TryRemove(process, out _); process.Dispose(); }
@@ -242,6 +268,8 @@ namespace Winui3_Wpf_XamlNexus.Services {
 
         private readonly System.Collections.Concurrent.ConcurrentDictionary<Process, int> _processIds = new();
         private readonly UICloseCoordinator _closeRequests = new();
+        private readonly UIActivationCoordinator _activationRequests = new();
+        private readonly SemaphoreSlim _controlWriteGate = new(1, 1);
         private readonly SemaphoreSlim _restartGate = new(1, 1);
         private volatile bool _restartPending;
         private volatile bool _hostShutdownRequested;

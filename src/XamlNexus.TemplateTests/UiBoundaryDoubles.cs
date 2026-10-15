@@ -19,6 +19,7 @@ namespace Microsoft.UI.Xaml {
         public System.Numerics.Vector3 Translation { get; set; }
         public double Opacity { get; set; } = 1;
         public bool IsHitTestVisible { get; set; } = true;
+        internal int ZIndex { get; set; }
     }
     public readonly record struct Duration(TimeSpan Value);
 }
@@ -31,7 +32,8 @@ namespace Microsoft.UI.Xaml.Controls {
         public void RaiseUnloaded() => Unloaded?.Invoke(this, new());
     }
     public static class Canvas {
-        public static void SetZIndex(Page page, int value) { }
+        public static void SetZIndex(Page page, int value) => page.ZIndex = value;
+        public static int GetZIndex(Page page) => page.ZIndex;
     }
 }
 namespace Winui3_XamlNexus.UIComponent.Feedback { public sealed class Loading { } }
@@ -61,7 +63,9 @@ namespace Microsoft.UI.Xaml.Media.Animation {
         public List<DoubleAnimation> Children { get; } = new();
         public static void SetTarget(DoubleAnimation animation, Microsoft.UI.Xaml.UIElement element) { }
         public static void SetTargetProperty(DoubleAnimation animation, string property) { }
-        public void Begin() { }
+        public static readonly AsyncLocal<Exception?> BeginFailure = new();
+        public void Begin() { if (BeginFailure.Value is { } exception) throw exception; }
+        public void Stop() { }
     }
 }
 namespace XamlNexus.TemplateTests {

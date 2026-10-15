@@ -396,7 +396,9 @@ public static class XamlNexusThreeWayXmlMerge {
 
     /// <summary>拒绝注释、处理指令、CDATA 和元素内的非空混合文本，避免重建 XML 时静默丢失内容</summary>
     private static bool HasUnsupportedNodes(XDocument document) =>
-        document.Nodes().Any(node => node is not XElement) ||
+        // Recipe edits may remove the declaration while retaining its following newline.
+        document.Nodes().Any(node => node is not XElement &&
+            (node is not XText text || !string.IsNullOrWhiteSpace(text.Value))) ||
         document.Root!.DescendantsAndSelf().Any(element => {
             bool hasElements = element.Elements().Any();
             return element.Nodes().Any(node =>

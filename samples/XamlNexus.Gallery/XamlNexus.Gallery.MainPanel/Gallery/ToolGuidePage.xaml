@@ -51,6 +51,8 @@
                     <TextBlock Text="{Binding [SingleInstanceBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                     <TextBlock Text="{Binding [HybridCloseTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
                     <TextBlock Text="{Binding [HybridCloseBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [ApplicationCleanupTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [ApplicationCleanupBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
                     <TextBlock Text="{Binding [LifecycleSupportBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     <Expander Header="{Binding [LifecycleAcceptanceTitle], Source={StaticResource Strings}}">
                         <StackPanel Spacing="12">
@@ -59,6 +61,15 @@
                         </StackPanel>
                     </Expander>
                     <g:GallerySourceBrowser Kind="Activation"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding [AiGuidanceTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [AiGuidanceCliBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [AiGuidanceProjectBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="AiGuidanceCode"/>
+                    <TextBlock Text="{Binding [AiGuidanceBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
             </Border>
             <Expander Header="{Binding [ToolMaintenance], Source={StaticResource Strings}}" Style="{StaticResource Section}">

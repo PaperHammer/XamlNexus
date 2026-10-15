@@ -56,6 +56,11 @@ namespace Winui3_XamlNexus.UIComponent.Utils {
             return _data;
         }
 
+        internal void RestoreData(IReadOnlyDictionary<string, object?> values) {
+            _data.Clear();
+            foreach (var pair in values) _data.Add(pair.Key, pair.Value);
+        }
+
         private readonly Dictionary<string, object?> _data = [];
     }
 

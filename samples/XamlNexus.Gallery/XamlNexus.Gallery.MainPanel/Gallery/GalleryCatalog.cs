@@ -39,7 +39,7 @@ public static class GalleryCatalog {
         new GalleryEntry("arc-window", "WindowCard", "WindowDescription", "\uE737", typeof(ArcWindowGalleryPage), "mechanics", "ArcWindow titlebar window 窗口 标题栏", navigationTitleKey: "NavigationWindow"),
         new GalleryEntry("arc-page", "PageCard", "PageDescription", "\uE8A5", typeof(ArcPageGalleryPage), "mechanics", "ArcPage payload loading lifecycle 导航 加载 生命周期", navigationTitleKey: "NavigationPage"),
         new GalleryEntry("keepalive", "LifetimeTitle", "LifetimeDescription", "\uE81C", typeof(KeepAliveGalleryPage), "mechanics", "KeepAlive retention draft 草稿 保活", navigationTitleKey: "NavigationRetention"),
-        new GalleryEntry("tool-guide", "ToolGuide", "ToolGuideDescription", "\uE82D", typeof(ToolGuidePage), "reference", "cli commands hybrid profile activation single instance close 单实例 激活 关闭 参数 命令 架构", navigationTitleKey: "NavigationCommands"),
+        new GalleryEntry("tool-guide", "ToolGuide", "ToolGuideDescription", "\uE82D", typeof(ToolGuidePage), "reference", "cli commands hybrid profile activation single instance close ai skills codex claude qwen 单实例 激活 关闭 参数 命令 架构 规范", navigationTitleKey: "NavigationCommands"),
     };
     private static readonly List<GalleryEntry> recent = new();
     public static IReadOnlyList<GalleryEntry> Recent => recent;

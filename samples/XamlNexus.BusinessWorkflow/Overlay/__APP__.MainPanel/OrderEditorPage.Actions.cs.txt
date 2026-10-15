@@ -1,0 +1,20 @@
+using System;
+using Microsoft.UI.Xaml;
+using __APP__.MainPanel.Services;
+using __APP__.UIComponent.Utils;
+
+namespace __APP__.MainPanel;
+
+public sealed partial class OrderEditorPage {
+    private IOrderNavigation navigation = null!;
+    private async void SaveAndList_Click(object sender, RoutedEventArgs args) {
+        try {
+            if (await ViewModel.TrySaveAsync()) await navigation.OpenAsync("Orders");
+        }
+        catch (Exception exception) { GlobalMessageUtil.ShowException(exception); }
+    }
+    private async void List_Click(object sender, RoutedEventArgs args) {
+        try { await navigation.OpenAsync("Orders"); }
+        catch (Exception exception) { GlobalMessageUtil.ShowException(exception); }
+    }
+}

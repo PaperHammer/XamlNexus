@@ -3,5 +3,6 @@
   <ItemGroup>
     <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/UIHostControl.cs" Link="UIHostControl.cs" />
     <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/UICloseCoordinator.cs" Link="UICloseCoordinator.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/HybridActivationPipe.cs" Link="HybridActivationPipe.cs" />
   </ItemGroup>
 </Project>

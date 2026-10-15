@@ -29,14 +29,14 @@ For translated titles, add the same string key to each UIComponent language's Re
 
 ## Standard and custom windows
 
-`INavigationRegistry` exposes Register, Entries, and Resolve. NavigationRegistry is the default implementation, with `NavigationRegistry.Default` shared in the process. MainWindow uses NavigationMenu to create items, stores routes in NavigationViewItem.Tag, resolves a selected route to its page type, and calls NaviContent.Navigate(pageType). There is no per-page switch to maintain in the window.
+`INavigationRegistry` exposes Register, Entries, and Resolve. NavigationRegistry is the default implementation, with `NavigationRegistry.Default` shared in the process. MainWindow uses NavigationMenu to create items, stores routes in NavigationViewItem.Tag, resolves a selected route to its page type, and awaits NaviContent.NavigateAsync(pageType), updating selection only after success. There is no per-page switch to maintain in the window.
 
 A custom window can reuse the adapter:
 
 ```csharp
 var menu = new NavigationMenu(myNavigationView, NavigationRegistry.Default);
 menu.Select("home");
-// Read SelectedItemContainer.Tag on selection and call the content control's Navigate.
+// Read SelectedItemContainer.Tag on selection and await the content control's NavigateAsync.
 // Call menu.Dispose() when the window closes.
 ```
 
@@ -51,3 +51,17 @@ Older projects without the interface receive only the three page-related files a
 Dry runs, file conflict checks, and transactional rollback still apply. Module DI lifecycle and navigation registration govern services and pages separately. Adding navigation requires no database and does not change ViewModel ownership.
 
 Business activation uses MainWindow.NavigateActivationAsync to share guarded navigation and update sidebar selection after success. See [application activation and business navigation](app-activation.md) for launch arguments and payload access.
+
+## Failed page entry
+
+Await `NavigateAsync` and update navigation selection only after it succeeds. The standard sidebar and business activation already follow this rule. The compatibility `Navigate` method logs errors but cannot return an awaitable result.
+
+After leave approval, the navigation host captures the target's framework state, merges its payload, attaches it and runs synchronous `OnEnter`. Only successful entry and animation startup commit activation and departure of the previous page. Unsupported transitions are rejected before leave confirmation. Cancellation observed after entry preparation also rolls back.
+
+On failure, a target created for this attempt is removed from the host and cleaned up once, including a new KeepAlive page. A reused background page or same-page parameter change restores its status, payload reference/keys, DataContext reference, context active flag, visual properties and pre-leave flag. An already pending exit is not cancelled by an unsuccessful re-entry. The caller's incoming payload dictionary is restored as well.
+
+The original error propagates to the caller. Cleanup errors are logged separately and do not replace it; the next navigation can retry. Constructor failure leaves the host unchanged, but a constructor must clean up resources it allocated before throwing.
+
+This restores framework-owned state, with shallow payload values. It does not undo completed saves, mutate business objects back, stop arbitrary work started by a page, or reverse custom external side effects. Async loading errors reported after `OnEnter` returns belong to the page's error/retry flow, An `async void` override cannot propagate its exceptions through the synchronous entry call.
+
+Headless tests compile the actual navigation/page sources and exercise new, retained, same-page, cancellation, pending-exit, cleanup-error and animation-start scenarios. Native animation rendering and XAML binding behavior still require runtime acceptance.

@@ -17,6 +17,7 @@ Run `xamlnexus gallery` with an official tool package to download, verify and la
 - **Two architectures:** a WinUI 3 application, or a WinUI 3 frontend with a WPF background host.
 - **Application foundations:** ArcXaml, navigation, MVVM, dependency injection, configuration, and logging.
 - **Optional components:** settings, SQLite, tray integration, application updates, and EditorConfig.
+- **AI development guidance:** bundled CLI skills and application architecture/rules for Codex, Claude Code and Qwen Code.
 - **Project maintenance:** preview changes, validate projects, diagnose configuration, and upgrade generated infrastructure.
 
 ## Install
@@ -129,6 +130,7 @@ xn --help
 
 - [Documentation index](docs/README.md)
 - [Quickstart](docs/user-guide/quickstart.md)
+- [AI development guidance: built-in CLI skills and generated application rules](docs/user-guide/ai-guidance.md)
 - [Command reference](docs/user-guide/commands.md)
 - [Architecture](docs/technical/architecture.md)
 - [Profiles and capabilities](docs/introduction/product-model.md)

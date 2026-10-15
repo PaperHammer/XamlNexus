@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Numerics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,10 +49,46 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
 
         #region async life-cycle hooks
         public void NavigateEnter(FrameworkPayload? payload) {
-            _exitCts?.Cancel();
+            CommitNavigationEntry();
+            EnterForNavigation(payload);
+        }
+
+        // Root navigation commits exit cancellation only after entry and animation setup succeed.
+        internal void EnterForNavigation(FrameworkPayload? payload) {
             Volatile.Write(ref _isPreLeaved, 0);
             OnEnter(payload);
         }
+
+        internal void CommitNavigationEntry() => _exitCts?.Cancel();
+
+        internal NavigationState CaptureNavigationState() => new(
+            Status, Payload, Payload is null ? null : new Dictionary<string, object?>(Payload.GetRawData()),
+            DataContext, ArcContext, ArcContext?.IsActive ?? false, IsPreLeaved,
+            Opacity, IsHitTestVisible, Translation, Canvas.GetZIndex(this));
+
+        internal void RestoreNavigationState(NavigationState state) {
+            Status = state.Status;
+            Payload = state.Payload;
+            if (Payload is not null && state.PayloadValues is not null) Payload.RestoreData(state.PayloadValues);
+            DataContext = state.DataContext;
+            ArcContext = state.Context;
+            if (ArcContext is not null) ArcContext.IsActive = state.ContextActive;
+            Volatile.Write(ref _isPreLeaved, state.PreLeaved ? 1 : 0);
+            Opacity = state.Opacity;
+            IsHitTestVisible = state.HitTestVisible;
+            Translation = state.Translation;
+            Canvas.SetZIndex(this, state.ZIndex);
+        }
+
+        internal void DiscardFailedNavigation() {
+            try { DestroyOnce(); }
+            finally { ReleaseFrameworkState(); }
+        }
+
+        internal sealed record NavigationState(
+            ArcPageStatus Status, FrameworkPayload? Payload, IReadOnlyDictionary<string, object?>? PayloadValues,
+            object? DataContext, ArcPageContext? Context, bool ContextActive, bool PreLeaved,
+            double Opacity, bool HitTestVisible, Vector3 Translation, int ZIndex);
 
         // Compatibility entry point for existing navigation callers.
         public async void NavigateExit(Action? beforeLeave = null, Action? afterDestoried = null) {
@@ -142,7 +180,9 @@ namespace Winui3_XamlNexus.UIComponent.Templates {
         /// <summary>
         /// 页面销毁 / Page cleanup.
         /// </summary>
-        protected virtual void OnDestroy() {
+        protected virtual void OnDestroy() => ReleaseFrameworkState();
+
+        private void ReleaseFrameworkState() {
             Status = ArcPageStatus.Stopped;
             Payload = null;
             DataContext = null;

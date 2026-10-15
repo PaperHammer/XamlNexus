@@ -138,6 +138,12 @@ jobs:
           New-Item -ItemType Directory -Force .artifacts/hybrid-close | Out-Null
           dotnet run --project eng/diagnostics/HybridCloseProbe/HybridCloseProbe.csproj -c Release -p:NuGetAudit=false *> .artifacts/hybrid-close/acceptance.log
           if ($LASTEXITCODE -ne 0) { throw 'Hybrid close acceptance failed.' }
+      - name: Verify hybrid secondary activation without UI
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .artifacts/hybrid-activation | Out-Null
+          dotnet run --project eng/diagnostics/HybridActivationProbe/HybridActivationProbe.csproj -c Release -p:NuGetAudit=false *> .artifacts/hybrid-activation/acceptance.log
+          if ($LASTEXITCODE -ne 0) { throw 'Hybrid activation acceptance failed.' }
       - name: Upload lifecycle evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -147,3 +153,27 @@ jobs:
           path: |
             .artifacts/app-instance-*/**
             .artifacts/hybrid-close/**
+            .artifacts/hybrid-activation/**
+
+  business-workflow:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Verify generated business data and scaffold maintenance without UI
+        shell: pwsh
+        run: ./eng/Test-BusinessWorkflow.ps1
+      - name: Upload business workflow evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: business-workflow
+          include-hidden-files: true
+          path: .artifacts/business-workflow-*/**

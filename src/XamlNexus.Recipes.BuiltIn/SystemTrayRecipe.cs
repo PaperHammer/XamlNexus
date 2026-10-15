@@ -5,7 +5,7 @@ namespace XamlNexus.Recipes.BuiltIn;
 public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdatePlanProvider {
     public XamlNexusRecipeDescriptor Descriptor { get; } = new() {
         Id = "system-tray",
-        Version = "1.0.0",
+        Version = "1.0.1",
         DisplayName = "System tray and notifications",
         Description = "Adds a WinUI system tray menu, show/hide behavior, exit command, and native balloon notifications.",
         SupportedPresets = ["winui"],
@@ -79,7 +79,7 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
             }
         }
 
-        public sealed class SystemTrayService(MainWindow mainWindow, IUserSettingsClient userSettings) : ISystemTraySettings, IDisposable {
+        public sealed class SystemTrayService(MainWindow mainWindow, IUserSettingsClient userSettings) : ISystemTraySettings, IDisposable, IAsyncDisposable {
             private bool Chinese => userSettings.Settings.Language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
             public WindowCloseBehavior CloseBehavior => userSettings.Settings.WindowCloseBehavior;
 
@@ -189,6 +189,21 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
             private void QueueExit() => mainWindow.DispatcherQueue.TryEnqueue(ExitApplication);
 
             {{CreateExitMethod(supportsLeaveGuard)}}
+
+            public ValueTask DisposeAsync() {
+                // DI can resume on a worker after disposing another async service.
+                // XAML and TaskbarIcon cleanup must still run on this window's dispatcher.
+                if (mainWindow.DispatcherQueue.HasThreadAccess) {
+                    Dispose();
+                    return ValueTask.CompletedTask;
+                }
+                var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                if (!mainWindow.DispatcherQueue.TryEnqueue(() => {
+                    try { Dispose(); completion.TrySetResult(); }
+                    catch (Exception exception) { completion.TrySetException(exception); }
+                })) completion.TrySetException(new InvalidOperationException("The tray UI dispatcher no longer accepts cleanup."));
+                return new ValueTask(completion.Task);
+            }
 
             public void Dispose() {
                 if (_disposed) return;

@@ -46,11 +46,13 @@ Routes match case-sensitive registrations in UI/Navigation, and ID is a string. 
 
 Activation navigation calls CanLeaveAsync even for another record on the same editor page. Keep editing or save failure preserves the record, draft, payload and sidebar selection. Incoming values take precedence over cached values; a create request without ID never reuses the previous activation's ID.
 
-Pure WinUI supports initial and redirected launches, processed serially after module initialization. Hybrid initial launch uses the background host `MyApp.exe`, which forwards arguments once to its UI; repeated-host argument forwarding is not supported. Unknown routes and invalid JSON report errors without navigating. Protocol and file associations still require business configuration.
+Pure WinUI supports initial and redirected launches, processed serially after module initialization. Hybrid initial and subsequent launches use `MyApp.exe`. The existing host queues arguments, reuses or creates its UI and invokes guarded navigation; restart does not replay old routes. Receipts confirm queuing only. Unknown routes and invalid JSON report errors without navigating. Protocol and file associations still require business configuration.
 
 These options belong to the generated executable. The current `xamlnexus run` command does not forward `--route` or `--data`. Existing projects must review a scaffold upgrade and merge the new startup and UIComponent code; page add does not replace an older App.xaml.cs. See [application activation](../technical/app-activation.md) and [hybrid close protection](../technical/hybrid-close.md).
 
-Gallery's business-page preview uses the actual template parser and router with its SQLite details/form models. It does not launch a second process; repository probes verify SDK delivery and the hybrid close protocol separately.
+Gallery's business-page preview uses the actual template parser and router with its SQLite details/form models. It does not launch a second process; repository probes verify SDK delivery and hybrid forwarding and close protocols separately.
+
+For a reproducible standalone application, see the [BusinessWorkflow sample](../../samples/XamlNexus.BusinessWorkflow/README.md). It creates a basic project with the CLI, installs SQLite, generates list/details/editor pages, and integrates shared data and navigation. Acceptance compiles the generated sources and checks process-reopened persistence, failed saves, and preservation after scaffold maintenance.
 
 ## Start without a database
 
@@ -188,3 +190,5 @@ In hybrid, inject IAppStateClient and use RPC to access the host-owned database;
 ActivatorUtilities creates a new business object and requires registered constructor dependencies. It neither recursively registers arbitrary dependencies nor hides missing-service errors. Dependency-free ViewModels need no container registration.
 
 Page navigation owns Page and ViewModel instances; kept-alive pages reuse them. The application container does not automatically dispose factory-created objects. Release ViewModel-owned resources in appropriate OnLeaveAsync/OnDestroy callbacks and make repeated destruction safe. Do not dispose injected shared services. The factory uses the application provider without a per-page scope; create/dispose database contexts per operation and explicitly create scopes for operations requiring scoped services.
+
+If synchronous page entry fails, navigation removes the new page or restores the reused page's framework state and keeps the previous page. See [failed page entry](../technical/navigation.md#failed-page-entry) for scope and error handling.

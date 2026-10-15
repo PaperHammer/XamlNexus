@@ -17,6 +17,7 @@
 - **两种架构**：纯 WinUI 3 应用，或 WinUI 3 前端搭配 WPF 后台宿主。
 - **应用基础设施**：集成 ArcXaml、导航、MVVM、依赖注入、配置和日志。
 - **可选组件**：设置、SQLite、系统托盘、应用更新和 EditorConfig。
+- **AI 开发指导**：内置 CLI skills 与应用架构规范，支持 Codex、Claude Code 和 Qwen Code。
 - **项目维护**：预览变更、校验项目、诊断配置和升级脚手架基础代码。
 
 ## 安装
@@ -129,6 +130,7 @@ xn --help
 
 - [文档目录](docs/README.zh-CN.md)
 - [快速开始](docs/user-guide/quickstart.zh-CN.md)
+- [AI 开发指导：内置 CLI skills 与生成应用的架构规范](docs/user-guide/ai-guidance.zh-CN.md)
 - [命令详解](docs/user-guide/commands.zh-CN.md)
 - [整体架构与关键流程](docs/technical/architecture.zh-CN.md)
 - [配置与能力边界](docs/introduction/product-model.zh-CN.md)

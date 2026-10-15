@@ -42,8 +42,14 @@
     <EmbeddedResource Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/BusinessActivationRequest.cs" LogicalName="Gallery.Sample.Activation.BusinessActivationRequest.cs" WithCulture="false" />
     <EmbeddedResource Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/BusinessActivationNavigator.cs" LogicalName="Gallery.Sample.Activation.BusinessActivationNavigator.cs" WithCulture="false" />
     <EmbeddedResource Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/ActivationCommandLine.cs" LogicalName="Gallery.Sample.Activation.ActivationCommandLine.cs" WithCulture="false" />
+    <EmbeddedResource Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/HybridActivationPipe.cs" LogicalName="Gallery.Sample.Hybrid.HybridActivationPipe.cs" WithCulture="false" />
+    <EmbeddedResource Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/UIActivationCoordinator.cs" LogicalName="Gallery.Sample.Hybrid.UIActivationCoordinator.cs" WithCulture="false" />
     <EmbeddedResource Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/UIHostControl.cs" LogicalName="Gallery.Sample.Hybrid.UIHostControl.cs" WithCulture="false" />
     <EmbeddedResource Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/UICloseCoordinator.cs" LogicalName="Gallery.Sample.Hybrid.UICloseCoordinator.cs" WithCulture="false" />
+    <EmbeddedResource Include="../../../src/Templates/Winui3/Winui3_XamlNexus.Common/Utils/Lifecycle/ApplicationCleanup.cs" LogicalName="Gallery.Sample.Lifecycle.ApplicationCleanup.cs" WithCulture="false" />
+    <EmbeddedResource Include="../../../src/Templates/Winui3/Winui3_XamlNexus.UI/App.xaml.cs" LogicalName="Gallery.Sample.Activation.App.xaml.cs" WithCulture="false" />
+    <EmbeddedResource Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus/App.xaml.cs" LogicalName="Gallery.Sample.Hybrid.App.xaml.cs" WithCulture="false" />
+    <EmbeddedResource Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UI/App.xaml.cs" LogicalName="Gallery.Sample.Hybrid.UI.App.xaml.cs" WithCulture="false" />
     <!-- Read the same files used by CLI generation; source remains available offline. / 读取 CLI 生成所使用的同一组文件，源码可离线查看。 -->
     <EmbeddedResource Include="../../../src/XamlNexus.Common/Assets/ListPage/*.txt" LogicalName="Gallery.Template.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="../../../src/XamlNexus.Common/Assets/DetailsPage/*.txt" LogicalName="Gallery.DetailsTemplate.%(Filename)%(Extension)" WithCulture="false" />

@@ -1,0 +1,36 @@
+using System;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using __APP__.Data.Persistence;
+using __APP__.MainPanel.Services;
+using __APP__.UIComponent.Activation;
+
+namespace __APP__.UI.Modules;
+
+internal sealed class BusinessModule : IXamlNexusModule {
+    [ModuleInitializer]
+    internal static void Register() => XamlNexusModuleCatalog.Register(static () => new BusinessModule());
+
+    public void ConfigureServices(IServiceCollection services) {
+        services.AddSingleton<OrderStore>();
+        services.AddSingleton<OrderDataSource>();
+        services.AddSingleton<IOrdersDataSource>(provider => provider.GetRequiredService<OrderDataSource>());
+        services.AddSingleton<IOrderDetailsDataSource>(provider => provider.GetRequiredService<OrderDataSource>());
+        services.AddSingleton<IOrderEditorDataSource>(provider => provider.GetRequiredService<OrderDataSource>());
+        services.AddSingleton<IOrderNavigation>(provider => new OrderNavigation(() => provider.GetRequiredService<MainWindow>()));
+    }
+
+    public Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken = default) => Task.CompletedTask;
+}
+
+internal sealed class OrderNavigation(Func<MainWindow> getWindow) : IOrderNavigation {
+    public async Task<bool> OpenAsync(string route, string? id = null, CancellationToken cancellationToken = default) {
+        string data = id is null ? "{}" : JsonSerializer.Serialize(new { id });
+        var request = BusinessActivationRequest.FromArguments(new[] { "--route", route, "--data", data })!;
+        // Resolve after window construction; the default Orders page also injects navigation.
+        return await getWindow().NavigateActivationAsync(request, cancellationToken) == ActivationNavigationResult.Navigated;
+    }
+}

@@ -37,6 +37,7 @@
     <ProjectReference Include="..\XamlNexus.Recipes.BuiltIn\XamlNexus.Recipes.BuiltIn.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.Common/Utils/Lifecycle/ApplicationCleanup.cs" Link="TemplateSources/Winui3/ApplicationCleanup.cs" />
     <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Templates/ArcPage.cs" Link="TemplateSources/Winui3/Templates/ArcPage.cs" />
     <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Attributes/KeepAliveAttribute.cs" Link="TemplateSources/Winui3/Attributes/KeepAliveAttribute.cs" />
     <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Context/ArcPageContext.cs" Link="TemplateSources/Winui3/Context/ArcPageContext.cs" />

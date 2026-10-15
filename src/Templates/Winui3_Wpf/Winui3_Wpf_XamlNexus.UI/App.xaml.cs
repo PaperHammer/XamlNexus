@@ -13,6 +13,7 @@ using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Logging;
 using Winui3_Wpf_XamlNexus.Common.Utils;
 using Winui3_Wpf_XamlNexus.Common.Utils.DI;
+using Winui3_Wpf_XamlNexus.Common.Utils.Lifecycle;
 using Winui3_Wpf_XamlNexus.Common.Utils.Files;
 using Winui3_Wpf_XamlNexus.Common.Utils.IPC;
 using Winui3_Wpf_XamlNexus.UIComponent.Utils.Extensions;
@@ -122,7 +123,17 @@ namespace Winui3_Wpf_XamlNexus.UI {
             await _moduleCatalog.InitializeAsync(AppServiceLocator.Services);
 
             var m_window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
+            // Run after module-installed close policies (including tray); keep the window alive during async cleanup.
+            m_window.AppWindow.Closing += (_, closing) => {
+                if (closing.Cancel || _isShuttingDown) return;
+                closing.Cancel = true;
+                m_window.DispatcherQueue.TryEnqueue(ShutDown);
+            };
             m_window.Show();
+            // Initial navigation finishes before the control listener drains queued secondary launches.
+            await HandleBusinessActivationAsync(m_window, Environment.GetCommandLineArgs().Skip(1).ToArray(),
+                _hostControlCancellation.Token);
+            if (_hostControlCancellation.IsCancellationRequested) return;
             _hostControlTask = Task.Run(async () => {
                 try {
                     await UIHostControl.ListenAsync(Console.In, Console.Out, async token => {
@@ -131,20 +142,32 @@ namespace Winui3_Wpf_XamlNexus.UI {
                             approved = await m_window.RequestCloseAsync(cancellationToken: token);
                         });
                         return approved;
-                    }, exception => ArcLog.GetLogger<App>().Error("Host close request failed", exception), _hostControlCancellation.Token);
+                    }, async (arguments, token) => {
+                        await m_window.DispatcherQueue.EnqueueOrInvokeAsync(() =>
+                            HandleBusinessActivationAsync(m_window, arguments, token));
+                    }, exception => ArcLog.GetLogger<App>().Error("Host control request failed", exception),
+                        _hostControlCancellation.Token);
                 }
                 catch (OperationCanceledException) when (_hostControlCancellation.IsCancellationRequested) { }
                 catch (Exception exception) { ArcLog.GetLogger<App>().Error("Host control channel failed", exception); }
             });
+        }
+
+        private static async Task HandleBusinessActivationAsync(MainWindow window, string[] arguments,
+            CancellationToken token) {
             try {
-                var request = BusinessActivationRequest.FromArguments(Environment.GetCommandLineArgs().Skip(1).ToArray());
-                if (request is not null)
-                    await m_window.NavigateActivationAsync(request, _hostControlCancellation.Token);
+                token.ThrowIfCancellationRequested();
+                if (window.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter &&
+                    presenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Minimized) presenter.Restore();
+                window.Show();
+                window.Activate();
+                var request = BusinessActivationRequest.FromArguments(arguments);
+                if (request is not null) await window.NavigateActivationAsync(request, token);
             }
-            catch (OperationCanceledException) when (_hostControlCancellation.IsCancellationRequested) { }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { }
             catch (Exception exception) {
                 ArcLog.GetLogger<App>().Error("Business activation failed", exception);
-                GlobalMessageUtil.ShowException(exception, m_window);
+                GlobalMessageUtil.ShowException(exception, window);
             }
         }
 
@@ -180,7 +203,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
                 LogUnhandledException(e.UnhandledError);
         }
 
-        public static void ShutDown() {
+        public static async void ShutDown() {
             if (_isShuttingDown) return;
             _isShuttingDown = true;
             ((App)Current)._hostControlCancellation.Cancel();
@@ -188,10 +211,9 @@ namespace Winui3_Wpf_XamlNexus.UI {
             var cleanupTimer = Stopwatch.StartNew();
             ArcLog.GetLogger<App>().Info("Shutting down UI...");
             try {
-                ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
-            }
-            catch (Exception exception) {
-                ArcLog.GetLogger<App>().Error("Application cleanup failed", exception);
+                await ApplicationCleanup.RunAsync(
+                    exception => ArcLog.GetLogger<App>().Error("Application cleanup failed", exception),
+                    () => ApplicationCleanup.DisposeServicesAsync(AppServiceLocator.Services));
             }
             finally {
                 ArcLog.GetLogger<App>().Info($"UI was closed; service cleanup took {cleanupTimer.ElapsedMilliseconds} ms");

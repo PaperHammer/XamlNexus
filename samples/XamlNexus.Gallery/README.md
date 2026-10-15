@@ -13,6 +13,7 @@ Gallery is an interactive workspace for building applications with XamlNexus. It
 - **项目演进 / Project evolution**：编辑本地源码，切换独立修改与重叠修改，查看真实三方合并的结果或冲突文档。查看基线与维护命令。
 - **数据与恢复 / Data & recovery**：SQLite 的增删改查、迁移、WAL、完整性检查、备份与恢复。
 - **窗口与页面机制 / Windows and pages**：列表异步加载、窗口打开与管理、导航传参与加载、返回后继续编辑。
+- [AI 开发指导：工具指南展示随项目自动写入的两类 skills 和开发规范](../../docs/user-guide/ai-guidance.zh-CN.md)
 - **命令参考 / Command reference**：可复制的创建、运行、页面生成与维护命令；同时说明单实例激活、混合宿主安全关闭及当前支持边界；框架源码和无界面验收命令按需展开。
 - **设置 / Settings**：Gallery 的主题、窗口材质、语言与关于页面。
 
@@ -30,13 +31,17 @@ Search supports scenario names, descriptions and API / CLI keywords in both lang
 
 This preview compiles the production parser and router and adapts example routes to its existing business models. Confirmation precedes record and tab changes. Generated launch commands are copyable text and never execute inside Gallery.
 
-Gallery 自身仍使用 Mutex 与独立前台窗口，没有托盘、SDK 激活队列或 WPF 宿主。此演示证明页内业务参数接入；不能替代生成应用的跨进程激活、焦点、MSIX 或混合宿主退出验收。命令参考可离线浏览实际模板的单实例入口、激活队列、兼容处理和关闭协调器，验收命令在 XamlNexus 仓库根目录运行。详见[应用激活](../../docs/technical/app-activation.zh-CN.md)与[混合关闭保护](../../docs/technical/hybrid-close.zh-CN.md)。
+Gallery 自身仍使用 Mutex 与独立前台窗口，没有托盘、SDK 激活队列或 WPF 宿主。此演示证明页内业务参数接入；不能替代生成应用的跨进程激活、焦点、MSIX 或混合宿主退出验收。命令参考可离线浏览实际模板的单实例入口、激活队列、兼容处理、混合二次激活管道和关闭协调器，验收命令在 XamlNexus 仓库根目录运行。详见[应用激活](../../docs/technical/app-activation.zh-CN.md)与[混合关闭保护](../../docs/technical/hybrid-close.zh-CN.md)。
 
-Gallery retains its own foreground window and Mutex entry point, without a tray, SDK activation queue or WPF host. Its page preview does not prove cross-process activation or hybrid shutdown. The command guide embeds the actual template lifecycle sources for offline inspection and lists repository acceptance commands.
+Gallery retains its own foreground window and Mutex entry point, without a tray, SDK activation queue or WPF host. Its page preview does not prove cross-process activation or hybrid shutdown. The command guide embeds the actual template lifecycle sources for offline inspection and lists repository acceptance commands, including hybrid secondary activation and UI recreation.
 
 业务模板提供可运行的页面起点，仍需接入自己的应用服务与导航。CLI 默认模板表单的保存仍是示例服务行为；Gallery 通过 `GalleryBusinessDataSource` 和 `GalleryBusinessStore` 显式接入 SQLite，记录使用 `gallery.business/` 键前缀，与普通数据演示记录分开。SQLite Recipe 提供数据层；Gallery 的 CRUD、备份和恢复界面是独立实现，不会由组件安装自动生成。
 
 The Gallery compiles the actual CLI template ViewModels and service interfaces at build time. Its composition and evolution workflows call the production planner and merge engine. Previews are in memory; they never run commands or write projects. Generated template forms use a sample service; Gallery connects these ViewModels to its own SQLite adapter for persistent business records. The SQLite business interface is a custom demonstration rather than generated Recipe output.
+
+希望在生成应用中复现完整流程，可运行 [BusinessWorkflow 独立样例](../XamlNexus.BusinessWorkflow/README.md)。它使用 CLI 生成与业务接入代码，并提供数据持久化及脚手架维护的无界面验收；Gallery 页内预览与独立应用验收分别保留边界。
+
+For the same workflow in a standalone generated app, use the [BusinessWorkflow sample](../XamlNexus.BusinessWorkflow/README.md), which includes headless data and maintenance acceptance.
 
 ## 运行 / Run
 

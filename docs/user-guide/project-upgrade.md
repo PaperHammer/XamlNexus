@@ -95,6 +95,8 @@ All resolved files and automatic changes are applied together. The manifest adva
 
 `--resolve-from` may be combined with `--dry-run`, but not with `--conflict-output`.
 
+Whitespace outside the root is accepted during structural merging. Recipe edits can omit an XML declaration while retaining the following newline; this formatting difference must not prevent merging. Comments, processing instructions, CDATA, DTD and nonempty mixed content still retain the existing manual-review boundary.
+
 ## Safety model
 
 New projects record each scaffold-managed path and SHA-256 in

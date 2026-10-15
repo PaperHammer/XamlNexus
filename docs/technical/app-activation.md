@@ -13,7 +13,7 @@ Launch a compiled app from PowerShell 7:
 ~~~powershell
 # Orders is registered by page add Orders --kind form
 & .\MyApp.UI.exe --route Orders --data '{"id":"42"}'
-# First launch of a hybrid app uses the background host
+# Initial and subsequent hybrid launches use the background host
 & .\MyApp.exe --route Orders --data '{"id":"42"}'
 ~~~
 
@@ -36,9 +36,17 @@ if (payload is not null &&
 
 Omitting ID uses the sample record in details pages or creates a new record in forms. Cached activation IDs are not reused. Incoming payload values take precedence over cached values, and explicit in-app navigation clears the cached external activation marker. List pages can consume request.Data for their own search and filter contracts.
 
-Pure WinUI supports initial and redirected launches. Hybrid apps forward the host's initial arguments once to its UI child using ProcessStartInfo.ArgumentList, then navigate after UI initialization. UI restart does not replay the startup destination. Repeated hybrid-host launches still use the existing Mutex rejection; forwarding to an existing hybrid host is not implemented.
+Pure WinUI supports initial and redirected launches. Hybrid apps forward the host's initial arguments once to its UI child using ProcessStartInfo.ArgumentList, then navigate after UI initialization. UI restart does not replay the startup destination. Subsequent host launches forward their argument array through a separate named pipe before creating services or windows, then exit. The existing host starts processing after its modules are ready, reuses or creates its UI child, and delivers through the owned stdin/stdout channel. Ordinary launches restore the window without changing its record.
 
 Gallery previews route/JSON navigation with these actual template sources and its SQLite business models. Gallery itself retains a separate Mutex entry point; this preview does not validate SDK delivery or hybrid-host shutdown. See the [Gallery acceptance steps](../../samples/XamlNexus.Gallery/README.md#业务流程验收--business-workflow-acceptance).
+
+## Hybrid delivery contract
+
+Mutex still determines the unique host. HybridActivationPipe transports complete argument arrays without changing existing numeric gRPC commands. The listener opens before expensive module initialization and processing starts after host readiness. UIHostControl serializes activation and close requests; incoming requests can be queued while a user decides whether to save. Cancellation and failed saves retain the current page through MainWindow's existing leave guard.
+
+Each queue holds up to 64 requests. A request supports up to 128 arguments and 64 KiB of UTF-8 JSON. A host receipt means acceptance into its in-memory queue; a UI receipt means acceptance into its control queue. Neither confirms navigation success. Host connection/receipt waits at most 15 seconds and UI delivery waits at most 30 seconds; user confirmation and saving have no deadline. Timeouts may occur after acceptance, so requests are never automatically retried or replayed. Host exit drops pending work; delivery is not durable or exactly once across exits. UI exit before receipt fails that delivery; a later new activation can create another UI.
+
+CurrentUserOnly restricts the pipe to the same Windows user and elevation level; see [Microsoft PipeOptions documentation](https://learn.microsoft.com/dotnet/api/system.io.pipes.pipeoptions). Permission mismatch, owner exit, initialization failure, full queues and timeouts never create a second host. Sender failures return a nonzero exit code. Failures after host receipt are logged by the host; business navigation errors appear in the UI. Launch MyApp.exe, rather than UI.exe, to use host redirection. Development launches with --xamlnexus-run still refuse to join an existing host.
 
 ## Business handlers
 
@@ -56,7 +64,7 @@ Handlers run in DI registration order. Use asynchronous APIs and honor cancellat
 
 - New pure WinUI basic and standard projects use this entry point, including projects with the tray Recipe installed or removed. A tray-hidden window reuses the same MainWindow.
 - Full AppActivationArguments are retained for Launch, Protocol, File, and other activation kinds. Applications must configure their own protocol and file associations; the template does not register them automatically.
-- The hybrid architecture retains its WPF host, UIRunnerService, and named-pipe ownership of the frontend process. Initial business arguments follow this host lifecycle; repeated-host forwarding remains outside this implementation.
+- The hybrid architecture retains its WPF host, UIRunnerService, and named-pipe ownership of the frontend process. Initial and subsequent business arguments follow this host lifecycle; the frontend remains a managed child.
 - DISABLE_XAML_GENERATED_MAIN selects the custom STA entry point. It installs DispatcherQueueSynchronizationContext and pumps COM while redirecting activation instead of blocking the STA on the SDK task.
 - Existing generated projects do not automatically receive a replacement App.xaml.cs. Review scaffold upgrade differences and merge application-specific startup logic.
 
@@ -83,3 +91,12 @@ The 2026-10-12 compatibility fix retains SDK 1.8.260317003. Before accessing App
 Activation is subscribed before publishing the instance key. Redirection pumps the STA for at most 15 seconds and watches owner exit. Failure reports an error rather than starting another UI. Registration retries a bounded number of times when the previous owner exits between registration and lookup.
 
 The probe compiles the actual CanonicalAppLaunch, ActivationRedirector, and ActivationQueue template sources. Its default scenarios include path casing, concurrent start, activation during initialization, owner exit, and the initial business route. Use -RawSdk to reproduce the SDK without the path compatibility layer; nonzero exit is expected on this release. Window restoration and packaged runtime behavior still require separate verification.
+
+### Hybrid forwarding and close probes
+
+~~~powershell
+dotnet run --project eng/diagnostics/HybridActivationProbe/HybridActivationProbe.csproj -c Release
+dotnet run --project eng/diagnostics/HybridCloseProbe/HybridCloseProbe.csproj -c Release
+~~~
+
+HybridActivationProbe owns its secondary launchers and simulated UI processes under the same user/elevation. It compiles the actual template pipe, UI control channel, receipt coordinator, business parser and router. Checks cover initialization queuing, complete JSON, cancellation preserving modeled draft state, ordinary launches, eight concurrent deliveries, UI recreation and bounded failure after host exit. Unit tests additionally cover full queues, malformed frames, stale/PID-mismatched receipts, UI timeout and close serialization while navigation awaits a decision. The probe does not execute the real WPF App, UIRunnerService, native windows or ContentDialog. Generated-project builds validate that wiring compiles; actual restoration, focus, dialogs and MSIX runtime require separate acceptance.

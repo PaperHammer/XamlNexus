@@ -24,6 +24,10 @@ namespace XamlNexus.Common.Generators {
                 outputRoot = PrepareOutput(config);
                 var projects = CopyModulesInternal(config, outputRoot, progress);
                 CreateSlnInternal(config, outputRoot, projects, progress);
+                XamlNexusAiGuidance.WriteGenerated(outputRoot, new XamlNexusProjectIdentity {
+                    Name = config.SlnName, Preset = GetPresetId(), Profile = config.Profile,
+                    Language = config.Language, SolutionFormat = config.SlnType.ToString().ToLowerInvariant(),
+                });
                 progress?.Invoke(new(GenerationStage.WriteManifest, 0, 1));
                 WriteProjectManifest(config, outputRoot);
                 progress?.Invoke(new(GenerationStage.WriteManifest, 1, 1));

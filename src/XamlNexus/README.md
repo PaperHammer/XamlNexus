@@ -149,6 +149,7 @@ xn run
 - Documentation: [English](https://github.com/PaperHammer/XamlNexus/blob/main/docs/README.md) | [简体中文](https://github.com/PaperHammer/XamlNexus/blob/main/docs/README.zh-CN.md)
 - Architecture: [English](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/architecture.md) | [整体架构与关键流程](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/architecture.zh-CN.md)
 - [Quickstart / 中文快速开始](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/quickstart.zh-CN.md)
+- [AI development guidance: built-in CLI skills and generated application rules](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/ai-guidance.md)
 - [Profiles and capability boundaries](https://github.com/PaperHammer/XamlNexus/blob/main/docs/introduction/product-model.zh-CN.md)
 - [Pages and ViewModels](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/business-page.zh-CN.md)
 - [Navigation](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/navigation.md)

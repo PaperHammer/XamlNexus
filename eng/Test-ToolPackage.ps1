@@ -92,9 +92,25 @@ try {
         $name = if ($preset -eq 'winui') { 'PackagePure' } else { 'PackageHybrid' }
         $root = Join-Path $projects $name
         Invoke-Checked "$name-new" $cli @('new', $name, '--preset', $preset, '--profile', 'basic', '--output', $projects) | Out-Null
+        $guidancePaths = @('AGENTS.md', 'CLAUDE.md', 'QWEN.md')
+        foreach ($agentDirectory in @('.agents', '.claude', '.qwen')) {
+            $guidancePaths += @(
+                "$agentDirectory/skills/xamlnexus-cli/SKILL.md",
+                "$agentDirectory/skills/xamlnexus-cli/references/maintenance.md",
+                "$agentDirectory/skills/xamlnexus-project/SKILL.md",
+                "$agentDirectory/skills/xamlnexus-project/references/architecture.md",
+                "$agentDirectory/skills/xamlnexus-project/references/pages.md"
+            )
+        }
+        foreach ($guidancePath in $guidancePaths) {
+            if (-not (Test-Path -LiteralPath (Join-Path $root $guidancePath) -PathType Leaf)) { throw "$name omitted $guidancePath." }
+        }
+        $startup = if ($preset -eq 'winui') { "$name.UI/$name.UI.csproj" } else { "$name/$name.csproj" }
+        if (-not (Get-Content -LiteralPath (Join-Path $root 'AGENTS.md') -Raw).Contains($startup)) { throw "$name AI guidance identifies the wrong startup project." }
         Invoke-Checked "$name-details" $cli @('page', 'add', 'OrderDetails', '--kind', 'details', '--project', $root, '--json') | Out-Null
         Invoke-Checked "$name-form" $cli @('page', 'add', 'OrderEditor', '--kind', 'form', '--project', $root, '--json') | Out-Null
-        Invoke-Checked "$name-add" $cli @('add', 'settings,sqlite', '--project', $root, '--json') | Out-Null
+        $features = if ($preset -eq 'winui') { 'settings,sqlite,tray' } else { 'settings,sqlite' }
+        Invoke-Checked "$name-add" $cli @('add', $features, '--project', $root, '--json') | Out-Null
         $validation = Invoke-Checked "$name-validate" $cli @('validate', '--project', $root, '--json') | ConvertFrom-Json
         if (-not $validation.isValid) { throw "$name failed validation." }
         $status = Invoke-Checked "$name-status" $cli @('status', '--project', $root, '--json') | ConvertFrom-Json

@@ -30,6 +30,8 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
             ArgumentNullException.ThrowIfNull(targetPageType);
             if (!typeof(ArcPage).IsAssignableFrom(targetPageType) || targetPageType.IsAbstract)
                 throw new ArgumentException("The target must be a concrete ArcPage.", nameof(targetPageType));
+            if (options is not null && options.Transition != ArcNavigationTransition.Fade)
+                throw new ArgumentOutOfRangeException(nameof(options), options.Transition, "Unsupported navigation transition.");
             bool accepted = false;
             await navView.DispatcherQueue.EnqueueOrInvokeAsync(async () => {
                 accepted = await navView.LeaveRequest.TryRunAsync(async () => {
@@ -40,16 +42,11 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
                     cancellationToken.ThrowIfCancellationRequested();
                     if (!ReferenceEquals(oldPage, GetActivePage(navView.PageMap))) return false;
                     // Construct and activate the target only after leave approval.
+                    bool created = false;
                     var newPage = oldPage?.ArcType == targetPageType ? oldPage
-                        : GetBackgroundPage(navView.PageMap, targetPageType) ?? ResolvePageInstance(targetPageType);
-                    // Incoming keys win; merge only after approval, preserving the cached payload.
-                    bool incomingActivation = payload?.ContainsKey(BusinessActivationRequest.PayloadKey) == true;
-                    var nextPayload = payload.Merge(newPage.Payload, overwrite: false);
-                    // An explicit in-app request supersedes any cached external activation.
-                    if (payload is not null && !incomingActivation)
-                        nextPayload.Set(BusinessActivationRequest.PayloadKey, null);
-                    if (options is null) NavigateRootWithoutAnimation(navView, oldPage, newPage, nextPayload);
-                    else NavigateRootWithAnimation(navView, oldPage, newPage, nextPayload, options.Transition);
+                        : GetBackgroundPage(navView.PageMap, targetPageType);
+                    newPage ??= ResolvePageInstance(targetPageType, out created);
+                    NavigateRoot(navView, oldPage, newPage, payload, options, created, cancellationToken);
                     return true;
                 });
             });
@@ -75,38 +72,55 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
             return accepted;
         }
 
-        private static void NavigateRootWithoutAnimation(
-            ArcNavigationContentView navView,
-            ArcPage? oldPage,
-            ArcPage newPage,
-            FrameworkPayload? paylaod) {
-            CrossThreadInvoker.InvokeOnUIThread(() => {
-                if (!navView.PageMap.ContainsKey(newPage.ArcType)) {
-                    navView.PageMap[newPage.ArcType] = newPage;
-                    navView.ContentGrid.Children.Add(newPage);
+        private static void NavigateRoot(ArcNavigationContentView navView, ArcPage? oldPage,
+            ArcPage newPage, FrameworkPayload? payload, ArcNavigationOptions? options,
+            bool created, CancellationToken cancellationToken) {
+            var state = newPage.CaptureNavigationState();
+            var incomingValues = payload is null ? null : new Dictionary<string, object?>(payload.GetRawData());
+            bool mapped = navView.PageMap.ContainsKey(newPage.ArcType);
+            bool attached = navView.ContentGrid.Children.Contains(newPage);
+            Storyboard? animation = null;
+            try {
+                // Preserve payload identity on success; restore its dictionary if entry fails.
+                bool incomingActivation = payload?.ContainsKey(BusinessActivationRequest.PayloadKey) == true;
+                var nextPayload = payload.Merge(newPage.Payload, overwrite: false);
+                if (payload is not null && !incomingActivation)
+                    nextPayload.Set(BusinessActivationRequest.PayloadKey, null);
+                if (options is not null) newPage.Opacity = 0;
+                if (!mapped) navView.PageMap.Add(newPage.ArcType, newPage);
+                if (!attached) navView.ContentGrid.Children.Add(newPage);
+                newPage.EnterForNavigation(nextPayload);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (options is not null) {
+                    animation = CreateEnterAnimation(newPage, options.Transition);
+                    animation.Begin();
                 }
-                newPage.NavigateEnter(paylaod);
-                
-                HandlePageStatus(navView, oldPage, newPage);
-            });
+                newPage.CommitNavigationEntry();
+            }
+            catch {
+                RollbackStep(() => animation?.Stop());
+                if (!mapped) RollbackStep(() => {
+                    if (navView.PageMap.TryGetValue(newPage.ArcType, out var entry) && ReferenceEquals(entry, newPage))
+                        navView.PageMap.Remove(newPage.ArcType);
+                });
+                if (!attached) RollbackStep(() => {
+                    if (navView.ContentGrid.Children.Contains(newPage)) navView.ContentGrid.Children.Remove(newPage);
+                });
+                if (created) RollbackStep(newPage.DiscardFailedNavigation);
+                else RollbackStep(() => newPage.RestoreNavigationState(state));
+                if (payload is not null && incomingValues is not null)
+                    RollbackStep(() => payload.RestoreData(incomingValues));
+                throw; // Keep the entry failure, even if cleanup also failed.
+            }
+            // Departure is committed only after all entry preparation succeeds.
+            HandlePageStatus(navView, oldPage, newPage);
         }
 
-        private static void NavigateRootWithAnimation(
-            ArcNavigationContentView navView,
-            ArcPage? oldPage,
-            ArcPage newPage,
-            FrameworkPayload? parameter,
-            ArcNavigationTransition transition) {
-            newPage.Opacity = 0;
-            if (!navView.PageMap.ContainsKey(newPage.ArcType)) {
-                navView.PageMap[newPage.ArcType] = newPage;
-                navView.ContentGrid.Children.Add(newPage);
+        private static void RollbackStep(Action action) {
+            try { action(); }
+            catch (Exception exception) {
+                ArcLog.GetLogger<ArcNavigationContentView>().Error("Navigation rollback cleanup failed", exception);
             }
-            newPage.NavigateEnter(parameter);
-            
-            HandlePageStatus(navView, oldPage, newPage);
-            
-            PlayEnterAnimation(newPage, transition);
         }
 
         private static void HandlePageStatus(ArcNavigationContentView navView, ArcPage? oldPage, ArcPage newPage) {
@@ -130,7 +144,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
                 });
         }
 
-        private static void PlayEnterAnimation(UIElement newPage, ArcNavigationTransition transition) {
+        private static Storyboard CreateEnterAnimation(UIElement newPage, ArcNavigationTransition transition) {
             var sb = new Storyboard();
 
             switch (transition) {
@@ -150,10 +164,11 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
                     throw new ArgumentOutOfRangeException(nameof(transition), transition, "Unsupported navigation transition.");
             }
 
-            sb.Begin();
+            return sb;
         }
 
-        private static ArcPage ResolvePageInstance(Type type) {
+        private static ArcPage ResolvePageInstance(Type type, out bool created) {
+            created = false;
             bool keepAlive = type.GetCustomAttribute<KeepAliveAttribute>()?.Value == true;
 
             if (keepAlive) {
@@ -162,6 +177,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils.Extensions {
                     return page;
             }
 
+            created = true;
             return AppObjectFactory.Create(type) as ArcPage
                    ?? throw new Exception($"Cannot create page {type.Name}");
         }

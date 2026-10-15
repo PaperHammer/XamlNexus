@@ -7,6 +7,7 @@ namespace Winui3_Wpf_XamlNexus.Services.Interfaces {
         bool IsVisibleUI { get; }
 
         void ShowUI();
+        Task ActivateAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken = default);
         void CloseUI();
         void RestartUI();
         Task<bool> PrepareShutdownAsync(CancellationToken cancellationToken = default);

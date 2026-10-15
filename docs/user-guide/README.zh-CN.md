@@ -7,6 +7,7 @@
 1. [快速开始](quickstart.zh-CN.md)：安装 → 创建 → 运行 → 修改首页 → 添加页面 → 添加组件。
 2. [页面开发](business-page.zh-CN.md)：普通 Page、ViewModel、依赖注入与页面生命周期。
 3. [设置](settings.zh-CN.md)与[多语言](localization.zh-CN.md)：配置持久化、恢复、主题与运行时语言切换。
+4. [AI 开发指导：内置 CLI skills 与生成应用的架构和规范。](ai-guidance.zh-CN.md)
 
 ## 按需添加能力
 
