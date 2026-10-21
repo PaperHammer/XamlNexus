@@ -5,6 +5,8 @@ using Winui3_XamlNexus.UIComponent.Templates;
 namespace Winui3_XamlNexus.UIComponent.Utils {
     public readonly record struct ArcWindowManagerKey(ArcWindowKey Key, string? BizType = null);
 
+    // 跟踪活动窗口，以便通过 GetWindowForElement 查找任意 UIElement 所属的窗口。
+    // 应通过 ArcWindowManager.CreateWindow 创建窗口以登记跟踪；未来可由平台 API 提供此能力。
     // Helper class to allow the app to find the Window that contains an
     // arbitrary UIElement (GetWindowForElement).  To do this, we keep track
     // of all active Windows.  The app code must call ArcWindowManager.CreateWindow
@@ -52,7 +54,7 @@ namespace Winui3_XamlNexus.UIComponent.Utils {
             return null;
         }
 
-        // get dpi for an element
+        // get dpi for an element / 获取元素所在显示器的 DPI。
         public static double GetRasterizationScaleForElement(UIElement element) {
             if (element.XamlRoot != null) {
                 foreach (ArcWindow window in _activeWindows.Values) {

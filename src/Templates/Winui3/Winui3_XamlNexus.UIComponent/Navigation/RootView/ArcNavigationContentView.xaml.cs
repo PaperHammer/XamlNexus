@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Winui3_XamlNexus.UIComponent.Templates;
@@ -12,6 +14,7 @@ using Winui3_XamlNexus.UIComponent.Utils.Extensions;
 
 namespace Winui3_XamlNexus.UIComponent.Navigation {
     public sealed partial class ArcNavigationContentView : UserControl {
+        internal ArcLeaveRequest LeaveRequest { get; } = new();
         public Dictionary<Type, ArcPage> PageMap { get; } = [];
         public Grid ContentGrid => PART_ContentGrid;
 
@@ -28,6 +31,12 @@ namespace Winui3_XamlNexus.UIComponent.Navigation {
         public ArcNavigationContentView() {
             this.InitializeComponent();
         }
+
+        public Task<bool> NavigateAsync(Type pageType, FrameworkPayload? parameter = null, ArcNavigationOptions? options = null, CancellationToken cancellationToken = default) =>
+            this.ArcNavigateAsync(pageType, parameter, options, cancellationToken);
+
+        public Task<bool> CanLeaveAsync(ArcLeaveReason reason, CancellationToken cancellationToken = default) =>
+            this.ArcCanLeaveAsync(reason, cancellationToken);
 
         public void Navigate(Type pageType, FrameworkPayload? parameter = null, ArcNavigationOptions? options = null) {
             this.ArcNavigate(pageType, parameter, options);

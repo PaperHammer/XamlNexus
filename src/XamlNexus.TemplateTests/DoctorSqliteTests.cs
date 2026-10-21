@@ -1,4 +1,6 @@
+using XamlNexus.Tooling.Diagnostics;
 using XamlNexus.Common.Projects;
+using XamlNexus.Common.Utils;
 using XamlNexus.Recipes.BuiltIn;
 using Xunit;
 
@@ -34,8 +36,10 @@ public sealed class DoctorSqliteTests {
             Assert.Equal(expected, check.Severity);
             Assert.True(report.IsHealthy);
             if (expected == XamlNexusDoctorSeverity.Pass)
-                Assert.Contains("runtime journal mode has not been verified", check.Message);
-            else Assert.Contains("Custom initialization or another journal mode is allowed", check.Message);
+                Assert.Contains(LanguageRegistry.CurrentLanguage == LanguageType.Chinese
+                    ? "尚未验证运行时日志模式" : "runtime journal mode has not been verified", check.Message);
+            else Assert.Contains(LanguageRegistry.CurrentLanguage == LanguageType.Chinese
+                ? "允许自定义初始化或其他日志模式" : "Custom initialization or another journal mode is allowed", check.Message);
             Assert.Equal(source, File.ReadAllText(Path.Combine(root, "App.Data/Persistence/SqliteDatabase.cs")));
         }
         finally { Directory.Delete(root, recursive: true); }

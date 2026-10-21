@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Winui3_Wpf_XamlNexus.Common.Utils.IPC;
+using Winui3_Wpf_XamlNexus.Common.Utils.Lifecycle;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -54,8 +56,16 @@ public partial class App : Application {
                     Console.Error.WriteLine("The background host is already running. Exit it before starting a development run.");
                     Environment.Exit(1);
                 }
-                MessageBox.Show("已存在正在运行的程序，请检查托盘或任务管理器\nThere are already running programs, check the tray or Task Manager", "Winui3_Wpf_XamlNexus", MessageBoxButton.OK, MessageBoxImage.Information);
-                ShutDown();
+                try {
+                    HybridActivationPipe.ForwardAsync(Consts.CoreField.UniqueAppUid,
+                        Environment.GetCommandLineArgs().Skip(1).ToArray()).GetAwaiter().GetResult();
+                    Environment.Exit(0);
+                }
+                catch (Exception exception) {
+                    Console.Error.WriteLine("Could not forward activation to the running host: " + exception.Message);
+                    MessageBox.Show(exception.Message, "Activation forwarding failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Environment.Exit(1);
+                }
                 return;
             }
         }
@@ -67,6 +77,9 @@ public partial class App : Application {
 #endif
         }
         #endregion
+
+        _activationPipe = new HybridActivationPipe(Consts.CoreField.UniqueAppUid,
+            exception => ArcLog.GetLogger<App>().Error("Host activation failed", exception));
 
         SetupUnhandledExceptionLogging(); // 初始化异常处理机制
         ArcLog.GetLogger<App>().Info(LogUtil.GetHardwareInfo()); // 记录硬件信息
@@ -139,7 +152,8 @@ public partial class App : Application {
 
         try {
             //first run Setup-Wizard show..
-            if (UserSettings.Settings.IsFirstRun || Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
+            if (UserSettings.Settings.IsFirstRun || Environment.GetCommandLineArgs().Contains("--xamlnexus-run") ||
+                Environment.GetCommandLineArgs().Contains("--route") || Environment.GetCommandLineArgs().Contains("--data")) {
                 Services.GetRequiredService<IUIRunnerService>().ShowUI();
             }
         }
@@ -153,6 +167,11 @@ public partial class App : Application {
             MessageBox.Show("Cores runtime Error, please restart or reinstall.\n" + ex.Message);
             return;
         }
+
+        _activationPipe.StartHandling(async (arguments, token) => {
+            await Dispatcher.InvokeAsync(() =>
+                Services.GetRequiredService<IUIRunnerService>().ActivateAsync(arguments, token)).Task.Unwrap();
+        });
 
         #region 事件绑定
         //need to load theme later stage of startu to update..
@@ -304,26 +323,63 @@ public partial class App : Application {
         _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(ShutDown));
     }
 
-    public static void ShutDown() {
-        try {
-            _ctsPlayback.Cancel();
-            Jobs?.Close();
-            Jobs?.Dispose();
-            ((ServiceProvider)Services)?.Dispose();
-            ((App)Current)._grpcServer?.Kill();
-            ((App)Current)._grpcServer?.Dispose();
-            ToastNotificationManagerCompat.Uninstall();
+    internal static bool IsShuttingDown => _isShuttingDown;
+    private static bool _isShuttingDown;
+    private static readonly SemaphoreSlim ShutdownGate = new(1, 1);
+    private static readonly TaskCompletionSource ShutdownCleanupCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            if (UserSettings.Settings.IsUpdated) {
-                UserSettings.Settings.IsUpdated = false;
-                UserSettings.Save<ISettings>();
-            }
-        }
-        catch (InvalidOperationException) { /* not initialised */ }
-
-        Application.Current.Dispatcher.Invoke(Application.Current.Shutdown);
+    public static async void ShutDown() {
+        try { await RequestShutDownAsync(); }
+        catch (Exception exception) { ArcLog.GetLogger<App>().Error("Host shutdown failed", exception); }
     }
 
+    public static async Task<bool> RequestShutDownAsync(CancellationToken cancellationToken = default) {
+        if (_isShuttingDown) { await ShutdownCleanupCompleted.Task; return true; }
+        if (!await ShutdownGate.WaitAsync(0, cancellationToken)) return false;
+        try {
+            IServiceProvider? services = ((App)Current)._serviceProvider;
+            IUIRunnerService? runner = services?.GetService<IUIRunnerService>();
+            if (runner is not null && !await runner.PrepareShutdownAsync(cancellationToken)) return false;
+            _isShuttingDown = true;
+            await Current.Dispatcher.InvokeAsync(ShutDownCoreAsync).Task.Unwrap();
+            return true;
+        }
+        catch (Exception exception) {
+            if (_isShuttingDown) ShutdownCleanupCompleted.TrySetException(exception);
+            throw;
+        }
+        finally { ShutdownGate.Release(); }
+    }
+
+    private static async Task ShutDownCoreAsync() {
+        var app = (App)Current;
+        try {
+            await ApplicationCleanup.RunAsync(
+                exception => ArcLog.GetLogger<App>().Error("Host cleanup failed", exception),
+                () => { app._activationPipe?.Dispose(); return ValueTask.CompletedTask; },
+                () => { _ctsPlayback.Cancel(); return ValueTask.CompletedTask; },
+                () => { app._grpcServer?.Kill(); return ValueTask.CompletedTask; },
+                () => { app._grpcServer?.Dispose(); return ValueTask.CompletedTask; },
+                () => {
+                    var settings = app._serviceProvider?.GetService<IUserSettingsService>();
+                    if (settings?.Settings.IsUpdated == true) {
+                        settings.Settings.IsUpdated = false;
+                        settings.Save<ISettings>();
+                    }
+                    return ValueTask.CompletedTask;
+                },
+                () => { app._serviceProvider?.GetService<JobService>()?.Close(); return ValueTask.CompletedTask; },
+                () => ApplicationCleanup.DisposeServicesAsync(app._serviceProvider),
+                () => { ToastNotificationManagerCompat.Uninstall(); return ValueTask.CompletedTask; });
+        }
+        finally {
+            // A repeated development-run shutdown must not call Environment.Exit during async service disposal.
+            ShutdownCleanupCompleted.TrySetResult();
+            Current.Shutdown();
+        }
+    }
+
+    private readonly HybridActivationPipe? _activationPipe;
     private readonly IServiceProvider? _serviceProvider;
     private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();
     private readonly Mutex _mutex = new(false, Consts.CoreField.UniqueAppUid);

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<arc:ArcWindow
+    x:Class="XamlNexus.Gallery.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates"
+    xmlns:local="using:XamlNexus.Gallery.UI"
+    xmlns:navi="using:XamlNexus.Gallery.UIComponent.Navigation"
+    Width="1440" Height="820" MinHeight="648" MinWidth="800" Title="XamlNexus Gallery">
+    <local:GalleryShell x:Name="MainHost">
+        <local:GalleryShell.SearchContent>
+            <Grid x:Name="TitleBarTools" MaxWidth="400" Margin="24,0">
+                <AutoSuggestBox x:Name="SampleSearch" MinWidth="120"
+                    VerticalAlignment="Center" HorizontalAlignment="Stretch" QueryIcon="Find"
+                    DisplayMemberPath="Title" TextMemberPath="Title"
+                    TextChanged="SampleSearch_TextChanged" QuerySubmitted="SampleSearch_QuerySubmitted" />
+            </Grid>
+        </local:GalleryShell.SearchContent>
+        <Grid x:Name="MainGrid" Background="Transparent">
+            <NavigationView x:Name="NavigationViewControl" PaneDisplayMode="Auto" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                OpenPaneLength="252" CompactPaneLength="48" IsBackButtonVisible="Collapsed"
+                IsPaneToggleButtonVisible="False" IsSettingsVisible="False" IsTitleBarAutoPaddingEnabled="False"
+                SelectionChanged="OnNavigationViewSelectionChanged">
+                <NavigationView.MenuItems>
+                    <NavigationViewItem x:Name="Nav_Home" Tag="home" Icon="Home"/>
+                    <NavigationViewItem x:Name="Nav_GettingStarted" Tag="getting-started" Icon="Play"/>
+                    <NavigationViewItemSeparator/>
+                    <NavigationViewItemHeader x:Name="Nav_WorkflowsHeader"/>
+                    <NavigationViewItem x:Name="Nav_BusinessPages" Tag="business-pages" Icon="Page"/>
+                    <NavigationViewItem x:Name="Nav_Components" Tag="components" Icon="Add"/>
+                    <NavigationViewItem x:Name="Nav_Evolution" Tag="evolution" Icon="Sync"/>
+                    <NavigationViewItem x:Name="Nav_MainPage" Tag="sqlite" Icon="Save"/>
+                    <NavigationViewItemSeparator/>
+                    <NavigationViewItem x:Name="Nav_Fundamentals" SelectsOnInvoked="False" IsExpanded="False" Icon="Library">
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem x:Name="Nav_List" Tag="list" Icon="List"/>
+                            <NavigationViewItem x:Name="Nav_ArcWindow" Tag="arc-window" Icon="NewWindow"/>
+                            <NavigationViewItem x:Name="Nav_ArcPage" Tag="arc-page" Icon="Switch"/>
+                            <NavigationViewItem x:Name="Nav_Lifetime" Tag="keepalive" Icon="Edit"/>
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem x:Name="Nav_ToolGuide" Tag="tool-guide" Icon="Document"/>
+                    <NavigationViewItem x:Name="Nav_AppSettings" Tag="settings" Icon="Setting"/>
+                </NavigationView.FooterMenuItems>
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8,0,0,0"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1,1,0,0">
+                    <navi:ArcNavigationContentView x:Name="NaviContent" InfobarMessages="{x:Bind InfobarMessages}" />
+                </Border>
+            </NavigationView>
+        </Grid>
+    </local:GalleryShell>
+</arc:ArcWindow>

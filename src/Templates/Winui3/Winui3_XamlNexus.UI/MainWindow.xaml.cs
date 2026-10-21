@@ -1,4 +1,7 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Winui3_XamlNexus.UIComponent.Activation;
 using WinUIEx;
 using Microsoft.Extensions.DependencyInjection;
 using Winui3_XamlNexus.Common.Utils.DI;
@@ -24,6 +27,7 @@ namespace Winui3_XamlNexus.UI {
     public sealed partial class MainWindow : ArcWindow {
         public override ArcWindowHost ContentHost => this.MainHost;
         public override NavigationView AppNavView => this.NavigationViewControl;
+        public override ArcNavigationContentView NavigationContent => NaviContent;
         public override bool IsMainWindow => true;
         public override ArcWindowManagerKey Key => _windowKey;
 
@@ -37,7 +41,8 @@ namespace Winui3_XamlNexus.UI {
             _navigationMenu.Select("home");
 
             _userSettings = userSettings;
-            this.AppWindow.Closing += (_, _) => {
+            this.AppWindow.Closing += (_, args) => {
+                if (args.Cancel) return;
                 // With tray installed, its close dialog decides whether to hide or exit.
                 if (App.IsShuttingDown || AppServiceLocator.Services.GetService<ISystemTraySettings>() is null)
                     this.Hide();
@@ -56,19 +61,50 @@ namespace Winui3_XamlNexus.UI {
         }
 
         #region navigation control
-        private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+        private object? selectedNavigationItem;
+        private bool restoringNavigationSelection;
+        private async void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+            if (restoringNavigationSelection) return;
+            object? targetItem = sender.SelectedItem;
+            Type? pageType = args.SelectedItemContainer?.Tag is string route
+                ? NavigationRegistry.Default.Resolve(route) : null;
+            if (pageType is null) return;
+            RestoreNavigationSelection(sender, selectedNavigationItem);
             try {
-                Type? pageType = args.SelectedItemContainer?.Tag is string route
-                    ? NavigationRegistry.Default.Resolve(route) : null;
-                if (pageType is null)
-                    return;
-
-                NaviContent.Navigate(pageType);
+                if (await NaviContent.NavigateAsync(pageType)) {
+                    selectedNavigationItem = targetItem;
+                    RestoreNavigationSelection(sender, targetItem);
+                }
             }
             catch (Exception ex) {
                 GlobalMessageUtil.ShowException(ex, ArcWindowManager.GetArcWindow(Key));
                 ArcLog.GetLogger<MainWindow>().Error(ex);
             }
+        }
+
+        /// <summary>Business activation shares the same leave guard as sidebar navigation.</summary>
+        public async Task<ActivationNavigationResult> NavigateActivationAsync(BusinessActivationRequest request,
+            CancellationToken cancellationToken = default) {
+            var navigator = new BusinessActivationNavigator(NavigationRegistry.Default);
+            var result = await navigator.NavigateAsync(request, async (pageType, payload, token) => {
+                if (!await NaviContent.NavigateAsync(pageType, payload, cancellationToken: token)) return false;
+                restoringNavigationSelection = true;
+                try {
+                    _navigationMenu.Select(request.Route);
+                    selectedNavigationItem = NavigationViewControl.SelectedItem;
+                }
+                finally { restoringNavigationSelection = false; }
+                return true;
+            }, cancellationToken);
+            if (result == ActivationNavigationResult.RouteNotFound)
+                throw new InvalidOperationException($"Unknown business route '{request.Route}'.");
+            return result;
+        }
+
+        private void RestoreNavigationSelection(NavigationView sender, object? item) {
+            restoringNavigationSelection = true;
+            try { sender.SelectedItem = item; }
+            finally { restoringNavigationSelection = false; }
         }
         #endregion
 

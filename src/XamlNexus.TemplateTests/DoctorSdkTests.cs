@@ -1,3 +1,4 @@
+using XamlNexus.Tooling.Diagnostics;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Utils;
 using XamlNexus.Recipes.BuiltIn;

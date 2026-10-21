@@ -8,6 +8,8 @@ This section explains the scaffolding implementation and how to extend generated
 |---|---|
 | [Architecture and key flows](architecture.md) | How the CLI generates projects, how each process architecture runs, and how automatic changes protect user code |
 | [Module lifecycle](module-lifecycle.md) | Service registration, initialization order, page injection, and resource ownership |
+| [Application activation](app-activation.md) | Single-instance wakeup, business routes and data, and extension handlers |
+| [Hybrid close protection](hybrid-close.md) | Host exit/restart, UI cancellation and process ownership |
 | [Navigation contract](navigation.md) | Page registration and integration with standard or custom windows |
 | [Recipe contract](recipe-contract.md) | Component metadata, file plans, project operations, updates, and removal |
 | [Project manifest](project-manifest.md) | Module origins, file hashes, baselines, and compatibility boundaries |

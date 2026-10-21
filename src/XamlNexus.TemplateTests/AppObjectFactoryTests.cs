@@ -3,8 +3,8 @@ using Winui3_XamlNexus.Common.Utils.DI;
 using Xunit;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using SqliteShowcase.Data.Persistence;
-using SqliteShowcase.Data.Models;
+using XamlNexus.Gallery.Data.Persistence;
+using XamlNexus.Gallery.Data.Models;
 
 namespace XamlNexus.TemplateTests;
 

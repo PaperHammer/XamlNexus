@@ -18,7 +18,7 @@ xamlnexus --version
 xamlnexus --help
 ```
 
-本文对应当前源码。如果已安装版本缺少文中的命令，先运行 `dotnet tool update --global XamlNexus` 更新工具。尚未发布的功能需要从源码构建。
+本文对应 1.0.5 源码。使用 `xamlnexus --version` 核对已安装版本，使用 `dotnet tool update --global XamlNexus` 更新工具。若发行包尚未包含文中命令，可使用下方的源码构建入口。
 
 从仓库根目录执行 `dotnet build src/XamlNexus/XamlNexus.csproj` 后，可在 PowerShell 中定义入口；
 函数使用绝对路径，后续切换到生成项目目录仍可调用：
@@ -87,13 +87,15 @@ SDK 检查以项目目录中 `dotnet --version` 的实际结果为准，遵循�
 再次执行 `xamlnexus run` 查看变化。首页 ViewModel 由工厂创建，可通过构造函数注入模块注册的服务；
 不需要修改应用启动流程。主题和语言设置可在标准版设置页中切换。
 
-## 4. 添加普通页面
+## 4. 添加页面
 
 停止运行后，在 MyApp 目录执行：
 
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 xamlnexus run
 ```
 
@@ -104,8 +106,8 @@ xamlnexus run
 - `MyApp.MainPanel/ViewModels/WorkspaceViewModel.cs`
 - `MyApp.UI/Navigation/WorkspaceNavigation.cs`
 
-仅生成普通页面骨架，不包含查询、列表或表单业务。直接编辑页面与 ViewModel 即可。
-自定义窗口需消费统一导航注册表；`--no-navigation` 可只生成页面和 ViewModel。
+默认生成普通页面骨架；`--kind list`、`details`、`form` 会生成带可替换数据源接口的可运行业务起点。直接编辑生成的页面、ViewModel 和服务即可。
+自定义窗口需消费统一导航注册表；`--no-navigation` 会跳过导航注册。
 详见 [页面开发](business-page.zh-CN.md)和[导航接口](../technical/navigation.zh-CN.md)。
 
 ## 5. 按需添加能力
@@ -166,7 +168,7 @@ xamlnexus new XmlApp --solution-format slnx
 
 脚手架现有 i18n 和交互向导文案位于 `src/XamlNexus.Common/Resources/Strings.resx`（英文默认）
 与 `Strings.zh-CN.resx`，使用 ResourceManager 加载。新增翻译时保持两份资源键一致；
-`GetText` 返回原始文案，`GetI18n` 额外转义 Spectre 标记。生成客户端原有 `.resw` 资源保持不变。
+Common 的 `LanguageRegistry.GetText` 返回原始文案，Tooling 的 `ConsoleText.GetI18n` 额外转义 Spectre 标记。生成客户端原有 `.resw` 资源保持不变。
 CLI 诊断消息和帮助中的英文常量尚未全部本地化。
 
 ## 7. 后续维护与交付
@@ -175,8 +177,10 @@ CLI 诊断消息和帮助中的英文常量尚未全部本地化。
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 ```
 
@@ -184,4 +188,4 @@ xamlnexus upgrade --dry-run
 `update sqlite` 用于已安装 SQLite 的项目；升级行为见[项目升级](project-upgrade.zh-CN.md)。
 
 开发运行与发布分开。需要分发时使用生成项目中的发布工作流和脚本，并配置自己的版本、签名与更新源。
-[SqliteShowcase](../../samples/SqliteShowcase/README.md)提供组合示例和分发目录构建示例。
+[XamlNexus.Gallery](../../samples/XamlNexus.Gallery/README.md)提供组合示例和分发目录构建示例。

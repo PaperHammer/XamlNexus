@@ -4,37 +4,31 @@ using Microsoft.UI.Dispatching;
 
 namespace Winui3_Wpf_XamlNexus.UIComponent.Utils.Extensions {
     public static class DispatcherQueueExtensions {
-        /// <summary>
-        /// 确保异步操作能够在正确的线程（通常是 UI 线程）上执行
-        /// </summary>
-        /// <param name="queue"></param>
-        /// <param name="action"></param>
-        /// <returns></returns>
+        /// <summary>Run on the UI dispatcher and preserve completion, failure and cancellation.</summary>
         public static Task EnqueueOrInvokeAsync(this DispatcherQueue queue, Func<Task> action) {
-            var tcs = new TaskCompletionSource<bool>();
+            ArgumentNullException.ThrowIfNull(queue);
+            ArgumentNullException.ThrowIfNull(action);
+            if (queue.HasThreadAccess)
+                return InvokeAsync(action);
 
-            // 尝试立即执行（如果已经在正确的线程上）
-            if (queue.HasThreadAccess) {
+            var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            if (!queue.TryEnqueue(async () => {
                 try {
-                    action().ContinueWith(t => tcs.SetResult(true));
+                    await action();
+                    completion.TrySetResult(true);
+                }
+                catch (OperationCanceledException ex) {
+                    completion.TrySetCanceled(ex.CancellationToken);
                 }
                 catch (Exception ex) {
-                    tcs.SetException(ex);
+                    completion.TrySetException(ex);
                 }
+            })) {
+                completion.TrySetException(new InvalidOperationException("The UI dispatcher no longer accepts work."));
             }
-            else {
-                // 否则排队等待执行
-                queue.TryEnqueue(() => {
-                    try {
-                        action().ContinueWith(t => tcs.SetResult(true));
-                    }
-                    catch (Exception ex) {
-                        tcs.SetException(ex);
-                    }
-                });
-            }
-
-            return tcs.Task;
+            return completion.Task;
         }
+
+        private static async Task InvokeAsync(Func<Task> action) => await action();
     }
 }

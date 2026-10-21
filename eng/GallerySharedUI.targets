@@ -1,0 +1,46 @@
+<Project>
+  <!-- Template sources remain self-contained when copied into a user's project.
+       Gallery consumes only its explicit allowlist, with its own namespace. -->
+  <PropertyGroup>
+    <GalleryUITemplateRoot>$(MSBuildThisFileDirectory)../src/Templates/Winui3/Winui3_XamlNexus.UIComponent</GalleryUITemplateRoot>
+    <GalleryUIIntermediate>$(BaseIntermediateOutputPath)GallerySharedUI/$(Configuration)/$(Platform)/$(TargetFramework)/$(RuntimeIdentifier)/</GalleryUIIntermediate>
+  </PropertyGroup>
+  <Import Project="$(MSBuildProjectDirectory)/SharedSources.props" />
+  <ItemGroup>
+    <GallerySharedCompile Update="@(GallerySharedCompile)">
+      <Link>%(Identity)</Link>
+    </GallerySharedCompile>
+    <GallerySharedPage Update="@(GallerySharedPage)">
+      <Link>%(Identity)</Link>
+    </GallerySharedPage>
+    <Compile Include="@(GallerySharedCompile->'$(GalleryUIIntermediate)%(Identity)')" />
+    <Page Include="@(GallerySharedPage->'$(GalleryUIIntermediate)%(Identity)')" />
+    <_GallerySharedSource Include="@(GallerySharedCompile);@(GallerySharedPage)" />
+  </ItemGroup>
+  <UsingTask TaskName="GenerateGallerySharedUI" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Sources ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <SourceRoot ParameterType="System.String" Required="true" />
+      <OutputRoot ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        foreach (var source in Sources) {
+            var input = Path.Combine(SourceRoot, source.ItemSpec);
+            var output = Path.Combine(OutputRoot, source.ItemSpec);
+            var content = File.ReadAllText(input).Replace("Winui3_XamlNexus", "XamlNexus.Gallery");
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
+            if (!File.Exists(output) || File.ReadAllText(output) != content)
+                File.WriteAllText(output, content);
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="GenerateGallerySharedUISources" BeforeTargets="PrepareForBuild">
+    <GenerateGallerySharedUI Sources="@(_GallerySharedSource)" SourceRoot="$(GalleryUITemplateRoot)" OutputRoot="$(GalleryUIIntermediate)" />
+    <ItemGroup>
+      <FileWrites Include="@(_GallerySharedSource->'$(GalleryUIIntermediate)%(Identity)')" />
+    </ItemGroup>
+  </Target>
+</Project>

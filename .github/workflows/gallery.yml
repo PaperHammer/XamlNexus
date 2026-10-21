@@ -1,0 +1,45 @@
+name: Gallery portable build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'samples/XamlNexus.Gallery/**'
+      - 'src/XamlNexus.TemplateTests/GalleryBusinessStoreTests.cs'
+      - 'src/XamlNexus.Common/**'
+      - 'src/XamlNexus.Recipes.BuiltIn/**'
+      - 'eng/Publish-Gallery.ps1'
+      - 'eng/release/*Gallery*.ps1'
+      - 'eng/release/Test-ReleasePackage.ps1'
+      - 'src/XamlNexus.Tooling/**'
+      - 'src/Templates/Winui3/Winui3_XamlNexus.UIComponent/**'
+      - 'eng/GallerySharedUI.targets'
+      - 'src/XamlNexus/Program.Gallery.cs'
+      - 'src/XamlNexus/XamlNexus.csproj'
+      - '.github/workflows/release-merged-pull-request.yml'
+      - '.github/workflows/gallery.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  portable:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Test persistent Gallery business workflow
+        run: dotnet test src/XamlNexus.TemplateTests/XamlNexus.TemplateTests.csproj -c Release --filter FullyQualifiedName~GalleryBusinessStoreTests -p:UseSharedCompilation=false -p:NuGetAudit=false
+      - name: Build portable Gallery
+        shell: pwsh
+        run: ./eng/Publish-Gallery.ps1 -Architecture x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XamlNexus-Gallery-win-x64
+          path: .artifacts/gallery/**/*.zip
+          if-no-files-found: error

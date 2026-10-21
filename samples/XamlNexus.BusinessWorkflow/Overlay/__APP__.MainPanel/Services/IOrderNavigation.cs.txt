@@ -1,0 +1,9 @@
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace __APP__.MainPanel.Services;
+
+// The UI host owns navigation; MainPanel depends only on this contract.
+public interface IOrderNavigation {
+    Task<bool> OpenAsync(string route, string? id = null, CancellationToken cancellationToken = default);
+}

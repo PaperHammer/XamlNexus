@@ -1,0 +1,35 @@
+<arc:ArcPage
+    x:Class="__APP__.MainPanel.__NAME__Page"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:arc="using:__APP__.UIComponent.Templates">
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="{x:Bind ViewModel.PageTitle}" FontSize="28" />
+        <ProgressBar Grid.Row="1" IsIndeterminate="True"
+                     Visibility="{x:Bind ToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
+        <InfoBar Grid.Row="2" Severity="Error" IsClosable="False"
+                 IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                 Title="{x:Bind ViewModel.ErrorTitle, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}">
+            <InfoBar.ActionButton>
+                <Button Content="{x:Bind ViewModel.RetryText, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.RetryCommand}" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+        <StackPanel Grid.Row="3" Spacing="12"
+                    Visibility="{x:Bind ToVisibility(ViewModel.HasItem), Mode=OneWay}">
+            <TextBlock Text="{x:Bind ViewModel.Title, Mode=OneWay}"
+                       FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="{x:Bind ViewModel.Description, Mode=OneWay}"
+                       TextWrapping="Wrap" />
+            <TextBlock Text="{x:Bind ViewModel.Identifier, Mode=OneWay}"
+                       Opacity="0.65" />
+        </StackPanel>
+    </Grid>
+</arc:ArcPage>

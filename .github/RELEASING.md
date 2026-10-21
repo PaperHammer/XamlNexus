@@ -37,7 +37,15 @@ The release job uses the GitHub `production` environment. Configure its protecti
 
 Stable labels require a stable semantic version such as `1.2.0`. Preview labels require a prerelease version such as `1.3.0-preview.1`.
 
-The merged workflow checks out the exact merge commit, rebuilds and tests the solution, creates the .NET tool package, pushes it to NuGet, and creates the corresponding GitHub Release. Existing tags are reused only when they already point to the same merge commit, which makes a partially failed release safe to rerun without moving a published tag.
+The merged workflow checks out the exact merge commit, then:
+
+1. Rebuilds and tests the solution.
+2. Builds the matching Windows x64 Gallery archive and generates its versioned download manifest with a SHA-256 hash.
+3. Packs the .NET tool with that manifest and validates the release package.
+4. Creates the GitHub Release with the tool package and Gallery archive attached.
+5. Obtains a temporary NuGet API key through OIDC and uploads the tool package to NuGet.
+
+GitHub assets are available before the tool is published to NuGet, so installed tools can download their matching Gallery. Existing tags are reused only when they already point to the same merge commit. A retry reuses the exact published package and Gallery bytes; changed assets must be released under a new version rather than replacing files pinned by an existing tool package.
 
 ## Non-publishing pull requests
 

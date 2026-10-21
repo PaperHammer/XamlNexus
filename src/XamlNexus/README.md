@@ -1,6 +1,10 @@
-# XAML-Nexus
+# XamlNexus
 
-XamlNexus is a .NET CLI for generating Windows desktop prototypes with WinUI 3 or a WinUI 3 frontend and WPF background host. It includes ArcXaml, navigation, MVVM, DI, configuration and logging. The default standard profile also includes settings, themes and language controls.
+XamlNexus is a .NET CLI for creating and maintaining Windows desktop applications with WinUI 3 or a WinUI 3 frontend and WPF background host. It includes ArcXaml, navigation, MVVM, DI, configuration and logging. The default standard profile also includes settings, themes and language controls.
+
+- Generate blank, list, details, and form pages, then connect their data-source interfaces to your business services.
+- Open business pages from launch arguments, guard unsaved changes during navigation and window closing, and roll back synchronous page-entry failures.
+- Preview component updates and scaffold upgrades while protecting local changes. New projects include AI development rules and CLI/project skills.
 
 [中文快速开始：创建 → 运行 → 修改首页 → 添加页面 → 添加能力](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/quickstart.zh-CN.md)
 
@@ -11,11 +15,13 @@ Windows and a .NET 8 / WinUI build environment are required.
 ```powershell
 dotnet tool install --global XamlNexus
 xamlnexus --version
+xamlnexus doctor --environment
 ```
 
-This guide describes the current source. Public packages gain new commands when the corresponding version is published.
+This guide describes the 1.0.5 source. Check the installed version with `xamlnexus --version`; use a source build if its published package lacks a feature described here.
 Use `dotnet tool update --global XamlNexus` to update an installed tool.
-For unreleased source, follow the source-build instructions in the quickstart.
+Run `xamlnexus gallery` to open the Gallery matching the installed tool version. Official packages include a versioned download manifest: the first launch downloads and verifies the Windows x64 archive; later launches use the local cache and work offline. After updating the tool, run the command again to fetch its matching Gallery. Close a running Gallery before opening another version.
+Source builds without a Gallery download manifest require building Gallery separately; see the [Gallery README](https://github.com/PaperHammer/XamlNexus/blob/main/samples/XamlNexus.Gallery/README.md).
 Uninstall with `dotnet tool uninstall --global XamlNexus`.
 
 The installed command is `xamlnexus`; installation does not create an `xn` command or change your shell profile.
@@ -43,6 +49,9 @@ Edit `MyApp.MainPanel/MainPage.xaml` for the home layout and
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add Projects --kind list
+xamlnexus page add ProjectDetails --kind details
+xamlnexus page add ProjectEditor --kind form
 xamlnexus run
 ```
 
@@ -85,7 +94,7 @@ The defaults are winui and standard. Basic retains theme, localization, configur
 | `editorconfig` | Both architectures |
 
 For an existing basic project, `xamlnexus add settings,sqlite` installs both transactionally.
-Do not add capabilities that are already installed. Creating pages does not generate business CRUD or RPC methods.
+Already installed components are skipped while the remaining components are installed. Page templates provide sample data sources; connect your own persistence and custom business RPC methods.
 
 SLNX is available with `--solution-format slnx` (requires the selected .NET SDK 9.0.200+).
 The default remains `sln`. Upgrades preserve the existing format; they do not convert solutions.
@@ -96,14 +105,16 @@ Run from the generated project directory, or use `--project <directory>`:
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus doctor
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 xamlnexus --help
 ```
 
-`update sqlite` applies to projects with SQLite installed.
+`status` summarizes project health and available maintenance actions. `update sqlite` applies to projects with SQLite installed; `update --all` updates all outdated Recipes atomically.
 The generated `xamlnexus.json` records architecture, starting profile and installed capabilities.
 Publication and signing are separate from development and remain maintainer-controlled.
 
@@ -142,9 +153,13 @@ xn run
 - Documentation: [English](https://github.com/PaperHammer/XamlNexus/blob/main/docs/README.md) | [简体中文](https://github.com/PaperHammer/XamlNexus/blob/main/docs/README.zh-CN.md)
 - Architecture: [English](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/architecture.md) | [整体架构与关键流程](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/architecture.zh-CN.md)
 - [Quickstart / 中文快速开始](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/quickstart.zh-CN.md)
+- [AI development guidance: built-in CLI skills and generated application rules](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/ai-guidance.md)
 - [Profiles and capability boundaries](https://github.com/PaperHammer/XamlNexus/blob/main/docs/introduction/product-model.zh-CN.md)
 - [Pages and ViewModels](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/business-page.zh-CN.md)
 - [Navigation](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/navigation.md)
+- [Application activation and single instance](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/app-activation.md)
+- [Hybrid shutdown protection](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/hybrid-close.md)
+- [Standalone business workflow sample](https://github.com/PaperHammer/XamlNexus/blob/main/samples/XamlNexus.BusinessWorkflow/README.md)
 - [SQLite](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/sqlite-recipe.md)
 - [Settings and live localization](https://github.com/PaperHammer/XamlNexus/blob/main/docs/user-guide/localization.md)
 - [Project manifest](https://github.com/PaperHammer/XamlNexus/blob/main/docs/technical/project-manifest.md)

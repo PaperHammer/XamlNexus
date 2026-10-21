@@ -1,0 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using __APP__.Data.Persistence;
+
+namespace __APP__.MainPanel.Services;
+
+public sealed class OrderDataSource(OrderStore store) : IOrdersDataSource, IOrderDetailsDataSource, IOrderEditorDataSource {
+    public async Task<IReadOnlyList<OrdersItem>> LoadAsync(CancellationToken cancellationToken) =>
+        (await store.ListAsync(cancellationToken)).Select(record => new OrdersItem(record.Name, record.Description, record.Id)).ToArray();
+
+    async Task<OrderDetailsDetails> IOrderDetailsDataSource.GetAsync(string id, CancellationToken cancellationToken) {
+        var record = await store.GetAsync(id, cancellationToken)
+            ?? throw new InvalidOperationException("The requested order was not found.");
+        return new(record.Id, record.Name, record.Description);
+    }
+
+    async Task<OrderEditorDraft?> IOrderEditorDataSource.GetAsync(string id, CancellationToken cancellationToken) {
+        var record = await store.GetAsync(id, cancellationToken);
+        return record is null ? null : new(record.Id, record.Name, record.Description);
+    }
+
+    public async Task<OrderEditorDraft> SaveAsync(OrderEditorDraft draft, CancellationToken cancellationToken) {
+        var record = await store.SaveAsync(draft.Id, draft.Name, draft.Description, cancellationToken);
+        return new(record.Id, record.Name, record.Description);
+    }
+}

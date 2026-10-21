@@ -8,6 +8,8 @@
 |---|---|
 | [整体架构与关键流程](architecture.zh-CN.md) | CLI 如何生成项目，两种进程架构如何运行，自动变更如何保护用户代码 |
 | [模块生命周期](module-lifecycle.zh-CN.md) | 服务注册、初始化顺序、页面依赖注入和资源所有权 |
+| [应用激活与单实例](app-activation.zh-CN.md) | 单实例唤醒、业务路由与参数、扩展处理器 |
+| [混合宿主关闭保护](hybrid-close.zh-CN.md) | 宿主退出与重启、UI 取消和进程所有权 |
 | [统一导航接口](navigation.zh-CN.md) | 页面注册、标准窗口和自定义导航接入 |
 | [Recipe 契约](recipe-contract.zh-CN.md) | 组件描述、文件计划、项目操作、更新与移除 |
 | [项目清单](project-manifest.zh-CN.md) | 模块来源、文件哈希、生成基线与兼容边界 |

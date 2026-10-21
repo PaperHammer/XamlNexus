@@ -1,5 +1,7 @@
+using XamlNexus.Tooling.Development;
+using XamlNexus.Tooling.Diagnostics;
 using System.Text;
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Projects;
 using Xunit;
 using XamlNexus.Common.Recipes;
@@ -31,6 +33,56 @@ public sealed class PageGeneratorTests : IDisposable {
     }
     private string Read(string path) => File.ReadAllText(Path.Combine(root, path));
     private XamlNexusProjectContext Project => XamlNexusProjectLocator.Locate(root);
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ListPageUsesTransactionalGeneration(bool skipNavigation) {
+        var before = Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order().ToArray();
+        Assert.Equal(skipNavigation ? 4 : 5, PageGenerator.Add(Project, "Orders", true, skipNavigation, "list").Count);
+        Assert.Equal(before, Directory.GetFiles(root, "*", SearchOption.AllDirectories).Order().ToArray());
+        PageGenerator.Add(Project, "Orders", skipNavigation: skipNavigation, kind: "list");
+        Assert.Contains("IOrdersDataSource", Read("PageTest.MainPanel/Services/OrdersDataSource.cs"));
+        Assert.Contains("ViewModel.SearchText", Read("PageTest.MainPanel/OrdersPage.xaml"));
+        Assert.Contains("OnPreLeaveAsync", Read("PageTest.MainPanel/OrdersPage.xaml.cs"));
+        Assert.DoesNotContain("__APP__", Read("PageTest.MainPanel/ViewModels/OrdersViewModel.cs"));
+        Assert.Empty(Project.Manifest.Modules);
+    }
+
+    [Fact]
+    public void ListServiceCollisionPreventsAllPageWrites() {
+        Write("PageTest.MainPanel/Services/OrdersDataSource.cs", "user service");
+        Assert.ThrowsAny<Exception>(() => PageGenerator.Add(Project, "Orders", kind: "list"));
+        Assert.False(File.Exists(Path.Combine(root, "PageTest.MainPanel/OrdersPage.xaml")));
+        Assert.Equal("user service", Read("PageTest.MainPanel/Services/OrdersDataSource.cs"));
+    }
+
+    [Fact]
+    public void PageKindIsValidated() {
+        var parsed = CliParser.Parse(["page", "add", "Orders", "--kind", "list"], root);
+        Assert.True(parsed.Success);
+        Assert.Equal("list", parsed.Options!.PageKind);
+        Assert.True(CliParser.Parse(["page", "add", "Orders", "--kind", "details"], root).Success);
+        Assert.True(CliParser.Parse(["page", "add", "Orders", "--kind", "form"], root).Success);
+        Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind"], root).Success);
+        Assert.False(CliParser.Parse(["page", "add", "Orders", "--kind", "list", "--kind", "blank"], root).Success);
+        Assert.False(CliParser.Parse(["add", "sqlite", "--kind", "list"], root).Success);
+        Assert.Throws<ArgumentException>(() => PageGenerator.Add(Project, "Orders", kind: "unknown"));
+    }
+
+    [Theory]
+    [InlineData("details", "GetAsync", "GetBusinessString(\"id\")")]
+    [InlineData("form", "SaveAsync", "HasUnsavedChanges")]
+    public void BusinessPageKindsGenerateRunnableContracts(string kind, string serviceMember, string pageMember) {
+        IReadOnlyList<string> preview = PageGenerator.Add(Project, "Orders", dryRun: true, kind: kind);
+        Assert.Equal(5, preview.Count);
+        Assert.False(File.Exists(Path.Combine(root, "PageTest.MainPanel/OrdersPage.xaml")));
+
+        PageGenerator.Add(Project, "Orders", kind: kind);
+        Assert.Contains(serviceMember, Read("PageTest.MainPanel/Services/OrdersDataSource.cs"));
+        Assert.Contains(pageMember, Read("PageTest.MainPanel/OrdersPage.xaml.cs") + Read("PageTest.MainPanel/ViewModels/OrdersViewModel.cs"));
+        Assert.Contains("OrdersNavigation", string.Join("\n", Directory.GetFiles(Path.Combine(root, "PageTest.UI/Navigation")).Select(Path.GetFileName)));
+    }
 
     [Theory]
     [InlineData("Directory.Build.props", "<Project><PropertyGroup><Version>2.0.0</Version></PropertyGroup></Project>")]
@@ -242,5 +294,16 @@ public sealed class PageGeneratorTests : IDisposable {
         PageGenerator.Add(Project, "Orders");
         Assert.Contains("ViewModel { get; } = new();", Read("PageTest.MainPanel/OrdersPage.xaml.cs"));
     }
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void Form_leave_confirmation_matches_the_projects_actual_ArcPage_contract(bool supportsGuard) {
+        Write("PageTest.UIComponent/Templates/ArcPage.cs", supportsGuard ? "Task<bool> CanLeaveAsync(" : "class ArcPage { }");
+        PageGenerator.Add(Project, "GuardedForm", kind: "form");
+        string page = Read("PageTest.MainPanel/GuardedFormPage.xaml.cs");
+        Assert.Equal(supportsGuard, page.Contains("override async Task<bool> CanLeaveAsync"));
+        if (supportsGuard) Assert.Contains("ViewModel.TrySaveAsync()", page);
+        Assert.Contains("public async Task<bool> TrySaveAsync", Read("PageTest.MainPanel/ViewModels/GuardedFormViewModel.cs"));
+    }
+
     public void Dispose() => Directory.Delete(root, recursive: true);
 }

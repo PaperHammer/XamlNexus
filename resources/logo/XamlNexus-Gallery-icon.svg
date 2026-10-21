@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#253F68"/>
+      <stop offset="1" stop-color="#302B59"/>
+    </linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#6EC9F3"/>
+      <stop offset="1" stop-color="#A59AEE"/>
+    </linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#A59AEE"/>
+      <stop offset="1" stop-color="#6EC9F3"/>
+    </linearGradient>
+  </defs>
+  <!-- Stacked sample cards distinguish Gallery from the main XamlNexus mark. -->
+  <rect x="27" y="4" width="96" height="96" rx="17" fill="#8D80D6"/>
+  <rect x="16" y="15" width="96" height="96" rx="17" fill="#4C9ED3"/>
+  <rect x="5" y="26" width="96" height="96" rx="17" fill="url(#card)"/>
+  <!-- Original XamlNexus geometry, with brighter colors for the dark card. -->
+  <g transform="translate(23 44) scale(.46875)">
+    <path fill="url(#left)" d="M10 0H22C30 0 34 6 37 16H17V111H48V128H10Q0 128 0 118V10Q0 0 10 0Z"/>
+    <path fill="#6EC9F3" d="M22 0H42Q48 0 51 9L60 34L49 54L36 19C32 8 29 0 22 0Z"/>
+    <path fill="url(#right)" d="M88 0H117Q128 0 128 11V117Q128 128 117 128H103C93 128 87 120 84 111H110V16H91Z"/>
+    <path fill="#6EC9F3" d="M75 70L67 91L77 118Q81 128 89 128H111C101 128 96 116 92 107Z"/>
+    <path fill="#6EC9F3" d="M18 128C30 128 35 119 40 106L77 9Q81 0 88 0H110C99 0 95 9 92 17L51 118Q48 128 41 128Z"/>
+  </g>
+</svg>

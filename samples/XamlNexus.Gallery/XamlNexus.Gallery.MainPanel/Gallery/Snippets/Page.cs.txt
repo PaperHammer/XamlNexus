@@ -1,0 +1,24 @@
+using System;
+using MyApp.UIComponent.Templates;
+using MyApp.UIComponent.Utils;
+
+namespace MyApp.MainPanel;
+
+public sealed partial class DetailsPage : ArcPage
+{
+    public override Type ArcType => typeof(DetailsPage);
+    public DetailsPage() => InitializeComponent();
+
+    protected override void OnEnter(FrameworkPayload? payload)
+    {
+        base.OnEnter(payload);
+        if (payload is not null && payload.TryGet<string>("message", out var message))
+            Draft.Text = message;
+    }
+}
+
+// In the window that declares the Pages navigation container: / 在声明 Pages 导航容器的窗口中调用：
+// var payload = new FrameworkPayload();
+// payload.Set("message", "An initial draft");
+// Pages.Navigate(typeof(DetailsPage), payload);
+

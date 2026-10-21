@@ -1,0 +1,226 @@
+using System;
+using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using XamlNexus.Gallery.Common;
+using XamlNexus.Gallery.Common.Logging;
+using XamlNexus.Gallery.UIComponent.Utils;
+using XamlNexus.Gallery.UIComponent.Navigation;
+using XamlNexus.Gallery.UIComponent.Utils.Extensions;
+using WinUIEx;
+
+namespace XamlNexus.Gallery.UIComponent.Templates {
+    public abstract partial class ArcWindow : WindowEx {
+        public virtual NavigationView? AppNavView { get; }
+        public virtual ArcNavigationContentView? NavigationContent => null;
+        public virtual bool IsMainWindow => false;
+        protected virtual bool IsNeedTrack => true;
+        public abstract IWindowSurface ContentHost { get; }
+        public abstract ArcWindowManagerKey Key { get; }
+        protected PropertyHost PropertyHost => _propertyHost;
+        public ObservableCollection<GlobalMsgInfo> InfobarMessages { get; } = [];
+        public bool IsActive => _isActive ?? false;
+
+        public ArcWindow(AppTheme appTheme = AppTheme.Auto, AppSystemBackdrop systemBackdrop = default) {
+            _propertyHost = new();
+            if (IsMainWindow) {
+                ArcThemeUtil.SetMainWindowAppTheme(appTheme);
+                ArcThemeUtil.SetMainWindowBackdrop(systemBackdrop);
+            }
+
+            this.Closed += (_, _) => _isClosed = true;
+            this.Activated += ArcWindow_Activated;
+            this.Closed += ArcWindow_Closed;
+            this.AppWindow.Closing += ArcWindow_Closing;
+        }
+
+        private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
+            bool isActive = args.WindowActivationState != WindowActivationState.Deactivated;
+            if (_isActive == isActive) return;
+            _isActive = isActive;
+
+            ArcWindowManager.UpdateWindowVisualState(this);
+        }
+
+        private void ArcWindow_Closed(object sender, WindowEventArgs args) {
+            this.AppWindow.Closing -= ArcWindow_Closing;
+            this.Activated -= ArcWindow_Activated;
+            this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
+            this.ContentHost.AppRoot.ActualThemeChanged -= Host_ActualThemeChanged;
+
+            if (IsMainWindow) {
+                ArcWindowManager.Cleanup();
+                ArcThemeUtil.Cleanup();
+            }
+        }
+
+        private readonly ArcCloseRequest closeRequest = new();
+
+        protected virtual Task<bool> CanCloseAsync(CancellationToken cancellationToken) =>
+            NavigationContent?.CanLeaveAsync(ArcLeaveReason.WindowClose, cancellationToken) ?? Task.FromResult(true);
+
+        /// <summary>Request guarded close. Additional native handlers (for example tray policy) may still cancel it.</summary>
+        public Task<bool> RequestCloseAsync(Action? beforeClose = null, CancellationToken cancellationToken = default) =>
+            closeRequest.TryCloseAsync(CanCloseAsync, () => {
+                if (_isClosed) return;
+                beforeClose?.Invoke();
+                Close();
+            }, cancellationToken);
+
+        private void ArcWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+            if (_isClosed || args.Cancel || closeRequest.IsReplaying) return;
+            // Cancel synchronously and return from the native event before replaying Close().
+            args.Cancel = true;
+            DispatcherQueue.TryEnqueue(async () => {
+                if (_isClosed) return;
+                try { await RequestCloseAsync(); }
+                catch (Exception ex) { ArcLog.GetLogger<ArcWindow>().Error("Window leave confirmation failed", ex); }
+            });
+        }
+
+        private void AppRoot_Loaded(object sender, RoutedEventArgs e) {
+            if (!_isClosed)
+                UpdateTheme();
+        }
+
+        protected void InitializeWindow() {
+            this.ContentHost.AppRoot.Loaded += AppRoot_Loaded;
+            this.ContentHost.AppRoot.ActualThemeChanged += Host_ActualThemeChanged;
+
+            if (IsNeedTrack) {
+                ArcWindowManager.TrackWindow(Key, this);
+            }
+            SetWindowStartupPosition();
+            SetWindowStyle();
+            SetWindowTitleBar();
+            UpdateThemeIcon();
+            UpdateTheme();
+        }
+
+        #region theme
+        protected void UpdateThemeFromThemeBtnClick(AppTheme theme) {
+            if (!IsMainWindow) return;
+            ArcThemeUtil.UpdateThemeGlobal(theme);
+        }
+
+        private void UpdateThemeIcon() {
+            if (!IsMainWindow) return;
+
+            _propertyHost.ThemeIconKey = ArcThemeUtil.MainWindowAppTheme switch {
+                AppTheme.Light => "NaviIcon_ThemeLight",
+                AppTheme.Dark => "NaviIcon_ThemeDark",
+                _ => "NaviIcon_ThemeAuto"
+            };
+        }
+
+        public async Task SetThemeAsync() {
+            await _themeTransition.WaitAsync();
+            Image? overlay = null;
+            try {
+                if (_isClosed)
+                    return;
+
+                var root = ContentHost.AppRoot;
+                if (!root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0)
+                    return;
+
+                overlay = ContentHost.AppThemeTransitionImage;
+                UpdateThemeIcon();
+                var bitmap = new RenderTargetBitmap();
+                await bitmap.RenderAsync(root);
+                if (_isClosed)
+                    return;
+
+                overlay.Source = bitmap;
+                overlay.Visibility = Visibility.Visible;
+                overlay.Opacity = 1;
+                UpdateTheme();
+
+                var visual = ElementCompositionPreview.GetElementVisual(overlay);
+                var fade = visual.Compositor.CreateScalarKeyFrameAnimation();
+                fade.InsertKeyFrame(0, 1);
+                fade.InsertKeyFrame(1, 0);
+                fade.Duration = TimeSpan.FromMilliseconds(600);
+                visual.StartAnimation(nameof(visual.Opacity), fade);
+                await Task.Delay(600);
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<ArcWindow>().Error("Theme transition failed", exception);
+                if (!_isClosed)
+                    UpdateTheme();
+            }
+            finally {
+                if (!_isClosed && overlay is not null) {
+                    overlay.Visibility = Visibility.Collapsed;
+                    overlay.Source = null;
+                }
+                _themeTransition.Release();
+            }
+        }
+
+        private void Host_ActualThemeChanged(FrameworkElement sender, object args) {
+            ArcWindowManager.UpdateWindowVisualState(this);
+        }
+
+        private void UpdateTheme() {
+            ArcThemeUtil.ApplyTheme(this.ContentHost.AppRoot);
+            this.ContentHost.RequestedTheme = this.ContentHost.AppRoot.RequestedTheme;
+            ArcWindowManager.UpdateWindowVisualState(this);
+        }
+        #endregion
+
+        #region window property
+        protected virtual void SetWindowStartupPosition() {
+            DisplayArea displayArea = SystemUtil.GetDisplayArea(this, DisplayAreaFallback.Nearest);
+            if (displayArea is not null) {
+                var centeredPosition = this.AppWindow.Position;
+                centeredPosition.X = (displayArea.WorkArea.Width - this.AppWindow.Size.Width) / 2;
+                centeredPosition.Y = (displayArea.WorkArea.Height - this.AppWindow.Size.Height) / 2;
+                this.AppWindow.Move(centeredPosition);
+            }
+        }
+
+        private void SetWindowTitleBar() {
+            if (AppWindowTitleBar.IsCustomizationSupported()) {
+                this.ExtendsContentIntoTitleBar = true;
+                this.SetTitleBar(this.ContentHost.AppTitleBar);
+                this.AppWindow.SetIcon("Assets/xamlnexus.ico");
+                this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+            }
+            else {
+                this.ContentHost.AppTitleBar.Visibility = Visibility.Collapsed;
+                this.UseImmersiveDarkModeEx(ArcThemeUtil.MainWindowAppTheme == AppTheme.Dark);
+            }
+        }
+
+        private void SetWindowStyle() {
+            this.SystemBackdrop = ArcThemeUtil.MainWindowBackdrop switch {
+                AppSystemBackdrop.Mica => new MicaBackdrop(),
+                AppSystemBackdrop.Acrylic => new DesktopAcrylicBackdrop(),
+                _ => new MicaBackdrop(),
+            };
+        }
+        #endregion
+
+        private readonly SemaphoreSlim _themeTransition = new(1, 1);
+        private bool _isClosed;
+        private bool? _isActive = null;
+        private readonly PropertyHost _propertyHost;
+    }
+
+    public partial class PropertyHost : FrameworkElement {
+        public string ThemeIconKey {
+            get => (string)GetValue(ThemeIconKeyProperty);
+            set => SetValue(ThemeIconKeyProperty, value);
+        }
+        public static readonly DependencyProperty ThemeIconKeyProperty =
+            DependencyProperty.Register(nameof(ThemeIconKey), typeof(string),
+                typeof(PropertyHost), new PropertyMetadata(null));
+    }
+}

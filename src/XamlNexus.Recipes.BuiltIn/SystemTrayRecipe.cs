@@ -5,7 +5,7 @@ namespace XamlNexus.Recipes.BuiltIn;
 public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdatePlanProvider {
     public XamlNexusRecipeDescriptor Descriptor { get; } = new() {
         Id = "system-tray",
-        Version = "1.0.0",
+        Version = "1.0.1",
         DisplayName = "System tray and notifications",
         Description = "Adds a WinUI system tray menu, show/hide behavior, exit command, and native balloon notifications.",
         SupportedPresets = ["winui"],
@@ -14,10 +14,12 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
     public XamlNexusRecipePlan CreatePlan(XamlNexusRecipeContext context) {
         EnsureCloseBehaviorSupport(context);
         string projectName = context.Manifest.Project.Name;
+        string windowSource = Path.Combine(context.RootDirectory, projectName + ".UIComponent", "Templates", "ArcWindow.cs");
+        bool supportsLeaveGuard = File.Exists(windowSource) && File.ReadAllText(windowSource).Contains("RequestCloseAsync(", StringComparison.Ordinal);
         return new XamlNexusRecipePlan {
             Changes = [XamlNexusRecipeFileChange.CreateText(
                 $"{projectName}.UI/Modules/SystemTrayModule.cs",
-                CreateModule(projectName)), .. RecipeReadmeResources.CreatePair("Tray", "tray", projectName)],
+                CreateModule(projectName, supportsLeaveGuard)), .. RecipeReadmeResources.CreatePair("Tray", "tray", projectName)],
             ProjectOperations = [new EnsurePackageReferenceOperation(
                 $"{projectName}.UI/{projectName}.UI.csproj",
                 "H.NotifyIcon.WinUI",
@@ -43,7 +45,7 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
             "H.NotifyIcon.WinUI", "2.3.2")
     ];
 
-    private static string CreateModule(string projectName) => $$"""
+    private static string CreateModule(string projectName, bool supportsLeaveGuard) => $$"""
         using System;
         using System.Runtime.CompilerServices;
         using System.Threading;
@@ -77,7 +79,7 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
             }
         }
 
-        public sealed class SystemTrayService(MainWindow mainWindow, IUserSettingsClient userSettings) : ISystemTraySettings, IDisposable {
+        public sealed class SystemTrayService(MainWindow mainWindow, IUserSettingsClient userSettings) : ISystemTraySettings, IDisposable, IAsyncDisposable {
             private bool Chinese => userSettings.Settings.Language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
             public WindowCloseBehavior CloseBehavior => userSettings.Settings.WindowCloseBehavior;
 
@@ -186,14 +188,21 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
 
             private void QueueExit() => mainWindow.DispatcherQueue.TryEnqueue(ExitApplication);
 
-            private void ExitApplication() {
-                if (_exiting || _disposed) return;
-                _exiting = true;
-                // Hide immediately so service and native tray cleanup cannot leave a frozen window visible.
-                mainWindow.Hide();
-                _closeDialog?.Hide();
-                // The host performs its normal Closed cleanup and releases the DI-owned tray icon.
-                mainWindow.Close();
+            {{CreateExitMethod(supportsLeaveGuard)}}
+
+            public ValueTask DisposeAsync() {
+                // DI can resume on a worker after disposing another async service.
+                // XAML and TaskbarIcon cleanup must still run on this window's dispatcher.
+                if (mainWindow.DispatcherQueue.HasThreadAccess) {
+                    Dispose();
+                    return ValueTask.CompletedTask;
+                }
+                var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                if (!mainWindow.DispatcherQueue.TryEnqueue(() => {
+                    try { Dispose(); completion.TrySetResult(); }
+                    catch (Exception exception) { completion.TrySetException(exception); }
+                })) completion.TrySetException(new InvalidOperationException("The tray UI dispatcher no longer accepts cleanup."));
+                return new ValueTask(completion.Task);
             }
 
             public void Dispose() {
@@ -216,6 +225,35 @@ public sealed class SystemTrayRecipe : IXamlNexusRecipe, IXamlNexusRecipeUpdateP
             private bool _exiting;
             private bool _dialogOpen;
             private ContentDialog? _closeDialog;
+        }
+        """;
+
+    private static string CreateExitMethod(bool supportsLeaveGuard) => supportsLeaveGuard
+        ? """
+        private bool _exitPending;
+        private async void ExitApplication() {
+            if (_exiting || _disposed || _exitPending) return;
+            _exitPending = true;
+            try {
+                _closeDialog?.Hide();
+                // A refused page leave must keep both the application and window alive.
+                await mainWindow.RequestCloseAsync(beforeClose: () => _exiting = true);
+            }
+            catch (Exception exception) {
+                ArcLog.GetLogger<SystemTrayService>().Error("Could not confirm application exit", exception);
+            }
+            finally { _exitPending = false; }
+        }
+        """
+        : """
+        private void ExitApplication() {
+            if (_exiting || _disposed) return;
+            _exiting = true;
+            // Hide immediately so service and native tray cleanup cannot leave a frozen window visible.
+            mainWindow.Hide();
+            _closeDialog?.Hide();
+            // The host performs its normal Closed cleanup and releases the DI-owned tray icon.
+            mainWindow.Close();
         }
         """;
 }

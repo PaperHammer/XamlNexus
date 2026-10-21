@@ -1,6 +1,10 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Winui3_Wpf_XamlNexus.UIComponent.Activation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinUIEx;
 using WinRT.Interop;
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.Common.Logging;
@@ -23,6 +27,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
     public sealed partial class MainWindow : ArcWindow {
         public override ArcWindowHost ContentHost => this.MainHost;
         public override NavigationView AppNavView => this.NavigationViewControl;
+        public override ArcNavigationContentView NavigationContent => NaviContent;
         public override bool IsMainWindow => true;
         public override ArcWindowManagerKey Key => _windowKey;
 
@@ -38,6 +43,7 @@ namespace Winui3_Wpf_XamlNexus.UI {
             _userSettings = userSettings;
             _commandsClient = commandsClient;
             _commandsClient.UIRecieveCmd += CommandsClient_UIRecieveCmd;
+            this.AppWindow.Closing += (_, args) => { if (!args.Cancel) this.Hide(); };
             this.Closed += MainWindow_Closed;
         }
 
@@ -52,19 +58,50 @@ namespace Winui3_Wpf_XamlNexus.UI {
         }
 
         #region navigation control
-        private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+        private object? selectedNavigationItem;
+        private bool restoringNavigationSelection;
+        private async void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+            if (restoringNavigationSelection) return;
+            object? targetItem = sender.SelectedItem;
+            Type? pageType = args.SelectedItemContainer?.Tag is string route
+                ? NavigationRegistry.Default.Resolve(route) : null;
+            if (pageType is null) return;
+            RestoreNavigationSelection(sender, selectedNavigationItem);
             try {
-                Type? pageType = args.SelectedItemContainer?.Tag is string route
-                    ? NavigationRegistry.Default.Resolve(route) : null;
-                if (pageType is null)
-                    return;
-
-                NaviContent.Navigate(pageType);
+                if (await NaviContent.NavigateAsync(pageType)) {
+                    selectedNavigationItem = targetItem;
+                    RestoreNavigationSelection(sender, targetItem);
+                }
             }
             catch (Exception ex) {
                 GlobalMessageUtil.ShowException(ex, ArcWindowManager.GetArcWindow(Key));
                 ArcLog.GetLogger<MainWindow>().Error(ex);
             }
+        }
+
+        /// <summary>Business activation shares the same leave guard as sidebar navigation.</summary>
+        public async Task<ActivationNavigationResult> NavigateActivationAsync(BusinessActivationRequest request,
+            CancellationToken cancellationToken = default) {
+            var navigator = new BusinessActivationNavigator(NavigationRegistry.Default);
+            var result = await navigator.NavigateAsync(request, async (pageType, payload, token) => {
+                if (!await NaviContent.NavigateAsync(pageType, payload, cancellationToken: token)) return false;
+                restoringNavigationSelection = true;
+                try {
+                    _navigationMenu.Select(request.Route);
+                    selectedNavigationItem = NavigationViewControl.SelectedItem;
+                }
+                finally { restoringNavigationSelection = false; }
+                return true;
+            }, cancellationToken);
+            if (result == ActivationNavigationResult.RouteNotFound)
+                throw new InvalidOperationException($"Unknown business route '{request.Route}'.");
+            return result;
+        }
+
+        private void RestoreNavigationSelection(NavigationView sender, object? item) {
+            restoringNavigationSelection = true;
+            try { sender.SelectedItem = item; }
+            finally { restoringNavigationSelection = false; }
         }
         #endregion
 

@@ -29,7 +29,9 @@ Basic removes the full settings panel while retaining startup, navigation, MVVM,
 | Logon startup | Core implementation retained | Configurable in settings | No standalone Recipe; registration is not enabled by default |
 | Editor configuration | Optional | Optional | `add editorconfig` |
 | Publishing, installers, signing | Scripts included | Scripts included | Maintainer configuration and execution; separate from development running |
-| Ordinary page generation | `page add` | `page add` | Page, ViewModel, navigation registration; no list/form kinds |
+| Ordinary page generation | `page add` | `page add` | Page, ViewModel, navigation registration; blank/list/details/form kinds, sample data sources and unsaved-work guards |
+
+Business activation is a core framework capability: pure WinUI supports initial and redirected routes; hybrid supports initial host arguments. Normal host exit and restart first require UI leave approval; cancellation or save failure retains the business page. See [activation](../technical/app-activation.md) and [hybrid close protection](../technical/hybrid-close.md).
 
 Actual installation state is shown by `xamlnexus list` and `xamlnexus.json` modules. Profile records creation intent; later removals are not undone merely because of the initial profile. Legacy manifests without a profile are treated as standard; preset retains its architecture meaning.
 
@@ -49,11 +51,11 @@ Business pages are not recorded as removable Recipes. Both frontends share the [
 
 Source and configuration from both initial generation and `add` belong to the user, including version properties and publishing scripts. Hashes and baselines protect changes during updates, upgrades, and removal; they are not editing permissions. Content differences do not block running, page generation, or component installation. Missing required files still need attention, and compilation reports actual build errors.
 
-Unsafe automatic changes must report conflicts without overwriting user content or requiring hash recalculation to continue development. Capabilities suit components when they have distinct uses, dependencies, or configuration costs and clear installation/removal boundaries. Existing projects support batch add, dependency/conflict checks, previews, updates, removal, and rollback. Creation reuses included capabilities; explicitly adding an already installed module to an existing project reports an error.
+Unsafe automatic changes must report conflicts without overwriting user content or requiring hash recalculation to continue development. Capabilities suit components when they have distinct uses, dependencies, or configuration costs and clear installation/removal boundaries. Existing projects support batch add, dependency/conflict checks, previews, updates, removal, and rollback. Creation reuses included capabilities; the CLI skips already installed modules during `add` and continues with the remaining components.
 
 App updates still use the settings UI and shared contracts; basic projects automatically receive settings when installing updater. Themes and localization remain core mechanisms, without standalone Recipes or a generic settings-extension framework. Hybrid SQLite access belongs to the host; ordinary page generation does not create custom business RPCs.
 
 ## Serialization compatibility
 
-Unused MessagePack references and MVVM attributes have been removed from both templates and the Showcase. JSON storage and gRPC/Protobuf wire formats are unchanged.
+Unused MessagePack references and MVVM attributes have been removed from both templates and the Gallery. JSON storage and gRPC/Protobuf wire formats are unchanged.
 Existing applications that use MessagePack themselves need a separate assessment before removing the dependency.

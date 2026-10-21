@@ -1,4 +1,4 @@
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
@@ -43,6 +43,16 @@ namespace XamlNexus {
                     $"[grey]({Markup.Escape(change.Scope)})[/]");
             }
             AnsiConsole.MarkupLine("[yellow]Dry run:[/] no project files were changed.");
+        }
+
+        /// <summary>显示单个 Recipe 已提交的版本和文件列表</summary>
+        private static void ShowAppliedRecipe(string title, XamlNexusRecipeApplyResult result, string? symbol = null) {
+            AnsiConsole.MarkupLine(
+                $"[green]{title}:[/] {Markup.Escape(RecipeCommandNames.ToCommandName(result.RecipeId))} {Markup.Escape(result.RecipeVersion)}");
+            foreach (string file in result.ChangedFiles) {
+                if (symbol is null) AnsiConsole.WriteLine($"  {file}");
+                else AnsiConsole.MarkupLine($"  [grey]{symbol}[/] {Markup.Escape(file)}");
+            }
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ xamlnexus --version
 xamlnexus --help
 ```
 
-This guide describes current source. If your installed version lacks a command shown here, update with `dotnet tool update --global XamlNexus`. Unreleased features require a source build.
+This guide describes the 1.0.5 source. Use `xamlnexus --version` to check your installed version and `dotnet tool update --global XamlNexus` to update it. If the published package lacks a command shown here, use the source-build entry point below.
 
 From the repository root, run `dotnet build src/XamlNexus/XamlNexus.csproj`, then define an absolute-path PowerShell entry point that continues to work after changing directories:
 
@@ -77,13 +77,15 @@ At `<!-- Add page content here. -->`, insert:
 
 Run again to see the result. The home ViewModel is factory-created and can receive module-registered services through its constructor without changing startup. The standard settings panel can switch theme and language.
 
-## 4. Add an ordinary page
+## 4. Add pages
 
 After stopping the app, run inside MyApp:
 
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 xamlnexus run
 ```
 
@@ -94,7 +96,7 @@ Current templates generate and register:
 - `MyApp.MainPanel/ViewModels/WorkspaceViewModel.cs`
 - `MyApp.UI/Navigation/WorkspaceNavigation.cs`
 
-These are ordinary page scaffolds, not query, list, or form business implementations. Edit the Page and ViewModel directly. Custom windows must consume the shared registry; `--no-navigation` generates only the Page and ViewModel. See [pages](business-page.md) and [navigation](../technical/navigation.md).
+The default kind is an ordinary page scaffold. `--kind list`, `details`, and `form` add runnable business starting points with replaceable data-source interfaces. Edit the generated Page, ViewModel, and service directly. Custom windows must consume the shared registry; `--no-navigation` skips the navigation registration. See [pages](business-page.md) and [navigation](../technical/navigation.md).
 
 ## 5. Add capabilities
 
@@ -142,7 +144,7 @@ xamlnexus new XmlApp --solution-format slnx
 
 SLN remains the default; interactive creation can also select the format. SLNX requires the selected SDK to be at least 9.0.200; generated applications still target .NET 8. See [Microsoft's SLNX announcement](https://devblogs.microsoft.com/dotnet/introducing-slnx-support-dotnet-cli/). Component add/remove, manifest validation, and upgrades support SLNX. Upgrades preserve format, without automatic conversion; manually converting a solution does not update the manifest or baseline.
 
-Existing CLI localization and wizard strings live in `src/XamlNexus.Common/Resources/Strings.resx` (English default) and `Strings.zh-CN.resx`, loaded through ResourceManager. Keep keys aligned. `GetText` returns raw text; `GetI18n` also escapes Spectre markup. Generated application `.resw` resources remain separate. English constants in CLI help and diagnostics are not all localized yet.
+Existing CLI localization and wizard strings live in `src/XamlNexus.Common/Resources/Strings.resx` (English default) and `Strings.zh-CN.resx`, loaded through ResourceManager. Keep keys aligned. `LanguageRegistry.GetText` in Common returns raw text; `ConsoleText.GetI18n` in Tooling also escapes Spectre markup. Generated application `.resw` resources remain separate. English constants in CLI help and diagnostics are not all localized yet.
 
 ## 7. Maintenance and distribution
 
@@ -150,11 +152,13 @@ Inside the generated project:
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 ```
 
 From outside, add `--project <project-directory>`, for example `xamlnexus run --project ./MyApp`. `update sqlite` requires an installed SQLite component; see [upgrades](project-upgrade.md).
 
-Development running and publishing are separate. To distribute, configure your own versions, signing, and update source in the generated workflows and scripts. [SqliteShowcase](../../samples/SqliteShowcase/README.md) demonstrates composition and distribution-directory builds.
+Development running and publishing are separate. To distribute, configure your own versions, signing, and update source in the generated workflows and scripts. [XamlNexus.Gallery](../../samples/XamlNexus.Gallery/README.md) demonstrates composition and distribution-directory builds.

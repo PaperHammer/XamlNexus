@@ -1,0 +1,107 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.ToolGuidePage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="{Binding [ToolGuide], Source={StaticResource Strings}}" Description="{Binding [ToolGuideIntro], Source={StaticResource Strings}}"/>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding [CommandCreateTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [CommandCreateBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="CreateOptionsCode"/>
+                    <Expander Header="{Binding [ArchitectureIntro], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="{Binding [WinuiBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            <g:GalleryCodeView x:Name="WinuiCode"/>
+                            <TextBlock Text="{Binding [HybridBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            <g:GalleryCodeView x:Name="HybridCode"/>
+                            <TextBlock Text="{Binding [BasicBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            <g:GalleryCodeView x:Name="BasicCode"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding [CommandRunTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [CommandRunBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="RunCommandCode"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding [CommandPageTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [CommandPageBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="PageCommandCode"/>
+                    <Button Tag="business-pages" Click="Navigate_Click" HorizontalAlignment="Left" Content="{Binding [BusinessPagesTitle], Source={StaticResource Strings}}"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding [LifecycleTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [ActivationLaunchBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="ActivationLaunchCode"/>
+                    <Button Tag="business-pages" Click="Navigate_Click" HorizontalAlignment="Left" Content="{Binding [ActivationOpenDemo], Source={StaticResource Strings}}"/>
+                    <TextBlock Text="{Binding [SingleInstanceTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [SingleInstanceBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [HybridCloseTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [HybridCloseBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [ApplicationCleanupTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [ApplicationCleanupBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [LifecycleSupportBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <Expander Header="{Binding [LifecycleAcceptanceTitle], Source={StaticResource Strings}}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="{Binding [LifecycleAcceptanceBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                            <g:GalleryCodeView x:Name="LifecycleAcceptanceCode"/>
+                        </StackPanel>
+                    </Expander>
+                    <g:GallerySourceBrowser Kind="Activation"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding [AiGuidanceTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding [AiGuidanceCliBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [AiGuidanceProjectBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="AiGuidanceCode"/>
+                    <TextBlock Text="{Binding [AiGuidanceBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+            </Border>
+            <Expander Header="{Binding [ToolMaintenance], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [MaintenanceHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <TextBlock Text="{Binding [MaintainInspectTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [MaintainInspectBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="InspectCode"/>
+                    <TextBlock Text="{Binding [MaintainComponentTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [MaintainComponentBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="ComponentMaintenanceCode"/>
+                    <Button Tag="components" Click="Navigate_Click" HorizontalAlignment="Left" Content="{Binding [ComponentsTitle], Source={StaticResource Strings}}"/>
+                    <TextBlock Text="{Binding [MaintainScaffoldTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [MaintainScaffoldBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="ScaffoldMaintenanceCode"/>
+                    <Button Tag="evolution" Click="Navigate_Click" HorizontalAlignment="Left" Content="{Binding [EvolutionTitle], Source={StaticResource Strings}}"/>
+                </StackPanel>
+            </Expander>
+            <Expander Header="{Binding [CommandAutomationTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [CommandAutomationBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="AutomationCode"/>
+                    <TextBlock Text="{Binding [CommandBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                </StackPanel>
+            </Expander>
+            <Expander Header="{Binding [CommandGalleryTitle], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [CommandGalleryBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    <g:GalleryCodeView x:Name="GalleryCommandCode"/>
+                </StackPanel>
+            </Expander>
+            <TextBlock Text="{Binding [GuideCodeNote], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

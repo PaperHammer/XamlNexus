@@ -93,3 +93,87 @@ jobs:
             .artifacts/generated-build-*/*.log
             .artifacts/generated-build-*/*.binlog
             .artifacts/generated-build-*/results.json
+
+  package-acceptance:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Install packed tool, generate projects and run startup smoke tests
+        shell: pwsh
+        run: ./eng/Test-ToolPackage.ps1 -RunGuiSmoke
+      - name: Upload package acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-acceptance
+          include-hidden-files: true
+          path: .artifacts/package-acceptance-*/**
+
+  headless-lifecycle:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Verify single-instance identity and activation without UI
+        shell: pwsh
+        run: ./eng/Test-AppInstance.ps1 -Repetitions 2
+      - name: Verify hybrid close cancellation and delayed save without UI
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .artifacts/hybrid-close | Out-Null
+          dotnet run --project eng/diagnostics/HybridCloseProbe/HybridCloseProbe.csproj -c Release -p:NuGetAudit=false *> .artifacts/hybrid-close/acceptance.log
+          if ($LASTEXITCODE -ne 0) { throw 'Hybrid close acceptance failed.' }
+      - name: Verify hybrid secondary activation without UI
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .artifacts/hybrid-activation | Out-Null
+          dotnet run --project eng/diagnostics/HybridActivationProbe/HybridActivationProbe.csproj -c Release -p:NuGetAudit=false *> .artifacts/hybrid-activation/acceptance.log
+          if ($LASTEXITCODE -ne 0) { throw 'Hybrid activation acceptance failed.' }
+      - name: Upload lifecycle evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: headless-lifecycle
+          include-hidden-files: true
+          path: |
+            .artifacts/app-instance-*/**
+            .artifacts/hybrid-close/**
+            .artifacts/hybrid-activation/**
+
+  business-workflow:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Verify generated business data and scaffold maintenance without UI
+        shell: pwsh
+        run: ./eng/Test-BusinessWorkflow.ps1
+      - name: Upload business workflow evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: business-workflow
+          include-hidden-files: true
+          path: .artifacts/business-workflow-*/**

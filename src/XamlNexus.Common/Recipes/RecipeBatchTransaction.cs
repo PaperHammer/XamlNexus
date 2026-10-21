@@ -3,7 +3,7 @@ using XamlNexus.Common.Projects;
 
 namespace XamlNexus.Common.Recipes;
 
-/// <summary>批量安装的准备结果：原项目身份和清单哈希、最终文件内容、最终清单及逐组件预览</summary>
+/// <summary>批量安装或更新的准备结果：原项目身份和清单哈希、最终文件内容、最终清单及逐组件预览</summary>
 public sealed class XamlNexusRecipeBatchPlan {
     internal XamlNexusRecipeBatchPlan(string root, string manifestHash, XamlNexusProjectManifest manifest,
         XamlNexusRecipePlan files, IReadOnlyList<XamlNexusRecipePreview> recipes) {
@@ -22,7 +22,7 @@ public sealed class XamlNexusRecipeBatchPlan {
     internal XamlNexusProjectManifest Manifest { get; }
     /// <summary>将多次中间操作归并为从原始状态到最终状态的文件计划</summary>
     internal XamlNexusRecipePlan Files { get; }
-    /// <summary>按调用方提供的安装顺序保存每个组件的预览</summary>
+    /// <summary>按调用方提供的处理顺序保存每个组件的预览</summary>
     public IReadOnlyList<XamlNexusRecipePreview> Recipes { get; }
     /// <summary>归并后的文件路径列表，用于展示批量提交范围</summary>
     public IReadOnlyList<string> ChangedFiles { get; }
@@ -34,7 +34,17 @@ public static partial class XamlNexusRecipeTransaction {
     };
 
     /// <summary>复制项目到临时目录，按给定顺序实际演练安装并校验结果；不修改原项目，但会写临时文件</summary>
-    public static XamlNexusRecipeBatchPlan PrepareApplyBatch(XamlNexusProjectContext project, IReadOnlyList<IXamlNexusRecipe> recipes) {
+    public static XamlNexusRecipeBatchPlan PrepareApplyBatch(XamlNexusProjectContext project, IReadOnlyList<IXamlNexusRecipe> recipes) =>
+        PrepareBatch(project, recipes, update: false);
+
+    /// <summary>在临时项目副本中依次演练多个 Recipe 更新，再生成一次性提交计划。</summary>
+    public static XamlNexusRecipeBatchPlan PrepareUpdateBatch(XamlNexusProjectContext project, IReadOnlyList<IXamlNexusRecipe> recipes) =>
+        PrepareBatch(project, recipes, update: true);
+
+    private static XamlNexusRecipeBatchPlan PrepareBatch(
+        XamlNexusProjectContext project,
+        IReadOnlyList<IXamlNexusRecipe> recipes,
+        bool update) {
         if (recipes.Count == 0) throw new ArgumentException("At least one Recipe is required.", nameof(recipes));
 
         string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(project.RootDirectory));
@@ -52,20 +62,7 @@ public static partial class XamlNexusRecipeTransaction {
             foreach (var recipe in recipes) {
                 // 每轮重新加载清单，让后续组件看见前一组件已安装的依赖和文件
                 var current = XamlNexusProjectLocator.Locate(staging);
-                XamlNexusRecipeContract.ValidateCompatibility(recipe.Descriptor, current.Manifest);
-                var plan = recipe.CreatePlan(new XamlNexusRecipeContext(staging, current.Manifest))
-                    ?? throw new XamlNexusRecipeException(XamlNexusRecipeErrors.MissingInstallationPlan, []);
-
-                var changes = XamlNexusRecipeContract.ResolveAndValidatePlan(staging, plan);
-                foreach (var change in changes) {
-                    string relative = NormalizePath(Path.GetRelativePath(staging, change.FullPath));
-                    ValidateBatchPath(root, relative);
-                    if (!originals.ContainsKey(relative))
-                        originals.Add(relative, File.Exists(change.FullPath) ? File.ReadAllBytes(change.FullPath) : null);
-                }
-                previews.Add(CreatePreview("add", recipe.Descriptor.Id, null, recipe.Descriptor.Version, changes));
-                Execute(current, recipe.Descriptor.Id, recipe.Descriptor.Version, changes,
-                    manifest => AddRecipeToManifest(manifest, recipe.Descriptor, changes));
+                previews.Add(StageBatchRecipe(root, current, recipe, update, originals));
             }
             var final = XamlNexusProjectLocator.Locate(staging);
             if (!XamlNexusProjectValidator.Validate(final).IsValid)
@@ -102,6 +99,44 @@ public static partial class XamlNexusRecipeTransaction {
         }
     }
 
+    /// <summary>在临时副本中规划并执行一个 Recipe，同时记录最终提交所需的原始文件内容</summary>
+    private static XamlNexusRecipePreview StageBatchRecipe(
+        string root,
+        XamlNexusProjectContext current,
+        IXamlNexusRecipe recipe,
+        bool update,
+        Dictionary<string, byte[]?> originals) {
+        string staging = current.RootDirectory;
+        XamlNexusRecipePlan plan;
+        string? fromVersion = null;
+        if (update) {
+            var updatePlan = CreateRecipeUpdatePlan(current, recipe);
+            plan = updatePlan.Plan;
+            fromVersion = updatePlan.Module.Version;
+        }
+        else {
+            XamlNexusRecipeContract.ValidateCompatibility(recipe.Descriptor, current.Manifest);
+            plan = recipe.CreatePlan(new XamlNexusRecipeContext(staging, current.Manifest))
+                ?? throw new XamlNexusRecipeException(XamlNexusRecipeErrors.MissingInstallationPlan, []);
+        }
+
+        IReadOnlyList<ResolvedRecipeFileChange> changes =
+            XamlNexusRecipeContract.ResolveAndValidatePlan(staging, plan);
+        XamlNexusRecipePreview preview = CreatePreview(
+            update ? "update" : "add", recipe.Descriptor.Id, fromVersion, recipe.Descriptor.Version, changes);
+        foreach (var change in changes) {
+            string relative = NormalizePath(Path.GetRelativePath(staging, change.FullPath));
+            ValidateBatchPath(root, relative);
+            if (!originals.ContainsKey(relative))
+                originals.Add(relative, File.Exists(change.FullPath) ? File.ReadAllBytes(change.FullPath) : null);
+        }
+        Execute(current, recipe.Descriptor.Id, recipe.Descriptor.Version, changes,
+            manifest => update
+                ? UpdateRecipeInManifest(manifest, recipe.Descriptor, changes)
+                : AddRecipeToManifest(manifest, recipe.Descriptor, changes));
+        return preview;
+    }
+
     /// <summary>确认项目路径和清单未改变，重新检查文件计划，再通过统一事务提交归并结果</summary>
     public static IReadOnlyList<string> ApplyBatch(XamlNexusProjectContext project, XamlNexusRecipeBatchPlan plan) {
         string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(project.RootDirectory));
@@ -116,7 +151,10 @@ public static partial class XamlNexusRecipeTransaction {
         // 此处检查后，Execute 还会在持有写锁时复核清单和文件，防止检查与提交之间状态变化
         var changes = XamlNexusRecipeContract.ResolveAndValidatePlan(root, plan.Files);
 
-        return Execute(project, "batch", "1.0.0", changes, _ => plan.Manifest, plan.ManifestHash).ChangedFiles;
+        IReadOnlyList<string> changedFiles = Execute(
+            project, "batch", "1.0.0", changes, _ => plan.Manifest, plan.ManifestHash).ChangedFiles;
+        RemoveEmptyOwnedDirectories(project.RootDirectory, plan.Files.Changes);
+        return changedFiles;
     }
 
     private static string HashBytes(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));

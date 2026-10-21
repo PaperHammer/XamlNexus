@@ -14,23 +14,20 @@ namespace Winui3_Wpf_XamlNexus.GrpcServers {
             return Task.FromResult(new Empty());
         }
 
-        public override Task<Empty> CloseUI(Empty _, ServerCallContext context) {
-            _runner.CloseUI();
-            return Task.FromResult(new Empty());
+        public override async Task<Empty> CloseUI(Empty _, ServerCallContext context) {
+            // UI teardown cancels its RPC; finish the owned close operation independently.
+            await _runner.CloseUIAsync();
+            return new Empty();
         }
 
-        public override Task<Empty> RestartUI(Empty _, ServerCallContext context) {
-            _runner.RestartUI();
-            return Task.FromResult(new Empty());
+        public override async Task<Empty> RestartUI(Empty _, ServerCallContext context) {
+            await _runner.RestartUIAsync();
+            return new Empty();
         }
 
-        public override Task<Empty> ShutDown(Empty _, ServerCallContext context) {
-            try {
-                return Task.FromResult(new Empty());
-            }
-            finally {
-                App.ShutDown();
-            }
+        public override async Task<Empty> ShutDown(Empty _, ServerCallContext context) {
+            await App.RequestShutDownAsync();
+            return new Empty();
         }
 
         public override async Task SubscribeUIRecievedCmd(Empty request, IServerStreamWriter<Grpc_UIRecievedCmd> responseStream, ServerCallContext context) {

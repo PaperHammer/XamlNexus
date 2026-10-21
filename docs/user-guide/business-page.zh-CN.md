@@ -2,7 +2,7 @@
 
 [English](business-page.md) | [简体中文](business-page.zh-CN.md)
 
-[SqliteShowcase 主页](../../samples/SqliteShowcase/SqliteShowcase.MainPanel/MainPage.xaml.cs)
+[XamlNexus.Gallery 主页](../../samples/XamlNexus.Gallery/XamlNexus.Gallery.MainPanel/MainPage.xaml.cs)
 演示同一页面使用设置、日志和 SQLite。业务代码位于 MainPanel，未修改 App 启动流程。
 
 ## 一条命令生成页面
@@ -16,6 +16,10 @@ xamlnexus page add Orders
 xamlnexus page add Reports --no-navigation
 # 从项目外调用或用于脚本
 xamlnexus page add Customers --project <项目目录> --dry-run --json
+# 列表、详情和编辑页面
+xamlnexus page add Orders --kind list
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 ```
 
 命令生成 `MainPanel/OrdersPage.xaml`、对应代码文件和
@@ -35,7 +39,30 @@ JSON 输出的 `navigation` 为 `automatic` 或 `manual`，预览同样显示是
 自定义外壳替代 MainWindow 时允许页面生成，但命令不会修复原外壳或原有 XAML 语法错误。
 生成不会修改 App.xaml.cs，也不要求 SQLite。页面级 ViewModel 由页面持有，通过 AppObjectFactory 创建；构造参数从模块注册的应用服务中解析。
 `--dry-run` 只列出变更文件，`--json` 可用于脚本。添加后执行 `xamlnexus run`。
-默认生成空白 ViewModel 和普通页面骨架，不包含下文的 Query 示例。
+默认 `blank` 生成空白 ViewModel 和普通页面骨架。`list` 生成搜索、刷新、取消和异步状态；`details` 从激活 JSON 或 `FrameworkPayload` 的 `id` 读取记录标识，提供加载与重试；`form` 同时支持无 `id` 的新建模式和带 `id` 的编辑模式，包含校验、脏状态、异步保存与重置。三种业务模板都附带可运行的数据源接口和示例实现，接入实际业务时替换实现即可。
+
+## 从启动参数打开业务记录
+
+先生成并编译 OrderDetails、OrderEditor 页面，然后在编译产物目录用 PowerShell 7 调用应用：
+
+~~~powershell
+& .\MyApp.UI.exe --route OrderDetails --data '{"id":"42"}'
+& .\MyApp.UI.exe --route OrderEditor --data '{"id":"42"}'
+# 新建模式：没有 id
+& .\MyApp.UI.exe --route OrderEditor --data '{}'
+~~~
+
+路由对应 UI/Navigation 中的注册名称，区分大小写；ID 必须是字符串。两种模板的详情和编辑页调用 `payload.GetBusinessString("id")`，兼容外部激活 JSON 和应用内部 `FrameworkPayload` 的普通 id 键。其他业务字段保存在 `BusinessActivationRequest.Data`，由自己的页面验证并使用，不会展开成框架服务键。
+
+参数导航同样经过 CanLeaveAsync：同一编辑页打开另一条记录也先询问是否保存。继续编辑或保存失败时，原记录、草稿、Payload 和侧栏选中项保持不变。新参数优先于缓存参数；未传 ID 的新建请求不会重用上一条激活记录。
+
+纯 WinUI 支持首次和二次启动，模块就绪后串行消费请求。混合架构首次和二次启动均用 `MyApp.exe`（后台宿主）；已有宿主排队参数，复用或创建 UI 后交给受未保存保护的导航，UI 重启不重放旧路由。回执仅确认入队。未知路由或无效 JSON 显示错误，不改变当前业务页面。协议和文件关联仍需业务配置。
+
+这些是生成应用的启动参数，当前 `xamlnexus run` 不支持 `--route` / `--data` 透传。既有项目需先审阅脚手架升级，合并新的启动和 UIComponent 代码；page add 不会单独改写旧 App.xaml.cs。完整契约见[应用激活与单实例](../technical/app-activation.zh-CN.md)，宿主退出与重启见[混合关闭保护](../technical/hybrid-close.zh-CN.md)。
+
+Gallery 的“业务页面”提供路由和 JSON 预览，调用实际模板解析器与路由器，再接入现有 SQLite 详情/表单模型。它不启动第二个进程；SDK 转交和混合关闭协议由仓库探针另行验收。
+
+可重复生成的独立业务闭环见 [BusinessWorkflow 样例](../../samples/XamlNexus.BusinessWorkflow/README.md)：CLI 创建 basic 项目、安装 SQLite、生成列表/详情/编辑页，再接入共享数据源与导航。验收直接编译生成代码，检查独立进程持久化、保存失败和定制后的升级保留。
 
 ## 不依赖数据库的页面起点
 
@@ -130,7 +157,7 @@ internal static class OrdersNavigation {
 这些共享服务由应用容器管理，页面不要 Dispose 它们。每次操作创建的 DbContext
 使用 `await using` 释放，避免把跟踪状态或长期数据库上下文放进页面。
 
-本例直接扩展现有主页。若新增独立页面，使用 `page add` 或上述注册方式。旧版 SqliteShowcase 的窗口仍使用手工导航映射；
+本例直接扩展现有主页。若新增独立页面，使用 `page add` 或上述注册方式。旧版 XamlNexus.Gallery 的窗口仍使用手工导航映射；
 其现有主页示例不受影响。无需在 App.xaml.cs 增加业务初始化代码。
 
 ## 设置与数据
@@ -153,7 +180,7 @@ internal static class OrdersNavigation {
 ## 日志、错误与页面生命周期
 
 通过 `ArcLog.GetLogger<MainPage>()` 记录操作名称及异常，不主动记录用户输入值。
-日志位于 `%LOCALAPPDATA%\SqliteShowcase\logs\UI`。异常本身可能包含路径等诊断信息。
+日志位于 `%LOCALAPPDATA%\XamlNexus.Gallery\logs\UI`。异常本身可能包含路径等诊断信息。
 
 页面使用统一 RunAsync 捕获操作异常、显示提示，并在 finally 恢复控件。
 执行期间禁用编辑、列表、按钮和排序选择，同时用忙碌标志拒绝重复操作。
@@ -171,12 +198,9 @@ Loaded 时重新加载数据；本例不持有长期数据库上下文，本地�
 
 示例现在提供中英文资源，XAML 使用 `Uids.Uid`，运行状态保留资源键与参数，
 在 LanguageUpdated 时重新生成译文。页面在 Loaded 订阅、Unloaded 取消订阅，
-托盘服务在 Dispose 时取消订阅。接入方式见 [本地化文档](localization.zh-CN.md)。
+Gallery 没有托盘服务；应用自己的长生命周期服务应在 Dispose 时取消订阅。接入方式见 [本地化文档](localization.zh-CN.md)。
 
-“发送提醒”通过 Models 中的 `INotificationService` 调用 UI 托盘实现。
-MainPanel 不引用 UI 工程；点击时从应用服务容器取得接口，避免窗口构造期间
-提前解析依赖主窗口的托盘服务。成功提示只表示请求完成，Windows 决定最终显示。
-已有设置、日志和数据库操作保持独立，通知失败不会撤销之前保存的数据。
+Gallery 不提供托盘或通知入口。应用需要托盘菜单和通知时，可安装[系统托盘 Recipe](system-tray-recipe.zh-CN.md)，并从业务服务调用它；通知失败不应撤销已保存的数据。
 
 
 ## ViewModel 构造函数注入（新模板）
@@ -201,7 +225,7 @@ public async Task<int> CountAsync() {
 ```
 
 混合架构改为注入已有 `IAppStateClient`，通过 RPC 操作后台持有的数据库；前端不引用 Data。
-现有 SqliteShowcase 保留原有写法，新生成项目使用工厂。旧项目缺少 AppObjectFactory 时，
+现有 XamlNexus.Gallery 保留原有写法，新生成项目使用工厂。旧项目缺少 AppObjectFactory 时，
 page add 保留 `new()`，不会生成无法编译的工厂调用。
 
 工厂通过 ActivatorUtilities 创建新的业务对象，构造参数必须是已注册的服务；它不会递归
@@ -212,3 +236,5 @@ page add 保留 `new()`，不会生成无法编译的工厂调用。
 中释放，并保证重复销毁回调安全。注入的共享服务由容器管理，页面不要释放它们。
 当前创建入口使用应用级服务提供器，不为每页建立 DI scope；数据库上下文按操作创建并释放，
 需要 scoped 服务的业务操作应显式创建 scope，避免将其长期保存在页面上。
+
+同步页面进入失败时，导航会移除新建页或恢复复用页的框架状态，并保留旧页。恢复范围与异常处理见[导航回滚](../technical/navigation.zh-CN.md#页面进入失败时的回滚)。

@@ -1,0 +1,44 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.GettingStartedGalleryPage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="{Binding [GettingStarted], Source={StaticResource Strings}}" Description="{Binding [GettingStartedDescription], Source={StaticResource Strings}}"/>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [GuideStep1Title], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [GuideStep1Body], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <g:GalleryCodeView x:Name="InstallCode"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [GuideStep2Title], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [GuideStep2Body], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <g:GalleryCodeView x:Name="CreateCode"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [GuideStep3Title], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [GuideStep3Body], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <g:GalleryCodeView x:Name="AddCode"/>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding [GuideStep4Title], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="{Binding [GuideStep4Body], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <g:GalleryCodeView x:Name="MaintainCode"/>
+                </StackPanel>
+            </Border>
+            <Button Tag="tool-guide" Click="Guide_Click" Style="{StaticResource AccentButtonStyle}" HorizontalContentAlignment="Left"><TextBlock Text="{Binding [GuideNext], Source={StaticResource Strings}}" TextWrapping="Wrap"/></Button>
+            <TextBlock Text="{Binding [GuideCodeNote], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

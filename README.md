@@ -6,13 +6,20 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-A .NET command-line tool for creating Windows desktop prototypes with WinUI 3. Generate a project, add pages and components, and start building your application.
+A .NET command-line tool for creating and maintaining Windows desktop applications with WinUI 3. Generate an editable project, add business pages and components, and maintain its infrastructure as the application grows.
+
+Explore [XamlNexus Gallery](samples/XamlNexus.Gallery/README.md), a standalone app with interactive examples, tips, and offline browsing of the actual source templates. Gallery is maintained separately from the default generated application.
+
+Run `xamlnexus gallery` with an official tool package to download, verify and launch its matching Gallery. After `dotnet tool update -g XamlNexus`, the next launch obtains the matching version; cached versions work offline. For source builds without a download manifest, follow the Gallery README's build instructions.
 
 ## Features
 
 - **Two architectures:** a WinUI 3 application, or a WinUI 3 frontend with a WPF background host.
 - **Application foundations:** ArcXaml, navigation, MVVM, dependency injection, configuration, and logging.
+- **Business page templates:** blank, list, details, and form pages with navigation integration, loading states, validation, and editable data-source interfaces.
+- **Activation and lifecycle:** launch arguments open business pages; unsaved-change guards cover sidebar navigation and window closing, with rollback on synchronous page-entry failure.
 - **Optional components:** settings, SQLite, tray integration, application updates, and EditorConfig.
+- **AI development guidance:** bundled CLI skills and application architecture/rules for Codex, Claude Code and Qwen Code.
 - **Project maintenance:** preview changes, validate projects, diagnose configuration, and upgrade generated infrastructure.
 
 ## Install
@@ -22,6 +29,7 @@ Prepare Windows, the .NET 8 SDK, and the WinUI build environment.
 ```powershell
 dotnet tool install --global XamlNexus
 xamlnexus --version
+xamlnexus doctor --environment
 ```
 
 Update or uninstall the tool:
@@ -31,7 +39,7 @@ dotnet tool update --global XamlNexus
 dotnet tool uninstall --global XamlNexus
 ```
 
-This README describes the current source; the published NuGet package may not yet include all changes.
+This README describes the 1.0.5 source. Check your installed tool with `xamlnexus --version`; if its published package lacks a feature described here, use the source-build instructions below.
 
 ## Quick start
 
@@ -48,6 +56,9 @@ Add a page, then run the application:
 ```powershell
 xamlnexus page add Workspace --dry-run
 xamlnexus page add Workspace
+xamlnexus page add Projects --kind list
+xamlnexus page add ProjectDetails --kind details
+xamlnexus page add ProjectEditor --kind form
 xamlnexus run
 ```
 
@@ -95,14 +106,17 @@ Run these commands from the project directory, or specify `--project <directory>
 
 ```powershell
 xamlnexus list
+xamlnexus status
 xamlnexus validate
 xamlnexus doctor
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus upgrade --dry-run
 xamlnexus --help
 ```
 
-- `update <id>` updates an installed component; `upgrade` updates scaffold infrastructure. Updating the CLI does not update existing projects.
+- `status` summarizes environment, managed files, scaffold and Recipe updates, then suggests the next commands.
+- `update <id>` updates one component, `update --all` updates every outdated component in one transaction, and `upgrade` updates scaffold infrastructure. Updating the CLI does not update existing projects.
 - Generated files are editable. Component update/removal checks tracked files; scaffold upgrades report merge conflicts.
 - `--dry-run` previews changes. `--json` only changes the output format and does not prevent writes.
 - Installer creation, signing, and update distribution are configured separately in the generated publishing files.
@@ -118,10 +132,15 @@ xn --help
 
 - [Documentation index](docs/README.md)
 - [Quickstart](docs/user-guide/quickstart.md)
+- [AI development guidance: built-in CLI skills and generated application rules](docs/user-guide/ai-guidance.md)
 - [Command reference](docs/user-guide/commands.md)
 - [Architecture](docs/technical/architecture.md)
 - [Profiles and capabilities](docs/introduction/product-model.md)
 - [Pages and ViewModels](docs/user-guide/business-page.md)
+- [Application activation and single instance](docs/technical/app-activation.md)
+- [Navigation guards and entry-failure rollback](docs/technical/navigation.md)
+- [Hybrid shutdown protection](docs/technical/hybrid-close.md)
+- [Standalone business workflow sample](samples/XamlNexus.BusinessWorkflow/README.md)
 - [SQLite](docs/user-guide/sqlite-recipe.md)
 - [Settings and localization](docs/user-guide/localization.md)
 - [Scaffold upgrades](docs/user-guide/project-upgrade.md)

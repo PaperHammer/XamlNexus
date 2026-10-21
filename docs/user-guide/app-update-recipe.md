@@ -21,7 +21,7 @@ User-edited owned files are protected by the existing Recipe transaction checks.
 updater contract remains in the core template and the settings presentation remains
 in the settings module. Removing updater leaves settings installed.
 
-This Recipe supports new pure WinUI projects. Hybrid and the existing Showcase retain their
+This Recipe supports new pure WinUI projects. Hybrid retains its
 built-in updater. Older projects containing a built-in updater require migration first;
 adding over existing updater files is refused rather than overwriting them.
 The installer path targets unpackaged apps; MSIX updates follow their distribution channel.

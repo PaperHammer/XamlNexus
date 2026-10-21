@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "XamlNexus.Gallery.UI (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "XamlNexus.Gallery.UI (Package)": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

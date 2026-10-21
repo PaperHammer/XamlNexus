@@ -8,8 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\XamlNexus.Common\Assets\ListPage\ViewModel.cs.txt" Link="TemplateSources\ListViewModel.cs" />
+    <Compile Include="..\XamlNexus.Common\Assets\ListPage\DataSource.cs.txt" Link="TemplateSources\ListDataSource.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppObjectFactory.cs" Link="TemplateSources\AppObjectFactory.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\DI\AppServiceLocator.cs" Link="TemplateSources\AppServiceLocator.cs" />
+    <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\TaskUtils\TaskBlocking.cs" Link="TemplateSources\TaskBlocking.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.UIComponent\Navigation\INavigationRegistry.cs" Link="TemplateSources\INavigationRegistry.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.UIComponent\Navigation\NavigationRegistry.cs" Link="TemplateSources\NavigationRegistry.cs" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
@@ -21,15 +24,55 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\samples\SqliteShowcase\SqliteShowcase.Data\SqliteShowcase.Data.csproj" />
+    <ProjectReference Include="..\..\samples\XamlNexus.Gallery\XamlNexus.Gallery.Data\XamlNexus.Gallery.Data.csproj" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\DataDirectoryCopy.cs" Link="TemplateSources\PureDataDirectoryCopy.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\JsonSaver.cs" Link="TemplateSources\PureJsonSaver.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Utils\Storage\IntPtrJsonConverter.cs" Link="TemplateSources\PureIntPtrJsonConverter.cs" />
     <Compile Include="..\Templates\Winui3\Winui3_XamlNexus.Common\Logging\ArcLog.cs" Link="TemplateSources\PureArcLog.cs" />
     <ProjectReference Include="..\Templates\Winui3_Wpf\Winui3_Wpf_XamlNexus.Common\Winui3_Wpf_XamlNexus.Common.csproj" />
     <ProjectReference Include="..\XamlNexus.Common\XamlNexus.Common.csproj" />
+    <ProjectReference Include="..\XamlNexus.Tooling\XamlNexus.Tooling.csproj" />
     <ProjectReference Include="..\XamlNexus.Generator.Winui3App\XamlNexus.Generator.Winui3App.csproj" />
     <ProjectReference Include="..\XamlNexus.Generator.Winui3_Wpf_App\XamlNexus.Generator.Winui3_Wpf_App.csproj" />
     <ProjectReference Include="..\XamlNexus.Recipes.BuiltIn\XamlNexus.Recipes.BuiltIn.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.Common/Utils/Lifecycle/ApplicationCleanup.cs" Link="TemplateSources/Winui3/ApplicationCleanup.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Templates/ArcPage.cs" Link="TemplateSources/Winui3/Templates/ArcPage.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Attributes/KeepAliveAttribute.cs" Link="TemplateSources/Winui3/Attributes/KeepAliveAttribute.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Context/ArcPageContext.cs" Link="TemplateSources/Winui3/Context/ArcPageContext.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Utils/ArcPageContextManager.cs" Link="TemplateSources/Winui3/Utils/ArcPageContextManager.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Utils/FrameworkPayload.cs" Link="TemplateSources/Winui3/Utils/FrameworkPayload.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Utils/Extensions/DispatcherQueueExtensions.cs" Link="TemplateSources/Winui3/Utils/Extensions/DispatcherQueueExtensions.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Templates/ArcPage.cs" Link="TemplateSources/Winui3_Wpf/Templates/ArcPage.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Attributes/KeepAliveAttribute.cs" Link="TemplateSources/Winui3_Wpf/Attributes/KeepAliveAttribute.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Context/ArcPageContext.cs" Link="TemplateSources/Winui3_Wpf/Context/ArcPageContext.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Utils/ArcPageContextManager.cs" Link="TemplateSources/Winui3_Wpf/Utils/ArcPageContextManager.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Utils/FrameworkPayload.cs" Link="TemplateSources/Winui3_Wpf/Utils/FrameworkPayload.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Utils/Extensions/DispatcherQueueExtensions.cs" Link="TemplateSources/Winui3_Wpf/Utils/Extensions/DispatcherQueueExtensions.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.Common/Utils/ThreadContext/UiSynchronizationContext.cs" Link="TemplateSources/Winui3/UiSynchronizationContext.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.Common/Utils/ThreadContext/IUiSynchronizationContext.cs" Link="TemplateSources/Winui3/IUiSynchronizationContext.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Utils/Extensions/ArcNavigationContentViewExtension.cs" Link="TemplateSources/Winui3/ArcNavigationContentViewExtension.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Utils/Extensions/ArcNavigationContentViewExtension.cs" Link="TemplateSources/Winui3_Wpf/ArcNavigationContentViewExtension.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Navigation/INavigationRegistry.cs" Link="TemplateSources/Winui3_Wpf/INavigationRegistry.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Navigation/NavigationRegistry.cs" Link="TemplateSources/Winui3_Wpf/NavigationRegistry.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Navigation/ArcLeaveRequest.cs" Link="TemplateSources/Winui3/ArcLeaveRequest.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Navigation/ArcLeaveRequest.cs" Link="TemplateSources/Winui3_Wpf/ArcLeaveRequest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UI/Activation/ActivationQueue.cs" Link="TemplateSources/Winui3/ActivationQueue.cs" />
+  </ItemGroup>
+  <Import Project="../../samples/XamlNexus.Gallery/XamlNexus.Gallery.MainPanel/Gallery/GalleryPageModels.targets" />
+  <ItemGroup>
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/BusinessActivationRequest.cs" Link="TemplateSources/Winui3/BusinessActivationRequest.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/BusinessActivationNavigator.cs" Link="TemplateSources/Winui3/BusinessActivationNavigator.cs" />
+    <Compile Include="../Templates/Winui3/Winui3_XamlNexus.UIComponent/Activation/ActivationCommandLine.cs" Link="TemplateSources/Winui3/ActivationCommandLine.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Activation/BusinessActivationRequest.cs" Link="TemplateSources/Winui3_Wpf/BusinessActivationRequest.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Activation/BusinessActivationNavigator.cs" Link="TemplateSources/Winui3_Wpf/BusinessActivationNavigator.cs" />
+    <Compile Include="../Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Activation/ActivationCommandLine.cs" Link="TemplateSources/Winui3_Wpf/ActivationCommandLine.cs" />
   </ItemGroup>
 </Project>

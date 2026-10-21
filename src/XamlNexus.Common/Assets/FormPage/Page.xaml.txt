@@ -1,0 +1,29 @@
+<arc:ArcPage
+    x:Class="__APP__.MainPanel.__NAME__Page"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:arc="using:__APP__.UIComponent.Templates">
+    <ScrollViewer>
+        <StackPanel Padding="24" Spacing="12" MaxWidth="720" HorizontalAlignment="Left">
+            <TextBlock Text="{x:Bind ViewModel.FormTitle, Mode=OneWay}" FontSize="28" />
+            <ProgressBar IsIndeterminate="True"
+                         Visibility="{x:Bind ToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
+            <InfoBar Severity="Error" IsClosable="False"
+                     IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                     Title="{x:Bind ViewModel.ErrorTitle, Mode=OneWay}"
+                     Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+            <TextBox Header="Name" Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind ViewModel.NameError, Mode=OneWay}" Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                       Visibility="{x:Bind ToVisibility(ViewModel.HasNameError), Mode=OneWay}" />
+            <TextBox Header="Description" Text="{x:Bind ViewModel.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"
+                     IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{x:Bind ViewModel.SaveText, Mode=OneWay}" Command="{x:Bind ViewModel.SaveCommand}" />
+                <Button Content="{x:Bind ViewModel.ResetText, Mode=OneWay}" Command="{x:Bind ViewModel.ResetCommand}" />
+                <TextBlock Text="{x:Bind ViewModel.StateText, Mode=OneWay}" VerticalAlignment="Center" Opacity="0.7" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

@@ -1,6 +1,6 @@
 using System.Reflection;
 using Spectre.Console;
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Utils;
 
 namespace XamlNexus {
@@ -24,8 +24,8 @@ namespace XamlNexus {
                             operation = args.FirstOrDefault()?.ToLowerInvariant() ?? "cli",
                             status = "error",
                             error = new {
-                                code = "XC1001",
-                                message = parseResult.Error,
+                                code = CliErrors.InvalidArguments.Code,
+                                message = CliErrors.InvalidArguments.GetMessage(parseResult.Error),
                             },
                         });
                         return UsageErrorExitCode;
@@ -52,8 +52,12 @@ namespace XamlNexus {
                         return Generate(options.Project!, options.Profile, options.Features);
                     case CliCommand.Run:
                         return RunProject(options);
+                    case CliCommand.Gallery:
+                        return RunGalleryAsync().GetAwaiter().GetResult();
                     case CliCommand.List:
                         return ListProject(options.ProjectPath!, options.JsonOutput);
+                    case CliCommand.Status:
+                        return ShowProjectStatus(options.ProjectPath!, options.JsonOutput, version);
                     case CliCommand.Validate:
                         return ValidateProject(options.ProjectPath!, options.JsonOutput);
                     case CliCommand.Recipes:
@@ -63,9 +67,11 @@ namespace XamlNexus {
                     case CliCommand.Remove:
                         return RemoveRecipe(options.RecipeId!, options.ProjectPath!, options.DryRun, options.JsonOutput);
                     case CliCommand.Update:
-                        return UpdateRecipe(options.RecipeId!, options.ProjectPath!, options.DryRun, options.JsonOutput);
+                        return options.UpdateAll
+                            ? UpdateAllRecipes(options.ProjectPath!, options.DryRun, options.JsonOutput)
+                            : UpdateRecipe(options.RecipeId!, options.ProjectPath!, options.DryRun, options.JsonOutput);
                     case CliCommand.Doctor:
-                        return Doctor(options.ProjectPath!, options.JsonOutput);
+                        return Doctor(options.ProjectPath!, options.JsonOutput, options.EnvironmentOnly);
                     case CliCommand.Upgrade:
                         return UpgradeProject(
                             options.ProjectPath!,

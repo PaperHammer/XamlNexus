@@ -1,0 +1,46 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
+using MyApp.UIComponent.Attributes;
+using MyApp.UIComponent.Templates;
+
+namespace MyApp.MainPanel;
+
+[KeepAlive] // Retain the page, host and Loading control through navigation.
+public sealed partial class LoadingPage : ArcPage
+{
+    public override Type ArcType => typeof(LoadingPage);
+    public LoadingPage()
+    {
+        InitializeComponent();
+        ArcContext!.AttachLoadingComponent(Host.LoadingControlHost);
+    }
+    private async void Load_Click(object sender, RoutedEventArgs e)
+    {
+        if (ArcContext?.LoadingContext is not { } loading || loading.IsLoading) return;
+        StartButton.IsEnabled = false;
+        using var cts = new CancellationTokenSource();
+        try
+        {
+            await loading.RunWithProgressAsync(async (token, report) =>
+            {
+                // Handle errors INSIDE operation so the current wrapper can clean up.
+                try
+                {
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        await Task.Delay(500, token);
+                        report(i, 10);
+                    }
+                    Result.Text = "Completed";
+                }
+                catch (OperationCanceledException) { Result.Text = "Cancelled"; }
+                catch (Exception error) { Result.Text = error.Message; }
+            }, total: 10, cts: cts);
+            // For an indeterminate spinner use loading.RunAsync(operation, cts).
+            // Keep the same inner cancellation/error handling.
+        }
+        finally { StartButton.IsEnabled = true; }
+    }
+}

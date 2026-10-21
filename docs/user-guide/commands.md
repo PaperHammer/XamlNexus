@@ -2,7 +2,7 @@
 
 [English](commands.md) | [简体中文](commands.zh-CN.md)
 
-This reference describes current source. See the [quickstart](quickstart.md) for installation and your first run. Use `xamlnexus --help` for your installed version's help and `xamlnexus --version` for its version.
+This reference describes the 1.0.5 source. See the [quickstart](quickstart.md) for installation and your first run. Use `xamlnexus --help` for your installed version's help and `xamlnexus --version` for its version.
 
 ## Command name and syntax
 
@@ -16,6 +16,17 @@ xn --help
 The alias lasts for the current session. Add the `Set-Alias` line to `$PROFILE` for new PowerShell sessions. Installation, update, and uninstall commands still use the package name `XamlNexus`.
 
 `<name>` denotes a value to replace; `[...]` denotes optional arguments. Do not type the brackets. Separate options and values with spaces, and quote paths containing spaces. Help accepts `--help`, `-h`, `-?`, or `help`; version accepts `--version`, `-v`, or `version`.
+
+## Open matching examples: `gallery`
+
+```powershell
+dotnet tool update --global XamlNexus
+xamlnexus gallery
+```
+
+No project directory is required. Official tool packages contain a manifest pinning the matching Gallery version, Windows x64 downloads and SHA-256 hashes. First launch requires internet access; subsequent launches use the verified cache under `%LOCALAPPDATA%/XamlNexus/Gallery`. Updating the tool selects its matching Gallery on the next launch. Close an existing Gallery first; this command does not terminate it.
+
+Gallery settings and database remain in `%LOCALAPPDATA%/XamlNexus.Gallery`. Old program caches are retained for rollback and can be removed manually after closing Gallery. Cancelled or failed downloads are not installed; retry the command. Source builds without a release manifest explain how to build Gallery locally. Requires Windows 10 1809 or later, x64 only.
 
 ## Create a project: `new`
 
@@ -48,7 +59,7 @@ xamlnexus list --project "D:\Projects\MyApp"
 xamlnexus validate --project "D:\Projects\MyApp\xamlnexus.json"
 ```
 
-`run`, `list`, `validate`, `doctor`, and `upgrade` also accept a positional path, such as `xamlnexus run ./MyApp`. Supply the path once, either positionally or through `--project`. For `new`, `-p` means preset, not project path.
+`run`, `list`, `status`, `validate`, `doctor`, and `upgrade` also accept a positional path, such as `xamlnexus run ./MyApp`. Supply the path once, either positionally or through `--project`. For `new`, `-p` means preset, not project path.
 
 ## Run for development: `run`
 
@@ -64,17 +75,21 @@ Accepts a project path, `--no-build`, `--dry-run`, and `--json`. By default it b
 - `--no-build` runs existing output without compiling recent edits; a previous build is required.
 - Ctrl+C stops this run. Run the command again after editing. There are no watch, hot reload, or Release/MSIX running options.
 
+Business activation options `--route` / `--data` belong to the compiled application, not the run command. Launch the EXE from its output directory; see [opening records from launch arguments](business-page.md#open-a-record-from-launch-arguments).
+
 ## Add a page: `page add`
 
 ```powershell
 xamlnexus page add Orders --dry-run
 xamlnexus page add Orders
 xamlnexus page add Details --no-navigation
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 ```
 
 Accepts `--project`, `--no-navigation`, `--dry-run`, and `--json`. Names start with an uppercase English letter and contain only English letters or digits, such as `Orders`.
 
-By default, it generates an ordinary Page and ViewModel and connects navigation. `--no-navigation` skips navigation integration for projects managing navigation themselves. There are no `--kind list` or `--kind form` options, and no business CRUD generation. Edit the generated source directly; see [page development](business-page.md) for file locations and integration details.
+By default, it generates an ordinary Page and ViewModel and connects navigation. `--no-navigation` skips navigation integration for projects managing navigation themselves. Supports `--kind blank|list|details|form` (default blank): list includes search, refresh and asynchronous state; details demonstrates navigation payloads, loading, retry and cancellation; form provides create/edit state, validation, dirty tracking, save and reset. The generated data sources are runnable samples intended to be replaced by application services. See [page development](business-page.md) and [list page template](list-page.md).
 
 ## Inspect and manage components
 
@@ -85,20 +100,31 @@ By default, it generates an ordinary Page and ViewModel and connects navigation.
 | `add <id[,id...]>` | Add one or more components | `--project`, `--dry-run`, `--json` |
 | `remove <id>` | Remove one component | `--project`, `--dry-run`, `--json` |
 | `update <id>` | Update one component to the version provided by the current tool | `--project`, `--dry-run`, `--json` |
+| `update --all` | Update every outdated component in one transaction | `--project`, `--dry-run`, `--json` |
 
 ```powershell
 xamlnexus recipes
 xamlnexus add settings,sqlite --dry-run
 xamlnexus add settings,sqlite
 xamlnexus update sqlite --dry-run
+xamlnexus update --all --dry-run
 xamlnexus remove sqlite --dry-run
 ```
 
-The batch-add example requires a project without either component, such as a basic project. Standard already includes settings. Do not add installed components again. `remove` and `update` handle one component at a time. Updating to the same version does nothing; downgrades are rejected.
+Batch addition skips installed components and continues with the rest. For example, standard already includes settings, so `add settings,sqlite` skips settings and installs SQLite if missing. If all requested components are installed, it succeeds without changes. `remove` and `update <id>` handle one component at a time. `update --all` rehearses every update in a temporary project snapshot and commits the combined result once. Updating to the same version does nothing; downgrades are rejected.
 
 Built-in components are `settings`, `editorconfig`, `sqlite`, `tray`, and `updater`. The first three support both architectures; the last two serve pure WinUI, since hybrid already includes those capabilities. `updater` depends on `settings`. Batch addition handles dependency ordering. See the [product model](../introduction/product-model.md) for boundaries.
 
 You can customize generated source and configuration. Component updates and removal check files and stop on user changes or missing files to protect your work. They do not discard edits or recalculate hashes to bypass checks.
+
+## Project status: `status`
+
+```powershell
+xamlnexus status
+xamlnexus status --json
+```
+
+`status` combines tool and scaffold versions, project validation, Doctor results and available Recipe versions, then suggests commands such as `update --all --dry-run` and `upgrade --dry-run`. Available updates do not cause failure; validation or Doctor errors return exit code `1`.
 
 ## Check a project: `validate` and `doctor`
 
@@ -107,7 +133,7 @@ xamlnexus validate --json
 xamlnexus doctor
 ```
 
-Both accept a project path and `--json`. `validate` checks the manifest and tracked files; content changes normally produce warnings, while missing files are errors. `doctor` also checks the development environment, project references, and component integration. Neither replaces builds or GUI checks. See [diagnostics](doctor.md).
+Both accept a project path and `--json`. Before creating a project, use `doctor --environment [--json]`; this mode rejects project paths. `validate` checks the manifest and tracked files; content changes normally produce warnings, while missing files are errors. `doctor` also checks the development environment, project references, and component integration. Neither replaces builds or GUI checks. See [diagnostics](doctor.md).
 
 ## Upgrade scaffold infrastructure: `upgrade`
 

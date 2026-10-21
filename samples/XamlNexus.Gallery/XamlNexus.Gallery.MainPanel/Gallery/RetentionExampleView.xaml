@@ -1,0 +1,19 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:feedback="using:XamlNexus.Gallery.UIComponent.Feedback" x:Class="XamlNexus.Gallery.MainPanel.Gallery.RetentionExampleView">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel Spacing="14" Padding="4">
+        <TextBlock x:Name="ModeLabel" Style="{StaticResource CardTitle}"/>
+        <TextBox Header="{Binding [RetentionDraftTitle], Source={StaticResource Strings}}" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="80"/>
+        <TextBox Header="{Binding [RetentionDraftNotes], Source={StaticResource Strings}}" Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="96" MaxLength="500"/>
+        <ToggleSwitch x:Name="LoadingSwitch" Header="{Binding [LoadingToggle], Source={StaticResource Strings}}" Toggled="Loading_Toggled"/>
+        <Border Height="110" BorderBrush="{ThemeResource GalleryCardStrokeBrush}" BorderThickness="1" CornerRadius="6">
+            <feedback:Loading x:Name="RetainedLoading" Visibility="Collapsed"/>
+        </Border>
+        <TextBlock x:Name="IdentityLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" FontFamily="Consolas"/>
+    </StackPanel>
+</UserControl>

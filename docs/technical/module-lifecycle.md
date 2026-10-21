@@ -53,3 +53,17 @@ controls page reuse, and resource-owning ViewModels need explicit cleanup in
 the page lifecycle. Container-owned shared services must not be disposed by
 pages. Use context factories or explicit operation scopes for database work.
 See the [business page guide](../user-guide/business-page.md) for SQLite injection.
+
+## Application shutdown and owned resources
+
+The generated WinUI application, hybrid frontend and WPF host await DI container disposal, supporting both `IDisposable` and `IAsyncDisposable` services. Register resource-owning shared services with the container. Caller-owned pages/ViewModels still need their own lifecycle cleanup; container disposal does not take ownership of them.
+
+The main WinUI window's final shutdown handler is registered after module initialization. Existing leave confirmation and module-installed tray policies run first. A real exit request is deferred while the window remains alive and hidden, then the application exits after cleanup. Custom close policies should be registered during initialization, before this final handler, and preserve `RequestCloseAsync`.
+
+The hybrid host first waits for actual UI exit. It then stops activation delivery and RPC, saves pending settings while services are available, closes its owned Job, awaits container disposal and removes notifications. Repeated host shutdown requests wait for cleanup completion. Once shutdown is approved, caller cancellation does not abort resource disposal.
+
+`ApplicationCleanup` logs individual application-stage failures and continues later stages. This does not guarantee every service in a failing DI container was disposed: the DI container can stop its own disposal sequence when a service throws. Resource disposers should be reliable and complete promptly; the framework does not forcibly time out them.
+
+Async container disposal may resume subsequent service disposal on a worker thread. Services owning XAML/WPF resources must marshal cleanup to their UI dispatcher. The tray Recipe 1.0.1 implements `DisposeAsync` and dispatches tray cleanup to the window thread. See the [.NET 8 DI implementation](https://github.com/dotnet/runtime/blob/v8.0.0/src/libraries/Microsoft.Extensions.DependencyInjection/src/ServiceLookup/ServiceProviderEngineScope.cs).
+
+Headless tests exercise actual DI disposal, delayed async services, and application-stage failure recovery. They do not prove native close/dialog/tray behavior; generated-project builds establish compilation only.

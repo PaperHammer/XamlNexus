@@ -5,12 +5,17 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Windowing;
+using Microsoft.Windows.AppLifecycle;
+using Winui3_XamlNexus.UIComponent.Activation;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel.Activation;
 
 using Winui3_XamlNexus.Common;
 using Winui3_XamlNexus.Common.Logging;
 using Winui3_XamlNexus.Common.Utils;
 using Winui3_XamlNexus.Common.Utils.DI;
+using Winui3_XamlNexus.Common.Utils.Lifecycle;
 using Winui3_XamlNexus.Common.Utils.Files;
 using Winui3_XamlNexus.Common.Utils.ThreadContext;
 using Winui3_XamlNexus.UIComponent.Utils;
@@ -28,27 +33,9 @@ namespace Winui3_XamlNexus.UI {
     /// </summary>
     public partial class App : Application {
         /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
+        /// Initializes application services after Program has registered the primary instance.
         /// </summary>
         public App() {
-            #region 唯一实例检查
-            try {
-                if (!_mutex.WaitOne(TimeSpan.FromSeconds(1), false)) {
-                    ArcLog.GetLogger<App>().Warn("UI has been running.");
-                    Environment.Exit(0);
-                    return;
-                }
-            }
-            catch (AbandonedMutexException e) {
-                _ = e;
-#if DEBUG
-                //unexpected app termination.
-                DebugUtil.Output(e.Message);
-#endif
-            }
-            #endregion
-
             SetupUnhandledExceptionLogging(); // 初始化异常处理机制
             ArcLog.GetLogger<App>().Info(LogUtil.GetHardwareInfo()); // 记录硬件信息
 
@@ -110,7 +97,16 @@ namespace Winui3_XamlNexus.UI {
                 await _moduleCatalog.InitializeAsync(AppServiceLocator.Services);
 
                 var window = AppServiceLocator.Services.GetRequiredService<MainWindow>();
+                // Run after module-installed close policies (including tray); keep the window alive during async cleanup.
+                window.AppWindow.Closing += (_, closing) => {
+                    if (closing.Cancel || _isShuttingDown) return;
+                    closing.Cancel = true;
+                    window.DispatcherQueue.TryEnqueue(ShutDown);
+                };
                 window.Show();
+                Program.Activations.Start(
+                    (activation, cancellationToken) => HandleActivationAsync(window, activation, cancellationToken),
+                    action => window.DispatcherQueue.TryEnqueue(() => action()));
             }
             catch (Exception exception) {
                 ArcLog.GetLogger<App>().Error("Application startup failed", exception);
@@ -126,6 +122,36 @@ namespace Winui3_XamlNexus.UI {
                 finally {
                     ShutDown();
                 }
+            }
+        }
+
+        private static async Task HandleActivationAsync(MainWindow window, AppActivationArguments arguments,
+            CancellationToken cancellationToken) {
+            if (IsShuttingDown || cancellationToken.IsCancellationRequested) return;
+            if (window.AppWindow.Presenter is OverlappedPresenter presenter &&
+                presenter.State == OverlappedPresenterState.Minimized)
+                presenter.Restore();
+            window.Show();
+            window.Activate();
+            // Read the event payload, never this primary process's original command line.
+            if (arguments.Kind == ExtendedActivationKind.Launch && arguments.Data is ILaunchActivatedEventArgs launch) {
+                try {
+                    var request = BusinessActivationRequest.FromArguments(ActivationCommandLine.Split(launch.Arguments));
+                    if (request is not null) {
+                        await window.NavigateActivationAsync(request, cancellationToken);
+                        return; // A declined route must not fall through to another handler.
+                    }
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return; }
+                catch (Exception exception) {
+                    ArcLog.GetLogger<App>().Error("Business activation failed", exception);
+                    GlobalMessageUtil.ShowException(exception, window);
+                    return;
+                }
+            }
+            foreach (IAppActivationHandler handler in AppServiceLocator.Services.GetServices<IAppActivationHandler>()) {
+                cancellationToken.ThrowIfCancellationRequested();
+                await handler.HandleAsync(arguments, cancellationToken);
             }
         }
 
@@ -159,18 +185,18 @@ namespace Winui3_XamlNexus.UI {
                 LogUnhandledException(e.UnhandledError);
         }
 
-        public static void ShutDown() {
+        public static async void ShutDown() {
             if (_isShuttingDown) return;
             _isShuttingDown = true;
+            Program.Activations.Stop();
             // Also cover exits initiated by commands or modules rather than the window close button.
             ArcWindowManager.GetArcWindow(new(ArcWindowKey.Main))?.Hide();
             var cleanupTimer = System.Diagnostics.Stopwatch.StartNew();
             ArcLog.GetLogger<App>().Info("Shutting down UI...");
             try {
-                ((ServiceProvider)AppServiceLocator.Services)?.Dispose();
-            }
-            catch (Exception exception) {
-                ArcLog.GetLogger<App>().Error("Application cleanup failed", exception);
+                await ApplicationCleanup.RunAsync(
+                    exception => ArcLog.GetLogger<App>().Error("Application cleanup failed", exception),
+                    () => ApplicationCleanup.DisposeServicesAsync(AppServiceLocator.Services));
             }
             finally {
                 ArcLog.GetLogger<App>().Info($"UI was closed; service cleanup took {cleanupTimer.ElapsedMilliseconds} ms");
@@ -182,6 +208,5 @@ namespace Winui3_XamlNexus.UI {
         private static bool _isShuttingDown;
         private readonly IUserSettingsClient? _userSettings;
         private readonly XamlNexusModuleCatalog _moduleCatalog = XamlNexusModuleCatalog.Discover();
-        private readonly Mutex _mutex = new(false, Consts.CoreField.UniqueAppUIUid);
     }
 }

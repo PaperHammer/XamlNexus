@@ -11,7 +11,7 @@ Review `eng/publishing/release.json` for the solution, startup project, applicat
 From the generated project root:
 
 ```powershell
-./eng/publishing/Build-Installer.ps1 -Version 1.0.4
+./eng/publishing/Build-Installer.ps1 -Version 1.0.5
 ```
 
 The script publishes a self-contained win-x64 application and creates an installer in `artifacts/release`. Building an installer does not sign or upload it.

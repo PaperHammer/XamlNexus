@@ -170,7 +170,7 @@ public static partial class XamlNexusRecipeTransaction {
             throw new XamlNexusRecipeException(XamlNexusRecipeErrors.UpdateModuleNotInstalled, [descriptor.Id]);
         if (!module.Source.Equals("recipe", StringComparison.OrdinalIgnoreCase))
             throw new XamlNexusRecipeException(XamlNexusRecipeErrors.UpdateRequiresRecipeModule, [descriptor.Id]);
-        int comparison = CompareSemanticVersions(descriptor.Version, module.Version);
+        int comparison = XamlNexusRecipeVersion.Compare(descriptor.Version, module.Version);
         if (comparison == 0)
             throw new XamlNexusRecipeException(XamlNexusRecipeErrors.AlreadyAtTargetVersion, [descriptor.Id, descriptor.Version]);
         if (comparison < 0)
@@ -269,52 +269,6 @@ public static partial class XamlNexusRecipeTransaction {
             throw new XamlNexusRecipeException(
                 XamlNexusRecipeErrors.UpdateConflictingModules, [string.Join(", ", conflicts)]);
         }
-    }
-
-    /// <summary>比较主版本及预发布标识；正式版本高于同版本预发布，数字标识按数值比较</summary>
-    private static int CompareSemanticVersions(string left, string right) {
-        (Version leftVersion, string? leftPrerelease) = ParseSemanticVersion(left);
-        (Version rightVersion, string? rightPrerelease) = ParseSemanticVersion(right);
-        int coreComparison = leftVersion.CompareTo(rightVersion);
-        if (coreComparison != 0) return coreComparison;
-        if (leftPrerelease is null) return rightPrerelease is null ? 0 : 1;
-        if (rightPrerelease is null) return -1;
-
-        string[] leftParts = leftPrerelease.Split('.');
-        string[] rightParts = rightPrerelease.Split('.');
-        for (int index = 0; index < Math.Max(leftParts.Length, rightParts.Length); index++) {
-            if (index >= leftParts.Length) return -1;
-            if (index >= rightParts.Length) return 1;
-            bool leftNumeric = leftParts[index].All(char.IsDigit);
-            bool rightNumeric = rightParts[index].All(char.IsDigit);
-            int comparison = leftNumeric && rightNumeric
-                ? CompareNumericIdentifiers(leftParts[index], rightParts[index])
-                : leftNumeric
-                    ? -1
-                    : rightNumeric
-                        ? 1
-                        : string.CompareOrdinal(leftParts[index], rightParts[index]);
-            if (comparison != 0) return comparison;
-        }
-        return 0;
-    }
-
-    /// <summary>通过数字字符串长度和字典序比较数值，避免转换成整数时溢出</summary>
-    private static int CompareNumericIdentifiers(string left, string right) {
-        string normalizedLeft = left.TrimStart('0');
-        string normalizedRight = right.TrimStart('0');
-        if (normalizedLeft.Length == 0) normalizedLeft = "0";
-        if (normalizedRight.Length == 0) normalizedRight = "0";
-        int lengthComparison = normalizedLeft.Length.CompareTo(normalizedRight.Length);
-        return lengthComparison != 0
-            ? lengthComparison
-            : string.CompareOrdinal(normalizedLeft, normalizedRight);
-    }
-
-    /// <summary>拆分数字版本和预发布部分，供版本比较使用</summary>
-    private static (Version Version, string? Prerelease) ParseSemanticVersion(string value) {
-        string[] parts = value.Split('-', 2);
-        return (Version.Parse(parts[0]), parts.Length == 2 ? parts[1] : null);
     }
 
     private static string NormalizePath(string path) => path.Replace('\\', '/');

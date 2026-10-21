@@ -1,0 +1,10 @@
+<!-- MyApp.UI/MainWindow.xaml -->
+<arc:ArcWindow x:Class="MyApp.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:arc="using:MyApp.UIComponent.Templates"
+    Width="1440" Height="900" Title="MyApp">
+    <arc:ArcWindowHost x:Name="MainHost">
+        <TextBlock Text="Hello, ArcWindow" Margin="24"/>
+    </arc:ArcWindowHost>
+</arc:ArcWindow>

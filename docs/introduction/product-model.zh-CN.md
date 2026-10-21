@@ -31,7 +31,9 @@ XamlNexus 默认生成可以直接运行和修改页面的 Windows 标准客户�
 | 登录自启动 | 保留基础实现 | 设置界面可配置 | 无独立 Recipe，不默认开启系统注册 |
 | 编辑器配置 | 按需 | 按需 | `add editorconfig` |
 | 发布、安装器、签名 | 保留脚本 | 保留脚本 | 需维护者自行配置和执行，不属于开发运行 |
-| 普通页面生成 | `page add` | `page add` | 页面、ViewModel、导航注册；无列表或表单类型 |
+| 普通页面生成 | `page add` | `page add` | 页面、ViewModel、导航注册；支持 blank/list/details/form，附示例数据源与未保存保护 |
+
+业务激活是框架基础能力：纯 WinUI 支持首次和二次启动路由，混合架构支持首次宿主参数转交。宿主正常退出与重启须先通过 UI 的未保存确认；取消或保存失败不终止业务页面。详见[应用激活](../technical/app-activation.zh-CN.md)和[混合关闭保护](../technical/hybrid-close.zh-CN.md)。
 
 实际安装状态以 `xamlnexus list` 和 `xamlnexus.json` 中的 modules 为准。
 profile 记录创建意图，后续移除组件不会因初始预设被自动装回。
@@ -60,7 +62,7 @@ new → run → 修改首页 → page add → 按需 add → run
 
 独立用途、依赖或配置成本较高且有清晰增减边界的能力，才适合拆成组件。
 已有项目支持批量 add、依赖和冲突检查、预览、更新、移除与事务回滚，保护用户修改和业务数据。
-创建时组合会复用已包含能力；已有项目显式 add 已安装组件会提示错误。
+创建时组合会复用已包含能力；CLI 对已有项目执行 `add` 时会跳过已安装组件，继续处理其余组件。
 
 updater 仍使用设置界面的更新展示与公共接口，基础版安装时自动补齐 settings。
 主题和多语言保留为基础机制，目前没有独立 Recipe 或通用设置扩展框架。
@@ -68,5 +70,5 @@ updater 仍使用设置界面的更新展示与公共接口，基础版安装时
 
 ## 序列化兼容性
 
-两套模板及 Showcase 已移除未使用的 MessagePack 引用与 MVVM 特性，JSON 存储和 gRPC/Protobuf 通信格式不变。
+两套模板及 Gallery 已移除未使用的 MessagePack 引用与 MVVM 特性，JSON 存储和 gRPC/Protobuf 通信格式不变。
 如果已有应用自行使用 MessagePack，需要单独评估，不能直接移除依赖。

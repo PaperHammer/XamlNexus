@@ -1,5 +1,6 @@
+using XamlNexus.Tooling.Development;
 using Spectre.Console;
-using XamlNexus.Common.CommandLine;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
 using XamlNexus.Common.Utils;
@@ -14,13 +15,14 @@ namespace XamlNexus {
         private static int AddPage(CliOptions options) {
             try {
                 var changed = PageGenerator.Add(XamlNexusProjectLocator.Locate(options.ProjectPath!),
-                    options.PageName!, options.DryRun, options.SkipNavigation);
+                    options.PageName!, options.DryRun, options.SkipNavigation, options.PageKind);
                 bool navigationAdded = changed.Any(path => path.EndsWith($".UI/Navigation/{options.PageName}Navigation.cs", StringComparison.Ordinal));
                 string? notice = navigationAdded ? null
                     : "Navigation was not changed. Register the generated page in your navigation system manually.";
                 if (options.JsonOutput) WriteJson(new {
                     operation = "page-add",
                     status = options.DryRun ? "preview" : "created",
+                    kind = options.PageKind,
                     files = changed,
                     navigation = navigationAdded ? "automatic" : "manual",
                     message = notice
@@ -70,7 +72,7 @@ namespace XamlNexus {
                 return 130;
             }
             catch (Exception exception) {
-                ShowCommandError("run", XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception), options.JsonOutput, "XC1201");
+                ShowCommandError("run", CliErrors.RunFailed.GetMessage(XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception)), options.JsonOutput, CliErrors.RunFailed.Code);
                 return GenerationFailureExitCode;
             }
             finally { Console.CancelKeyPress -= cancel; }
@@ -84,8 +86,8 @@ namespace XamlNexus {
                 AnsiConsole.WriteLine("Interactive creation needs a terminal. Use: xamlnexus new MyApp --profile standard --features sqlite");
                 return UsageErrorExitCode;
             }
-            BaseConfig.ShowLogo(version);
-            var config = BaseConfig.BaseComposeConfig();
+            ProjectWizard.ShowLogo(version);
+            var config = ProjectWizard.CollectConfiguration();
             var request = InteractiveCreation.Compose(config, GeneratorFactory.GetGenerator(config.Framework), BuiltInRecipeCatalog.Create());
             return Generate(request.Project, request.Profile, request.Features);
         }
@@ -100,16 +102,15 @@ namespace XamlNexus {
                 : LanguageType.Chinese;
 
             var generator = GeneratorFactory.GetGenerator(config.Framework);
-            if (features is not { Count: > 0 })
-                return generator.Generate(config) ? SuccessExitCode : GenerationFailureExitCode;
-
             try {
-                string output = ProjectComposer.Create(new CompositionRequest(config, profile, features), generator, BuiltInRecipeCatalog.Create());
-                CreationReport.Write(config, output, hasAddedCapabilities: true);
+                string output = GenerationConsole.Run(config, progress => features is { Count: > 0 }
+                    ? ProjectComposer.Create(new CompositionRequest(config, profile, features), generator, BuiltInRecipeCatalog.Create(), progress)
+                    : generator.GenerateProject(config, progress).GetOutputOrThrow());
+                CreationReport.Write(config, output, hasAddedCapabilities: features is { Count: > 0 });
                 return SuccessExitCode;
             }
             catch (Exception exception) {
-                AnsiConsole.WriteLine($"Project creation failed: {XamlNexus.Common.Utils.LanguageRegistry.GetExceptionMessage(exception)}");
+                AnsiConsole.WriteLine(string.Format(LanguageRegistry.GetText("Generation_Failed"), LanguageRegistry.GetExceptionMessage(exception)));
                 if (exception.Data["CleanupError"] is string cleanupError) AnsiConsole.WriteLine(cleanupError);
                 return GenerationFailureExitCode;
             }

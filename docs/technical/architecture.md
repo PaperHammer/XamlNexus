@@ -9,7 +9,8 @@ XamlNexus has two parts: a development-time scaffolding tool and the generated c
 ```mermaid
 flowchart TD
     Developer[Developer: commands or wizard] --> CLI[XamlNexus CLI]
-    CLI --> Common[Common: locate, plan, validate, execute]
+    CLI --> Tooling[Tooling: commands, presentation, diagnostics, running]
+    Tooling --> Common[Common: locate, plan, validate, execute]
     Common --> Composer[ProjectComposer: creation and composition]
     Composer --> Generators[WinUI / Hybrid generators]
     Generators --> Templates[Templates: architecture and Shared assets]
@@ -17,7 +18,7 @@ flowchart TD
     Common --> Pages[PageGenerator: Page, ViewModel, navigation]
     Common --> Transactions[RecipeTransaction: files and project structure]
     Common --> Upgrade[ProjectUpgrade: baseline comparison and merging]
-    Common --> Runner[DevelopmentRunner: build and launch]
+    Tooling --> Runner[DevelopmentRunner: build and launch]
     Templates --> App[User project: source, projects, release configuration]
     Recipes --> Transactions
     Transactions --> App
@@ -27,16 +28,20 @@ flowchart TD
     Runner --> App
 ```
 
+Common does not reference Tooling or Spectre.Console. Tooling depends on Common and owns terminal interaction, diagnostics, development processes, and Gallery downloads. The CLI also references the concrete generators and built-in Recipe catalog to compose commands.
+
 | Entry point | Responsibility |
 |---|---|
 | [Program.cs](../../src/XamlNexus/Program.cs) | Commands, help, previews, and errors |
+| [CliParser.cs](../../src/XamlNexus.Tooling/CommandLine/CliParser.cs) | Parse commands and options without generating files |
+| [XamlNexusDoctor.cs](../../src/XamlNexus.Tooling/Diagnostics/XamlNexusDoctor.cs) | Environment and generated-project diagnostics |
 | [ProjectComposer.cs](../../src/XamlNexus.Common/Projects/ProjectComposer.cs) | Resolve dependencies, generate and compose in a temporary project, validate, then copy into a reserved output directory |
 | [BaseGenerator.cs](../../src/XamlNexus.Common/Generators/BaseGenerator.cs) | Copy templates, replace parameters, generate projects, record baselines |
-| [PageGenerator.cs](../../src/XamlNexus.Common/Projects/PageGenerator.cs) | Ordinary pages and navigation integration |
+| [PageGenerator.cs](../../src/XamlNexus.Common/Projects/PageGenerator.cs) | Blank, list, details, and form pages with navigation integration |
 | [RecipeTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeTransaction.cs) | Transactional add, update, and remove |
 | [RecipeBatchTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeBatchTransaction.cs) | Compose and validate multiple installations in a snapshot, then commit together |
 | [XamlNexusProjectUpgrade.cs](../../src/XamlNexus.Common/Projects/XamlNexusProjectUpgrade.cs) | Three-way comparison and scaffold upgrades |
-| [DevelopmentRunner.cs](../../src/XamlNexus.Common/Projects/DevelopmentRunner.cs) | Debug/x64/unpackaged builds, executable resolution, process lifecycle |
+| [DevelopmentRunner.cs](../../src/XamlNexus.Tooling/Development/DevelopmentRunner.cs) | Debug/x64/unpackaged builds, executable resolution, process lifecycle |
 
 Preset selects process architecture, profile selects initial capabilities, and features selects components during creation. Standard and basic reuse each architecture's templates; basic omits the full settings panel but retains core services.
 
@@ -82,7 +87,15 @@ Both frontends use WinUI and the same page factory and navigation interfaces. Se
 
 Frontend and host each have their own DI container and module catalog; they do not share in-memory service instances. Custom business RPCs require protocol definitions and implementations on both sides. `page add` does not generate custom business protocols.
 
-Existing IPC uses gRPC/Protobuf; settings files use JSON. Current templates do not use MessagePack. Protocol changes require consideration of both endpoints, not just frontend models.
+Business RPC uses gRPC/Protobuf. The host-owned close-control channel uses requests and responses over the UI child process stdin/stdout; settings files use JSON. Current templates do not use MessagePack. Protocol changes require consideration of both endpoints, not just frontend models.
+
+### Activation, business navigation and close
+
+Before constructing App, pure WinUI canonicalizes an unpackaged executable path and registers or redirects the SDK instance. Initial and redirected requests wait in ActivationQueue until modules are ready, then parse `--route` / `--data` and use the registry with NavigateAsync. Declined leave approval does not replace a record or sidebar selection.
+
+Hybrid retains host ownership of the UI process and forwards initial arguments once; repeated host launches still use Mutex rejection. UIHostControl and UICloseCoordinator request UI approval before close, restart or host exit. Accepted operations await actual UI process exit before releasing the Job, services and RPC. Cancellation or save failure retains both processes; timeout does not approve forced termination.
+
+See [activation](app-activation.md), [navigation](navigation.md) and [hybrid close protection](hybrid-close.md) for integration and verification boundaries.
 
 ## 3. Module startup and page creation
 
@@ -155,7 +168,7 @@ See [project upgrades](../user-guide/project-upgrade.md) for commands, historica
 
 ## 6. Resources and development running
 
-- **CLI resources:** `src/XamlNexus.Common/Resources/Strings.resx` and `Strings.zh-CN.resx`, read by the tool's LanguageUtil, are distinct from generated application `.resw` resources.
+- **CLI resources:** `src/XamlNexus.Common/Resources/Strings.resx` and `Strings.zh-CN.resx` are read by `LanguageRegistry.GetText`. `ConsoleText.GetI18n` in Tooling adds Spectre markup escaping. These resources are distinct from generated application `.resw` resources.
 - **Application localization:** `.resw` and WinUI3Localizer update existing controls through attached properties; code-generated text refreshes on language events. Packaged startup replaces local resource copies to avoid old translations after upgrades. See [localization](../user-guide/localization.md).
 - **Development running:** `run` builds the startup project, reads MSBuild TargetPath, and launches WinUI or the hybrid host. It manages that run, provides no watch/hot reload, and does not replace installer publishing.
 - **Solution formats:** SLN and SLNX are supported. Generated release configuration matches the selected format. Generated CI installs .NET 8 and 10 SDKs; application target frameworks remain defined by project configuration.

@@ -2,7 +2,7 @@
 
 [English](business-page.md) | [简体中文](business-page.zh-CN.md)
 
-The [SqliteShowcase home page](../../samples/SqliteShowcase/SqliteShowcase.MainPanel/MainPage.xaml.cs) combines settings, logging, and SQLite. Business code lives in MainPanel without modifying application startup.
+The [XamlNexus.Gallery home page](../../samples/XamlNexus.Gallery/XamlNexus.Gallery.MainPanel/MainPage.xaml.cs) combines settings, logging, and SQLite. Business code lives in MainPanel without modifying application startup.
 
 ## Generate a page with one command
 
@@ -15,6 +15,10 @@ xamlnexus page add Orders
 xamlnexus page add Reports --no-navigation
 # Call from outside the project or from a script
 xamlnexus page add Customers --project <project-directory> --dry-run --json
+# List, details and editor pages
+xamlnexus page add Orders --kind list
+xamlnexus page add OrderDetails --kind details
+xamlnexus page add OrderEditor --kind form
 ```
 
 The command creates `MainPanel/OrdersPage.xaml`, its code-behind, `MainPanel/ViewModels/OrdersViewModel.cs`, and `UI/Navigation/OrdersNavigation.cs`. Names such as Orders must start with an uppercase English letter, followed by English letters or digits. The default title is the name; add localization resources for translations. Generation uses existing MainPanel, ArcPage, and ObservableObject infrastructure, which must be retained.
@@ -23,7 +27,32 @@ These files are user business code, not removable Recipes. Edit them directly; w
 
 If `UIComponent/Navigation/INavigationRegistry.cs` exists, the command creates registration without reading or rewriting MainWindow. Older projects receive the three business files and a manual-integration notice; `--no-navigation` explicitly skips registration. Custom windows must consume the [shared registry](../technical/navigation.md). JSON reports navigation as automatic or manual, including in previews.
 
-File collisions, invalid structure, and unsafe paths prevent writes. Write failures use transactional rollback. Manually registered duplicate routes are rejected by the startup registry; the CLI does not scan C# registration code. Custom shells may generate pages, but generation does not repair their XAML or the old shell. It does not edit App.xaml.cs or require SQLite. Pages own factory-created ViewModels, whose constructor arguments resolve from application services. Dry runs list files; JSON supports scripts. Run `xamlnexus run` afterward. The default is an empty ViewModel and ordinary page, without the Query example below.
+File collisions, invalid structure, and unsafe paths prevent writes. Write failures use transactional rollback. Manually registered duplicate routes are rejected by the startup registry; the CLI does not scan C# registration code. Custom shells may generate pages, but generation does not repair their XAML or the old shell. It does not edit App.xaml.cs or require SQLite. Pages own factory-created ViewModels, whose constructor arguments resolve from application services. Dry runs list files; JSON supports scripts. Run `xamlnexus run` afterward.
+
+The default `blank` kind creates an empty ViewModel and ordinary page. `list` provides search, refresh, cancellation and asynchronous states; `details` reads an `id` from activation JSON or `FrameworkPayload` and includes loading and retry; `form` supports create mode without an `id` and edit mode with an `id`, with validation, dirty tracking, asynchronous save and reset. Each business template includes a runnable data-source interface and sample implementation to replace with an application service.
+
+## Open a record from launch arguments
+
+Generate and build OrderDetails and OrderEditor, then use PowerShell 7 from the compiled application's output directory:
+
+~~~powershell
+& .\MyApp.UI.exe --route OrderDetails --data '{"id":"42"}'
+& .\MyApp.UI.exe --route OrderEditor --data '{"id":"42"}'
+# Create mode: no id
+& .\MyApp.UI.exe --route OrderEditor --data '{}'
+~~~
+
+Routes match case-sensitive registrations in UI/Navigation, and ID is a string. Details and form templates use `payload.GetBusinessString("id")` for both external JSON and legacy in-app FrameworkPayload id values. Other fields remain in BusinessActivationRequest.Data for business validation; they are not expanded into framework service keys.
+
+Activation navigation calls CanLeaveAsync even for another record on the same editor page. Keep editing or save failure preserves the record, draft, payload and sidebar selection. Incoming values take precedence over cached values; a create request without ID never reuses the previous activation's ID.
+
+Pure WinUI supports initial and redirected launches, processed serially after module initialization. Hybrid initial and subsequent launches use `MyApp.exe`. The existing host queues arguments, reuses or creates its UI and invokes guarded navigation; restart does not replay old routes. Receipts confirm queuing only. Unknown routes and invalid JSON report errors without navigating. Protocol and file associations still require business configuration.
+
+These options belong to the generated executable. The current `xamlnexus run` command does not forward `--route` or `--data`. Existing projects must review a scaffold upgrade and merge the new startup and UIComponent code; page add does not replace an older App.xaml.cs. See [application activation](../technical/app-activation.md) and [hybrid close protection](../technical/hybrid-close.md).
+
+Gallery's business-page preview uses the actual template parser and router with its SQLite details/form models. It does not launch a second process; repository probes verify SDK delivery and hybrid forwarding and close protocols separately.
+
+For a reproducible standalone application, see the [BusinessWorkflow sample](../../samples/XamlNexus.BusinessWorkflow/README.md). It creates a basic project with the CLI, installs SQLite, generates list/details/editor pages, and integrates shared data and navigation. Acceptance compiles the generated sources and checks process-reopened persistence, failed saves, and preservation after scaffold maintenance.
 
 ## Start without a database
 
@@ -106,7 +135,7 @@ Pages inherit ArcPage and override ArcType. New navigation creates them through 
 | `IDbContextFactory<AppDbContext>` | Create an independent context per operation |
 | `SqliteDatabaseInitializer` | Run an integrity check on user request |
 
-Do not dispose shared container-owned services. Dispose each operation's DbContext with `await using`; avoid long-lived contexts and tracked entities on a page. This example extends the existing home page. For separate pages, use page add or the registration above. The older Showcase retains manual window navigation; its existing home example still works. No business initialization in App.xaml.cs is required.
+Do not dispose shared container-owned services. Dispose each operation's DbContext with `await using`; avoid long-lived contexts and tracked entities on a page. This example extends the existing home page. For separate pages, use page add or the registration above. Gallery uses its own scenario catalog and shell navigation; its existing data page remains independent. No business initialization in App.xaml.cs is required.
 
 ## Settings and data
 
@@ -120,7 +149,7 @@ Settings and database files are separate stores, without a cross-store transacti
 
 ## Logging, errors, and lifecycle
 
-Use `ArcLog.GetLogger<MainPage>()` for operation names and exceptions, without explicitly logging user-entered values. Logs are under `%LOCALAPPDATA%/SqliteShowcase/logs/UI`; exceptions may contain paths or other diagnostic information.
+Use `ArcLog.GetLogger<MainPage>()` for operation names and exceptions, without explicitly logging user-entered values. Logs are under `%LOCALAPPDATA%/XamlNexus.Gallery/logs/UI`; exceptions may contain paths or other diagnostic information.
 
 A shared RunAsync handler catches failures, shows messages, and restores controls in finally. Disable editors, list, buttons, and sorting during an operation; a busy flag also rejects duplicate work. Reload on Loaded. The page keeps no long-lived database context. Unsubscribe from shared-service events on page departure or destruction.
 
@@ -132,9 +161,9 @@ A shared RunAsync handler catches failures, shows messages, and restores control
 4. Make the test application's settings file unwritable, toggle sorting, and verify the error, rollback, and restored controls. Restore access and retry successfully.
 5. Delete test data, refresh, confirm integrity_check returns ok, and inspect operation/error logs.
 
-The example provides Chinese and English resources. XAML uses Uids.Uid; runtime status stores resource keys/arguments and regenerates text on LanguageUpdated. The page subscribes on Loaded and unsubscribes on Unloaded; the tray service unsubscribes on Dispose. See [localization](localization.md).
+The example provides Chinese and English resources. XAML uses Uids.Uid; runtime status stores resource keys/arguments and regenerates text on LanguageUpdated. The page subscribes on Loaded and unsubscribes on Unloaded; Gallery has no tray service; application-owned long-lived services should unsubscribe on Dispose. See [localization](localization.md).
 
-Send reminder uses Models INotificationService to reach the UI tray implementation. MainPanel does not reference UI; resolve the interface on click to avoid resolving a main-window-dependent tray during window construction. Success means the request completed; Windows controls actual display. Notification failures do not undo independently saved settings or data.
+Gallery has no tray or notification entry point. Add the [system-tray Recipe](system-tray-recipe.md) when an application needs tray menus and notifications. Notification failures should not undo saved data.
 
 ## ViewModel constructor injection (new templates)
 
@@ -156,8 +185,10 @@ public async Task<int> CountAsync() {
 }
 ```
 
-In hybrid, inject IAppStateClient and use RPC to access the host-owned database; the frontend does not reference Data. The existing Showcase retains its original style; new projects use the factory. For older projects without AppObjectFactory, page add keeps `new()` rather than emitting uncompilable calls.
+In hybrid, inject IAppStateClient and use RPC to access the host-owned database; the frontend does not reference Data. The existing Gallery retains its original style; new projects use the factory. For older projects without AppObjectFactory, page add keeps `new()` rather than emitting uncompilable calls.
 
 ActivatorUtilities creates a new business object and requires registered constructor dependencies. It neither recursively registers arbitrary dependencies nor hides missing-service errors. Dependency-free ViewModels need no container registration.
 
 Page navigation owns Page and ViewModel instances; kept-alive pages reuse them. The application container does not automatically dispose factory-created objects. Release ViewModel-owned resources in appropriate OnLeaveAsync/OnDestroy callbacks and make repeated destruction safe. Do not dispose injected shared services. The factory uses the application provider without a per-page scope; create/dispose database contexts per operation and explicitly create scopes for operations requiring scoped services.
+
+If synchronous page entry fails, navigation removes the new page or restores the reused page's framework state and keeps the previous page. See [failed page entry](../technical/navigation.md#failed-page-entry) for scope and error handling.

@@ -4,14 +4,16 @@ using XamlNexus.Common.Recipes;
 namespace XamlNexus.Common.Projects;
 
 public static class PageGenerator {
-    public static IReadOnlyList<string> Add(XamlNexusProjectContext project, string name, bool dryRun = false, bool skipNavigation = false) {
+    public static IReadOnlyList<string> Add(XamlNexusProjectContext project, string name, bool dryRun = false, bool skipNavigation = false, string kind = "blank") {
+        if (kind is not ("blank" or "list" or "details" or "form"))
+            throw new ArgumentException("Page kind must be blank, list, details or form.", nameof(kind));
         if (project.Manifest.Project.Preset is not ("winui" or "hybrid"))
             throw new InvalidOperationException("Page generation supports WinUI and hybrid projects.");
         if (!Regex.IsMatch(name, "^[A-Z][A-Za-z0-9]*$", RegexOptions.CultureInvariant))
             throw new ArgumentException("Use a page name such as Orders: start with A-Z, followed by letters or digits.");
         // A custom shell may replace MainWindow entirely; page-only generation still works.
         if (XamlNexusProjectValidator.Validate(project).Issues.Any(issue =>
-            issue.Severity == ProjectValidationSeverity.Error && issue.Code != "XN1101"))
+            issue.Severity == ProjectValidationSeverity.Error && issue.Code != ProjectValidationCodes.ShellMissing))
             throw new InvalidOperationException("Fix project validation errors before adding a page.");
         string app = project.Manifest.Project.Name;
         string page = name + "Page";
@@ -21,21 +23,15 @@ public static class PageGenerator {
             string full = Path.GetFullPath(Path.Combine(root, path));
             if (!full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                 throw new IOException("Page path escapes the project.");
-            for (string? current = full; current is not null; current = Path.GetDirectoryName(current)) {
-                try {
-                    if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
-                        throw new IOException("Page generation does not support linked files or directories.");
-                }
-                catch (FileNotFoundException) { }
-                catch (DirectoryNotFoundException) { }
-                if (current.Equals(root, StringComparison.OrdinalIgnoreCase)) break;
-            }
+            ProjectPathSafety.EnsureNoLinks(full);
             return full;
         }
         if (!File.Exists(SafePath($"{app}.MainPanel/{app}.MainPanel.csproj")))
             throw new InvalidOperationException("The standard MainPanel project is required.");
         SafePath("xamlnexus.json");
         bool supportsInjection = File.Exists(SafePath($"{app}.Common/Utils/DI/AppObjectFactory.cs"));
+        string arcPagePath = SafePath($"{app}.UIComponent/Templates/ArcPage.cs");
+        bool supportsLeaveConfirmation = File.Exists(arcPagePath) && File.ReadAllText(arcPagePath).Contains("CanLeaveAsync(", StringComparison.Ordinal);
         string viewModelCreation = supportsInjection ? $"AppObjectFactory.Create<{vm}>()" : "new()";
         var navigationChanges = new List<XamlNexusRecipeFileChange>();
         if (!skipNavigation && File.Exists(SafePath($"{app}.UIComponent/Navigation/INavigationRegistry.cs"))) {
@@ -52,7 +48,7 @@ public static class PageGenerator {
                 }
                 """));
         }
-        var plan = new XamlNexusRecipePlan { Changes = [
+        XamlNexusRecipeFileChange[] CreateBlankPage() => [
             XamlNexusRecipeFileChange.CreateText($"{app}.MainPanel/{page}.xaml", $$"""
                 <arc:ArcPage
                     x:Class="{{app}}.MainPanel.{{page}}"
@@ -88,11 +84,36 @@ public static class PageGenerator {
                     // Add page state here. Shared services can be injected through the constructor.
                 }
                 """),
-            .. navigationChanges,
-        ] };
+        ];
+        IEnumerable<XamlNexusRecipeFileChange> pageChanges = kind switch {
+            "blank" => CreateBlankPage(),
+            "list" => CreatePageFromAssets("ListPage", app, name),
+            "details" => CreatePageFromAssets("DetailsPage", app, name),
+            "form" => CreatePageFromAssets("FormPage", app, name, supportsLeaveConfirmation),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+        var plan = new XamlNexusRecipePlan { Changes = [.. pageChanges, .. navigationChanges] };
         foreach (var change in plan.Changes) SafePath(change.RelativePath);
         return XamlNexusRecipeTransaction.ApplyPageChanges(project, plan, dryRun);
     }
 
-
+    private static IEnumerable<XamlNexusRecipeFileChange> CreatePageFromAssets(string assetDirectory, string app, string name, bool supportsLeaveConfirmation = true) {
+        foreach (var (asset, relative) in new[] {
+            ("Page.xaml", $"{app}.MainPanel/{name}Page.xaml"),
+            ("Page.xaml.cs", $"{app}.MainPanel/{name}Page.xaml.cs"),
+            ("ViewModel.cs", $"{app}.MainPanel/ViewModels/{name}ViewModel.cs"),
+            ("DataSource.cs", $"{app}.MainPanel/Services/{name}DataSource.cs"),
+        }) {
+            using var stream = typeof(PageGenerator).Assembly.GetManifestResourceStream(
+                $"XamlNexus.Common.Assets.{assetDirectory}.{asset}.txt")
+                ?? throw new InvalidOperationException($"Missing {assetDirectory} asset: {asset}");
+            using var reader = new StreamReader(stream);
+            string content = reader.ReadToEnd().Replace("__APP__", app).Replace("__NAME__", name);
+            if (!supportsLeaveConfirmation && asset == "Page.xaml.cs") {
+                // Old/custom ArcPage implementations still support adding a form without the new hook.
+                content = Regex.Replace(content, @"    // <leave-confirmation>[\s\S]*?    // </leave-confirmation>\r?\n", string.Empty);
+            }
+            yield return XamlNexusRecipeFileChange.CreateText(relative, content);
+        }
+    }
 }

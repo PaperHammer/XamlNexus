@@ -25,13 +25,15 @@ XamlNexus 是用于 Windows 客户端开发的 .NET CLI 脚手架。它生成可
 
 | 目录 | 用途 |
 |---|---|
-| `src/XamlNexus` | CLI 入口、命令解析和工具打包 |
-| `src/XamlNexus.Common` | 创建、页面、运行、诊断、事务和升级机制 |
+| `src/XamlNexus` | CLI 入口、命令分发和工具打包 |
+| `src/XamlNexus.Tooling` | 参数解析、向导与进度展示、诊断、开发运行和 Gallery 分发 |
+| `src/XamlNexus.Common` | 生成、页面模板、清单、Recipe 事务和升级合并 |
 | `src/XamlNexus.Generator.*` | 两种架构的生成适配 |
 | `src/XamlNexus.Recipes.BuiltIn` | 内置组件的安装定义及资源 |
 | `src/Templates` | 客户端源码模板及共享发布资产 |
 | `src/XamlNexus.TemplateTests` | 自动化测试 |
-| `samples/SqliteShowcase` | 可运行的组合示例 |
+| `samples/XamlNexus.Gallery` | 可运行的组合示例 |
+| `samples/XamlNexus.BusinessWorkflow` | 独立 SQLite 业务工作流，以及持久化、升级的无界面验收 |
 | `eng`、根目录 `.github` | 仓库构建验收与发布流程 |
 | `docs` | 项目介绍、技术说明和用户手册 |
 

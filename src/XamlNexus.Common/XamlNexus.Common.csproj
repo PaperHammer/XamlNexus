@@ -7,8 +7,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Assets\Ai\**\*.md" WithCulture="false" />
+		<EmbeddedResource Include="Assets\ListPage\*.txt" WithCulture="false" />
+		<EmbeddedResource Include="Assets\DetailsPage\*.txt" WithCulture="false" />
+		<EmbeddedResource Include="Assets\FormPage\*.txt" WithCulture="false" />
 		<InternalsVisibleTo Include="XamlNexus.TemplateTests" />
-		<PackageReference Include="Spectre.Console" Version="0.54.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 	</ItemGroup>
 </Project>

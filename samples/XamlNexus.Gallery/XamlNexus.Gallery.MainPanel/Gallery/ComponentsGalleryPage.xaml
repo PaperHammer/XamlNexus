@@ -1,0 +1,110 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.ComponentsGalleryPage">
+    <arc:ArcPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </arc:ArcPage.Resources>
+    <ScrollViewer x:Name="PageScroll" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Style="{StaticResource PageBody}" Width="{Binding ViewportWidth, ElementName=PageScroll}">
+            <g:GalleryPageHeader Title="{Binding [ComponentsTitle], Source={StaticResource Strings}}" Description="{Binding [ComponentsDescription], Source={StaticResource Strings}}"/>
+            <Grid ColumnSpacing="20" RowSpacing="20" SizeChanged="Composition_SizeChanged">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition x:Name="PlanColumn"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Spacing="20">
+                        <TextBlock Text="{Binding [CompositionChooseTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="Preset" Header="{Binding [CompositionArchitecture], Source={StaticResource Strings}}" SelectedIndex="0" HorizontalAlignment="Stretch" SelectionChanged="SelectionChanged">
+                                <ComboBoxItem Content="WinUI 3" Tag="winui"/>
+                                <ComboBoxItem Content="WinUI 3 + WPF" Tag="hybrid"/>
+                            </ComboBox>
+                            <ComboBox x:Name="Profile" Grid.Column="1" Header="{Binding [CompositionProfile], Source={StaticResource Strings}}" SelectedIndex="0" HorizontalAlignment="Stretch" SelectionChanged="SelectionChanged">
+                                <ComboBoxItem Content="basic" Tag="basic"/>
+                                <ComboBoxItem Content="standard" Tag="standard"/>
+                            </ComboBox>
+                        </Grid>
+                        <StackPanel Spacing="12">
+                            <CheckBox x:Name="SettingsFeature" Content="{Binding [RecipeSettingsTitle], Source={StaticResource Strings}}" Tag="settings" Click="FeatureChanged"/>
+                            <CheckBox x:Name="SqliteFeature" Content="{Binding [RecipeSqliteTitle], Source={StaticResource Strings}}" Tag="sqlite" IsChecked="True" Click="FeatureChanged"/>
+                            <CheckBox x:Name="TrayFeature" Content="{Binding [RecipeTrayTitle], Source={StaticResource Strings}}" Tag="system-tray" Click="FeatureChanged"/>
+                            <CheckBox x:Name="UpdaterFeature" Content="{Binding [RecipeUpdaterTitle], Source={StaticResource Strings}}" Tag="app-update" Click="FeatureChanged"/>
+                            <CheckBox x:Name="EditorFeature" Content="{Binding [RecipeEditorTitle], Source={StaticResource Strings}}" Tag="editorconfig" Click="FeatureChanged"/>
+                        </StackPanel>
+                        <TextBlock x:Name="IncludedText" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+                <Border x:Name="PlanPane" Grid.Column="1" Style="{StaticResource Card}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding [CompositionResultTitle], Source={StaticResource Strings}}" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="{Binding [CompositionResultBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                        <InfoBar x:Name="PlanError" IsOpen="False" IsClosable="False" Severity="Error"/>
+                        <ItemsControl x:Name="PlanItems">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="0,10" ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32"/>
+                                            <ColumnDefinition/>
+
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Position}" Foreground="{ThemeResource GalleryAccentBrush}" FontWeight="SemiBold"/>
+                                        <StackPanel Grid.Column="1" Spacing="4">
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Reason}" FontSize="12" Foreground="{ThemeResource GalleryAccentBrush}"/>
+                                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        </StackPanel>
+
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="EmptyPlan" Text="{Binding [CompositionEmpty], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Visibility="Collapsed"/>
+                        <g:GalleryCodeView x:Name="CreateCommand"/>
+                        <StackPanel Spacing="12">
+                            <Button Tag="sqlite" Click="Navigate_Click" Content="{Binding [CompositionTrySqlite], Source={StaticResource Strings}}"/>
+                            <Button Tag="evolution" Click="Navigate_Click" Content="{Binding [CompositionSeeEvolution], Source={StaticResource Strings}}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+            <Expander Header="{Binding [CompositionLearnMore], Source={StaticResource Strings}}" Style="{StaticResource Section}">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [RecipeSettingsTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeSettingsBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [RecipeSqliteTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeSqliteBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [RecipeTrayTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeTrayBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [RecipeUpdaterTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeUpdaterBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding [RecipeEditorTitle], Source={StaticResource Strings}}" Style="{StaticResource CardTitle}"/>
+                        <TextBlock Text="{Binding [RecipeEditorBody], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding [CompositionBoundary], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/>
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</arc:ArcPage>

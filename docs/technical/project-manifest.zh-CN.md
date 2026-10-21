@@ -9,7 +9,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatorVersion": "1.0.3",
+  "generatorVersion": "1.0.5",
   "project": {
     "name": "MyApp",
     "preset": "winui",

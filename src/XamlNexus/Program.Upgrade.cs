@@ -1,6 +1,8 @@
 using Spectre.Console;
+using XamlNexus.Tooling.CommandLine;
 using XamlNexus.Common.Generators;
 using XamlNexus.Common.Projects;
+using XamlNexus.Common.Recipes;
 using XamlNexus.Common.Utils;
 using XamlNexus.Utils;
 
@@ -19,15 +21,15 @@ namespace XamlNexus {
             try {
                 XamlNexusProjectContext current = XamlNexusProjectLocator.Locate(projectPath);
                 string targetVersion = GetVersion();
-                int versionComparison = CompareToolVersions(
+                int versionComparison = XamlNexusRecipeVersion.Compare(
                     targetVersion,
                     current.Manifest.GeneratorVersion);
                 if (versionComparison < 0) {
                     ShowCommandError(
                         "upgrade",
-                        $"Project downgrade from {current.Manifest.GeneratorVersion} to {targetVersion} is not supported.",
+                        ProjectUpgradeErrors.DowngradeUnsupported.GetMessage(current.Manifest.GeneratorVersion, targetVersion),
                         jsonOutput,
-                        "XU1008");
+                        ProjectUpgradeErrors.DowngradeUnsupported.Code);
                     return GenerationFailureExitCode;
                 }
                 if (versionComparison == 0 && current.Manifest.ScaffoldFiles is not null && !dryRun) {
@@ -48,9 +50,9 @@ namespace XamlNexus {
                 if (versionComparison > 0 && current.Manifest.ScaffoldFiles is null) {
                     ShowCommandError(
                         "upgrade",
-                        "This older project has no scaffold baseline. Upgrade it first with the matching XamlNexus version.",
+                        ProjectUpgradeErrors.LegacyBaselineMissing.GetMessage(),
                         jsonOutput,
-                        "XU1001");
+                        ProjectUpgradeErrors.LegacyBaselineMissing.Code);
                     return GenerationFailureExitCode;
                 }
 
@@ -71,13 +73,10 @@ namespace XamlNexus {
                     SlnType = current.Manifest.Project.SolutionFormat == "slnx" ? SolutionType.Slnx : SolutionType.Sln,
                 };
                 IGenerator generator = GeneratorFactory.GetGenerator(framework);
-                if (!GenerateUpgradeTarget(generator, config)) {
-                    ShowCommandError(
-                        "upgrade",
-                        "Failed to generate the target scaffold for upgrade planning.",
-                        jsonOutput);
-                    return GenerationFailureExitCode;
-                }
+                var generation = jsonOutput
+                    ? generator.GenerateProject(config)
+                    : GenerationConsole.Run(config, progress => generator.GenerateProject(config, progress));
+                generation.GetOutputOrThrow();
 
                 XamlNexusProjectContext target = XamlNexusProjectLocator.Locate(
                     Path.Combine(temporaryParent, current.Manifest.Project.Name));
@@ -147,21 +146,6 @@ namespace XamlNexus {
                         // Temporary scaffold cleanup must not hide the upgrade result.
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// 临时捕获生成器的标准输出以生成升级目标，并在结束时恢复原输出流
-        /// </summary>
-        private static bool GenerateUpgradeTarget(IGenerator generator, ProjectConfig config) {
-            TextWriter originalOutput = Console.Out;
-            using var suppressedOutput = new StringWriter();
-            try {
-                Console.SetOut(suppressedOutput);
-                return generator.Generate(config);
-            }
-            finally {
-                Console.SetOut(originalOutput);
             }
         }
 
@@ -239,21 +223,6 @@ namespace XamlNexus {
                 AnsiConsole.MarkupLine($"  [grey]{message}[/]");
             }
             AnsiConsole.MarkupLine("[yellow]Dry run:[/] no project files were changed.");
-        }
-
-        /// <summary>
-        /// 先比较数字版本，再区分正式版和预发布版；同类同数字版本按完整版本字符串的序号顺序比较
-        /// </summary>
-        private static int CompareToolVersions(string left, string right) {
-            Version leftVersion = Version.Parse(left.Split('-', 2)[0]);
-            Version rightVersion = Version.Parse(right.Split('-', 2)[0]);
-            int core = leftVersion.CompareTo(rightVersion);
-            if (core != 0) return core;
-            bool leftPreview = left.Contains('-', StringComparison.Ordinal);
-            bool rightPreview = right.Contains('-', StringComparison.Ordinal);
-            if (leftPreview == rightPreview)
-                return string.CompareOrdinal(left, right);
-            return leftPreview ? -1 : 1;
         }
 
     }

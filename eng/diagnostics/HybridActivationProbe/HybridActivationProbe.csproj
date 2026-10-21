@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/HybridActivationPipe.cs" Link="HybridActivationPipe.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/UIHostControl.cs" Link="UIHostControl.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.Common/Utils/IPC/UIActivationCoordinator.cs" Link="UIActivationCoordinator.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Activation/BusinessActivationRequest.cs" Link="BusinessActivationRequest.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Activation/BusinessActivationNavigator.cs" Link="BusinessActivationNavigator.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Navigation/INavigationRegistry.cs" Link="INavigationRegistry.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Navigation/NavigationRegistry.cs" Link="NavigationRegistry.cs" />
+    <Compile Include="../../../src/Templates/Winui3_Wpf/Winui3_Wpf_XamlNexus.UIComponent/Utils/FrameworkPayload.cs" Link="FrameworkPayload.cs" />
+  </ItemGroup>
+</Project>

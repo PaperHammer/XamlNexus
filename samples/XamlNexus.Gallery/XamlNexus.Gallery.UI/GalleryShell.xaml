@@ -1,0 +1,34 @@
+<UserControl
+    x:Class="XamlNexus.Gallery.UI.GalleryShell"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="TitleBar">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftInset" Width="0" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="RightInset" Width="140" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                <Button x:Name="BackButton" Width="40" Height="36" IsEnabled="False" Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon Glyph="&#xE72B;" FontSize="14" />
+                </Button>
+                <Button x:Name="MenuButton" Width="40" Height="36" Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon Glyph="&#xE700;" FontSize="16" />
+                </Button>
+                <Image Source="ms-appx:///Assets/icon-48.png" Width="16" Height="16" Margin="12,0,8,0" />
+                <TextBlock x:Name="AppTitle" Text="XamlNexus Gallery" FontSize="12" Tag="main" VerticalAlignment="Center" Margin="0,0,16,0" />
+            </StackPanel>
+            <ContentPresenter Grid.Column="2" Content="{x:Bind SearchContent, Mode=OneWay}"
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" />
+        </Grid>
+        <ContentPresenter Grid.Row="1" Content="{x:Bind RootContent, Mode=OneWay}"
+            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        <Image x:Name="ThemeTransition" Grid.RowSpan="2" Visibility="Collapsed" IsHitTestVisible="False" />
+    </Grid>
+</UserControl>

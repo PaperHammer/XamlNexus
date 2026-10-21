@@ -11,12 +11,14 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Winui3_Wpf_XamlNexus.Common;
 using Winui3_Wpf_XamlNexus.UIComponent.Utils;
+using Winui3_Wpf_XamlNexus.UIComponent.Navigation;
 using Winui3_Wpf_XamlNexus.UIComponent.Utils.Extensions;
 using WinUIEx;
 
 namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
     public abstract partial class ArcWindow : WindowEx {
         public virtual NavigationView? AppNavView { get; }
+        public virtual ArcNavigationContentView? NavigationContent => null;
         public virtual bool IsMainWindow => false;
         protected virtual bool IsNeedTrack => true;
         public abstract ArcWindowHost ContentHost { get; }
@@ -34,7 +36,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
 
             this.Closed += (_, _) => _isClosed = true;
             this.Activated += ArcWindow_Activated;
-            this.AppWindow.Closing += AppWindow_Closing;
+            this.Closed += ArcWindow_Closed;
+            this.AppWindow.Closing += ArcWindow_Closing;
         }
 
         private void ArcWindow_Activated(object sender, WindowActivatedEventArgs args) {
@@ -45,7 +48,8 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
             ArcWindowManager.UpdateWindowVisualState(this);
         }
 
-        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+        private void ArcWindow_Closed(object sender, WindowEventArgs args) {
+            this.AppWindow.Closing -= ArcWindow_Closing;
             this.Activated -= ArcWindow_Activated;
             this.ContentHost.AppRoot.Loaded -= AppRoot_Loaded;
             this.ContentHost.AppRoot.ActualThemeChanged -= Host_ActualThemeChanged;
@@ -56,8 +60,33 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
             }
         }
 
-        private async void AppRoot_Loaded(object sender, RoutedEventArgs e) {
-            await SetThemeAsync();
+        private readonly ArcCloseRequest closeRequest = new();
+
+        protected virtual Task<bool> CanCloseAsync(CancellationToken cancellationToken) =>
+            NavigationContent?.CanLeaveAsync(ArcLeaveReason.WindowClose, cancellationToken) ?? Task.FromResult(true);
+
+        /// <summary>Request guarded close. Additional native handlers (for example tray policy) may still cancel it.</summary>
+        public Task<bool> RequestCloseAsync(Action? beforeClose = null, CancellationToken cancellationToken = default) =>
+            closeRequest.TryCloseAsync(CanCloseAsync, () => {
+                if (_isClosed) return;
+                beforeClose?.Invoke();
+                Close();
+            }, cancellationToken);
+
+        private void ArcWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) {
+            if (_isClosed || args.Cancel || closeRequest.IsReplaying) return;
+            // Cancel synchronously and return from the native event before replaying Close().
+            args.Cancel = true;
+            DispatcherQueue.TryEnqueue(async () => {
+                if (_isClosed) return;
+                try { await RequestCloseAsync(); }
+                catch (Exception ex) { ArcLog.GetLogger<ArcWindow>().Error("Window leave confirmation failed", ex); }
+            });
+        }
+
+        private void AppRoot_Loaded(object sender, RoutedEventArgs e) {
+            if (!_isClosed)
+                UpdateTheme();
         }
 
         protected void InitializeWindow() {
@@ -92,10 +121,12 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
 
         public async Task SetThemeAsync() {
             await _themeTransition.WaitAsync();
-            var overlay = ContentHost.AppThemeTransitionImage;
+            Image? overlay = null;
             try {
+                if (_isClosed) return;
                 var root = ContentHost.AppRoot;
-                if (_isClosed || !root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0) return;
+                if (!root.IsLoaded || root.ActualWidth <= 0 || root.ActualHeight <= 0) return;
+                overlay = ContentHost.AppThemeTransitionImage;
                 UpdateThemeIcon();
                 // Same snapshot and Composition fade sequence as VirtualPaper.
                 var bitmap = new RenderTargetBitmap();
@@ -118,7 +149,7 @@ namespace Winui3_Wpf_XamlNexus.UIComponent.Templates {
                 if (!_isClosed) UpdateTheme();
             }
             finally {
-                if (!_isClosed) {
+                if (!_isClosed && overlay is not null) {
                     overlay.Visibility = Visibility.Collapsed;
                     overlay.Source = null;
                 }

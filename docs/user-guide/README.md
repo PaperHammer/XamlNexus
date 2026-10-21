@@ -7,6 +7,7 @@
 1. [Quickstart](quickstart.md): install → create → run → edit the home page → add pages → add components.
 2. [Page development](business-page.md): ordinary Pages, ViewModels, dependency injection, and page lifecycle.
 3. [Settings](settings.md) and [localization](localization.md): persistence, recovery, themes, and live language switching.
+4. [AI development guidance: bundled CLI skills and application architecture/rules.](ai-guidance.md)
 
 ## Add capabilities as needed
 
@@ -27,11 +28,14 @@ See the [command reference](commands.md) for all options, defaults, supported co
 | Create a default project | `xamlnexus new MyApp` |
 | Run for development | `xamlnexus run` |
 | Add an ordinary page | `xamlnexus page add Orders` |
+| Add a details/form page | `xamlnexus page add OrderDetails --kind details` |
 | Add a capability | `xamlnexus add sqlite` |
 | Preview component removal | `xamlnexus remove sqlite --dry-run` |
 | Preview a component update | `xamlnexus update sqlite --dry-run` |
+| Preview all component updates | `xamlnexus update --all --dry-run` |
 | Preview a scaffold upgrade | `xamlnexus upgrade --dry-run` |
 | Validate the project | `xamlnexus validate` |
+| Show maintenance status | `xamlnexus status` |
 | Diagnose the environment and integration | `xamlnexus doctor` |
 | Read help | `xamlnexus --help` |
 
@@ -47,3 +51,7 @@ Run project commands inside the generated project, or supply `--project`. Develo
 - [Generated-project release instructions](../../src/Templates/Shared/RELEASING.md): prepare installers, signing, and update assets. Use your generated project's own `RELEASING.md` and `eng/publishing/release.json` when publishing.
 
 All generated source and configuration can be customized. Content differences produce warnings; automatic removal or upgrades stop with a conflict when they cannot protect user changes. See the [product model](../introduction/product-model.md).
+
+[List page template](list-page.md): search, asynchronous loading, cancellation and replacing the data source.
+
+For business activation and unsaved-work guards, see [business pages](business-page.md#open-a-record-from-launch-arguments). Runtime details are in [application activation](../technical/app-activation.md) and [hybrid close protection](../technical/hybrid-close.md).

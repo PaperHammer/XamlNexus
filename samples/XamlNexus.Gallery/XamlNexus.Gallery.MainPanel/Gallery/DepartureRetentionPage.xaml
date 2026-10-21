@@ -1,0 +1,4 @@
+<arc:ArcPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.DepartureRetentionPage">
+    <arc:ArcPage.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></arc:ArcPage.Resources>
+    <StackPanel Padding="4" Spacing="12"><TextBlock Text="{Binding [LeaveRetention], Source={StaticResource Strings}}" FontWeight="SemiBold"/><TextBlock Text="{Binding [RetentionAwayHelp], Source={StaticResource Strings}}" Style="{StaticResource BodyText}"/></StackPanel>
+</arc:ArcPage>

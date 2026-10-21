@@ -33,82 +33,132 @@ namespace Winui3_Wpf_XamlNexus.Services {
         }
 
         public void ShowUI() {
-            if (_processUI != null) {
-                try {
-                    ArcLog.GetLogger<UIRunnerService>().Warn("UI is already running");
-                    UISendCmd?.Invoke(this, MessageType.cmd_active);
-                }
-                catch (Exception e) {
-                    ArcLog.GetLogger<UIRunnerService>().Error(e);
-                }
-            }
-            else {
-                try {
-                    _processUI = new Process {
-                        StartInfo = new ProcessStartInfo {
-                            FileName = _fileName,
-                            RedirectStandardInput = true,
-                            RedirectStandardOutput = false,
-                            RedirectStandardError = false,
-                            UseShellExecute = false,
-                            WorkingDirectory = _workingDir,
-                        },
-                        EnableRaisingEvents = true
-                    };
-                    _processUI.Exited += Proc_UI_Exited;
-                    _processUI.OutputDataReceived += Proc_OutputDataReceived;
-                    _processUI.Start();
-                    App.Jobs.AddProcess(_processUI.Id);
-
-                    //winui writing debug information into output stream :/
-                    //_processUI.BeginOutputReadLine();
-                    //_processUI.BeginErrorReadLine();
-                }
-                catch (Exception e) {
-                    ArcLog.GetLogger<UIRunnerService>().Error(e);
-                    _processUI = null;
-                    if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) throw;
-                    _ = MessageBox.Show(
-                        $"{LanguageManager.Instance["UIRunnerService_ExceptionGeneral"]}\nEXCEPTION:\n{e.Message}",
-                        LanguageManager.Instance["Common_TextError"],
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-        }
-
-        public void RestartUI() {
-            if (_processUI != null) {
-                try {
-                    _processUI.Exited -= Proc_UI_Exited;
-                    _processUI.OutputDataReceived -= Proc_OutputDataReceived;
-                    if (!_processUI.Responding || !_processUI.CloseMainWindow() || !_processUI.WaitForExit(500)) {
-                        _processUI.Kill();
+            lock (_processSync) {
+                if (_hostShutdownRequested || App.IsShuttingDown) return;
+                if (_processUI != null) {
+                    try {
+                        ArcLog.GetLogger<UIRunnerService>().Warn("UI is already running");
+                        UISendCmd?.Invoke(this, MessageType.cmd_active);
                     }
-                    _processUI.Dispose();
+                    catch (Exception e) {
+                        ArcLog.GetLogger<UIRunnerService>().Error(e);
+                    }
                 }
-                catch (Exception e) {
-                    ArcLog.GetLogger<UIRunnerService>().Error(e);
-                }
-                finally {
-                    _processUI = null;
+                else {
+                    try {
+                        _processUI = new Process {
+                            StartInfo = new ProcessStartInfo {
+                                FileName = _fileName,
+                                RedirectStandardInput = true,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = false,
+                                UseShellExecute = false,
+                                WorkingDirectory = _workingDir,
+                            },
+                            EnableRaisingEvents = true
+                        };
+                        if (_startupArguments is not null)
+                            foreach (string argument in _startupArguments)
+                                _processUI.StartInfo.ArgumentList.Add(argument);
+                        _processUI.Exited += Proc_UI_Exited;
+                        _processUI.OutputDataReceived += Proc_OutputDataReceived;
+                        _processUI.Start();
+                        _startupArguments = null; // Do not replay a startup destination after UI restart.
+                        _processIds[_processUI] = _processUI.Id;
+                        App.Jobs.AddProcess(_processUI.Id);
+
+                        _processUI.BeginOutputReadLine();
+                        //_processUI.BeginErrorReadLine();
+                    }
+                    catch (Exception e) {
+                        ArcLog.GetLogger<UIRunnerService>().Error(e);
+                        _processUI = null;
+                        if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) throw;
+                        _ = MessageBox.Show(
+                            $"{LanguageManager.Instance["UIRunnerService_ExceptionGeneral"]}\nEXCEPTION:\n{e.Message}",
+                            LanguageManager.Instance["Common_TextError"],
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
                 }
             }
-            ShowUI();
         }
 
-        public void CloseUI() {
-            if (_processUI == null)
-                return;
+        public async Task ActivateAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken = default) {
+            _ = UIHostControl.Activation(Guid.Empty, arguments); // Validate before creating a UI.
+            Process process;
+            lock (_processSync) {
+                if (_hostShutdownRequested || App.IsShuttingDown)
+                    throw new InvalidOperationException("The host is closing; activation was rejected.");
+                ShowUI();
+                process = _processUI ?? throw new IOException("Could not create the UI process.");
+            }
+            int processId = process.Id;
+            if (process.HasExited) throw new IOException("The UI exited before activation could be delivered.");
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            deadline.CancelAfter(TimeSpan.FromSeconds(30));
+            await _activationRequests.RequestAsync(processId,
+                id => SendControlAsync(process, UIHostControl.Activation(id, arguments), deadline.Token), deadline.Token);
+        }
 
+        private async Task SendControlAsync(Process process, string line, CancellationToken token) {
+            await _controlWriteGate.WaitAsync(token);
             try {
-                if (!_processUI.Responding || !_processUI.CloseMainWindow() || !_processUI.WaitForExit(3500)) {
-                    _processUI.Kill();
+                await process.StandardInput.WriteLineAsync(line.AsMemory(), token);
+                await process.StandardInput.FlushAsync(token);
+            }
+            finally { _controlWriteGate.Release(); }
+        }
+
+        public void RestartUI() => RunRequest(RestartUIAsync());
+        public void CloseUI() => RunRequest(CloseUIAsync());
+
+        private static async void RunRequest(Task<bool> request) {
+            try { await request; }
+            catch (Exception exception) { ArcLog.GetLogger<UIRunnerService>().Error(exception); }
+        }
+
+        public async Task<bool> CloseUIAsync(CancellationToken cancellationToken = default) {
+            Process? process;
+            lock (_processSync) process = _processUI;
+            if (process is null) return true;
+            int processId;
+            try {
+                processId = process.Id;
+                if (process.HasExited) return true;
+            }
+            catch (InvalidOperationException) { return true; }
+            return await _closeRequests.RequestAsync(processId, async id => {
+                try {
+                    await SendControlAsync(process, UIHostControl.Request(id), cancellationToken);
+                    if (process.HasExited) _closeRequests.ProcessExited(processId);
                 }
+                catch (InvalidOperationException) when (!ReferenceEquals(_processUI, process)) {
+                    _closeRequests.ProcessExited(processId);
+                }
+                catch (IOException) when (!ReferenceEquals(_processUI, process)) { _closeRequests.ProcessExited(processId); }
+            }, cancellationToken);
+        }
+
+        public async Task<bool> PrepareShutdownAsync(CancellationToken cancellationToken = default) {
+            lock (_processSync) _hostShutdownRequested = true;
+            bool approved = false;
+            try { return approved = await CloseUIAsync(cancellationToken); }
+            finally {
+                if (!approved) { lock (_processSync) _hostShutdownRequested = false; }
             }
-            catch (Exception e) {
-                ArcLog.GetLogger<UIRunnerService>().Error(e);
+        }
+
+        public async Task<bool> RestartUIAsync(CancellationToken cancellationToken = default) {
+            if (!await _restartGate.WaitAsync(0, cancellationToken)) return false;
+            if (_hostShutdownRequested) { _restartGate.Release(); return false; }
+            _restartPending = true;
+            try {
+                if (!await CloseUIAsync(cancellationToken)) return false;
+                ShowUI();
+                return true;
             }
+            finally { _restartPending = false; _restartGate.Release(); }
         }
 
         public nint GetUIHwnd() {
@@ -124,24 +174,30 @@ namespace Winui3_Wpf_XamlNexus.Services {
         private void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e) {
             //When the redirected stream is closed, a null line is sent to the event handler.
             if (!string.IsNullOrEmpty(e.Data)) {
+                if (sender is Process process && _processIds.TryGetValue(process, out int id) &&
+                    (_closeRequests.Receive(id, e.Data) || _activationRequests.Receive(id, e.Data))) return;
                 //Ref: https://github.com/cyanfish/grpc-dotnet-namedpipes/issues/8
                 ArcLog.GetLogger<UIRunnerService>().Info($"UI: {e.Data}");
             }
         }
 
         private void Proc_UI_Exited(object? sender, EventArgs e) {
-            if (_processUI == null) return;
-
-            int exitCode = _processUI.ExitCode;
-
-            _processUI.Exited -= Proc_UI_Exited;
-            _processUI.OutputDataReceived -= Proc_OutputDataReceived;
-            _processUI.Dispose();
-            _processUI = null;
-            if (Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
-                _ = Application.Current.Dispatcher.BeginInvoke(new Action(() => {
-                    App.ShutDown();
-                    Environment.Exit(exitCode);
+            if (sender is not Process process || !ReferenceEquals(process, _processUI)) return;
+            int exitCode = process.ExitCode;
+            int processId = process.Id;
+            process.Exited -= Proc_UI_Exited;
+            process.OutputDataReceived -= Proc_OutputDataReceived;
+            bool restarting = _restartPending;
+            lock (_processSync) { if (ReferenceEquals(_processUI, process)) _processUI = null; }
+            _closeRequests.ProcessExited(processId);
+            _activationRequests.ProcessExited(processId);
+            _ = Task.Run(async () => {
+                try { await process.WaitForExitAsync(); }
+                finally { _processIds.TryRemove(process, out _); process.Dispose(); }
+            });
+            if (!restarting && Environment.GetCommandLineArgs().Contains("--xamlnexus-run")) {
+                _ = Application.Current.Dispatcher.BeginInvoke(new Action(async () => {
+                    if (await App.RequestShutDownAsync()) Environment.Exit(exitCode);
                 }));
             }
         }
@@ -210,7 +266,16 @@ namespace Winui3_Wpf_XamlNexus.Services {
         }
         #endregion
 
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<Process, int> _processIds = new();
+        private readonly UICloseCoordinator _closeRequests = new();
+        private readonly UIActivationCoordinator _activationRequests = new();
+        private readonly SemaphoreSlim _controlWriteGate = new(1, 1);
+        private readonly SemaphoreSlim _restartGate = new(1, 1);
+        private volatile bool _restartPending;
+        private volatile bool _hostShutdownRequested;
+        private readonly object _processSync = new();
         private Process? _processUI;
+        private string[]? _startupArguments = Environment.GetCommandLineArgs().Skip(1).ToArray();
         private readonly IMonitorManager _monitorManager;
         private readonly string _fileName, _workingDir;
     }

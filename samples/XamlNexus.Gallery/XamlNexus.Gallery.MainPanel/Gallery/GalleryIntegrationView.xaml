@@ -1,0 +1,34 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:g="using:XamlNexus.Gallery.MainPanel.Gallery" xmlns:arc="using:XamlNexus.Gallery.UIComponent.Templates" x:Class="XamlNexus.Gallery.MainPanel.Gallery.GalleryIntegrationView">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///XamlNexus.Gallery.MainPanel/Gallery/GalleryStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel Spacing="24">
+        <StackPanel Spacing="8">
+            <TextBlock Text="{Binding [IntegrationIntro], Source={StaticResource Strings}}" Style="{StaticResource BodyText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            <HyperlinkButton Content="{Binding [OpenGettingStarted], Source={StaticResource Strings}}" Click="Start_Click" Padding="0,4"/>
+        </StackPanel>
+        <StackPanel Spacing="12">
+            <TextBlock Text="{Binding [CreateStep], Source={StaticResource Strings}}" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock x:Name="Step1" Style="{StaticResource BodyText}"/>
+            <g:GalleryCodeView x:Name="Commands"/>
+        </StackPanel>
+        <StackPanel Spacing="8">
+            <TextBlock Text="{Binding [ConnectStep], Source={StaticResource Strings}}" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock x:Name="Step2" Style="{StaticResource BodyText}"/>
+        </StackPanel>
+        <StackPanel x:Name="KeepAliveSection" Spacing="12">
+            <TextBlock Text="{Binding [KeepAliveStep], Source={StaticResource Strings}}" FontSize="16" FontWeight="SemiBold"/>
+            <g:GalleryCodeView x:Name="KeepAliveCode"/>
+        </StackPanel>
+        <Border Padding="16" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="4">
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding [CheckResult], Source={StaticResource Strings}}" FontWeight="SemiBold"/>
+                <TextBlock x:Name="Check" Style="{StaticResource BodyText}"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

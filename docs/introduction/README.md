@@ -25,13 +25,15 @@ See the [product model](product-model.md) for capabilities and constraints. The 
 
 | Directory | Purpose |
 |---|---|
-| `src/XamlNexus` | CLI entry point, command handling, and tool packaging |
-| `src/XamlNexus.Common` | Creation, pages, running, diagnostics, transactions, and upgrades |
+| `src/XamlNexus` | CLI entry point, command dispatch, and tool packaging |
+| `src/XamlNexus.Tooling` | Command parsing, wizard and progress presentation, diagnostics, development running, and Gallery distribution |
+| `src/XamlNexus.Common` | Generation, page templates, manifests, Recipe transactions, and upgrade merging |
 | `src/XamlNexus.Generator.*` | Generation adapters for the two architectures |
 | `src/XamlNexus.Recipes.BuiltIn` | Built-in component Recipes and assets |
 | `src/Templates` | Client source templates and shared publishing assets |
 | `src/XamlNexus.TemplateTests` | Automated tests |
-| `samples/SqliteShowcase` | Runnable composition example |
+| `samples/XamlNexus.Gallery` | Runnable composition example |
+| `samples/XamlNexus.BusinessWorkflow` | Standalone SQLite business workflow and headless persistence/upgrade acceptance |
 | `eng`, root `.github` | Repository acceptance and release workflows |
 | `docs` | Introduction, technical documentation, and user guides |
 

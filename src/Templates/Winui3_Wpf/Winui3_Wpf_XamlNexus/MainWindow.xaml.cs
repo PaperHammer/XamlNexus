@@ -22,6 +22,11 @@ public partial class MainWindow : Window {
     }
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+        if (!App.IsShuttingDown) {
+            e.Cancel = true;
+            App.ShutDown();
+            return;
+        }
         notifyIcon.Dispose();
         ToastNotificationManagerCompat.Uninstall();
     }

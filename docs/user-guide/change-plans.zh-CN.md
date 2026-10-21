@@ -8,6 +8,7 @@
 xamlnexus add sqlite --project D:\Projects\MyApp --dry-run
 xamlnexus remove sqlite --project D:\Projects\MyApp --dry-run
 xamlnexus update sqlite --project D:\Projects\MyApp --dry-run
+xamlnexus update --all --project D:\Projects\MyApp --dry-run
 xamlnexus upgrade --project D:\Projects\MyApp --dry-run
 ```
 
@@ -19,7 +20,7 @@ xamlnexus upgrade --project D:\Projects\MyApp --dry-run
 xamlnexus add sqlite --project D:\Projects\MyApp --dry-run --json
 ```
 
-成功预览包含 `status: "planned"`、`dryRun: true`、版本信息和 changes 数组。Recipe 变更具有 owned 或 project 范围。升级计划提供 canApply、冲突以及变更类型和相对路径，不输出生成文件内容。
+单项预览成功时返回 `status: "planned"`；批量 add 或 `update --all` 预览返回 `status: "preview"`。两者都包含 `dryRun: true`、版本信息和变化路径。单个 Recipe 的 changes 还会标明 owned 或 project 范围。升级计划提供 canApply、冲突以及变更类型和相对路径，不输出生成文件内容。
 
 升级的 strategy 可为：textMerge（独立行修改）、xmlMerge（XML/MSBuild/XAML 语义合并）、solutionMerge（SLN 工程、节或配置的独立添加）、direct（无需合并的直接替换）。
 
@@ -42,14 +43,15 @@ xamlnexus add sqlite --project D:\Projects\MyApp --dry-run --json
 
 ## 查询命令
 
-list、validate、recipes 也支持 JSON：
+status、list、validate、recipes 也支持 JSON：
 
 ```powershell
+xamlnexus status --project D:\Projects\MyApp --json
 xamlnexus list --project D:\Projects\MyApp --json
 xamlnexus validate --project D:\Projects\MyApp --json
 xamlnexus recipes --json
 ```
 
-list 返回项目身份、生成器版本和模块。validate 返回 valid 或 invalid 状态、isValid 布尔值及完整带编码问题列表。recipes 返回所有内置描述，包括兼容性、依赖和冲突元数据。
+status 汇总脚手架与 Recipe 版本、项目校验、Doctor 结果和建议维护命令。存在可更新内容不会令状态失败；校验或 Doctor 有错误时返回退出码 1。list 返回项目身份、生成器版本和模块。validate 返回 valid 或 invalid 状态、isValid 布尔值及完整带编码问题列表。recipes 返回所有内置描述，包括兼容性、依赖和冲突元数据。
 
 操作失败及命令行错误使用相同 operation/status/error 结构。JSON 模式的语法错误为 `XC1001`；项目定位或清单读取失败，list 使用 `XL1001`，validate 使用 `XV1001`。默认仍为面向人的文本输出。
