@@ -2,7 +2,7 @@
 
 [English](commands.md) | [简体中文](commands.zh-CN.md)
 
-本文对应当前源码。安装与首次运行见[快速开始](quickstart.zh-CN.md)。执行 `xamlnexus --help` 查看已安装版本的帮助，`xamlnexus --version` 查看版本。
+本文对应 1.0.5 源码。安装与首次运行见[快速开始](quickstart.zh-CN.md)。执行 `xamlnexus --help` 查看已安装版本的帮助，`xamlnexus --version` 查看版本。
 
 ## 命令名与参数写法
 
@@ -111,7 +111,7 @@ xamlnexus update --all --dry-run
 xamlnexus remove sqlite --dry-run
 ```
 
-上述批量添加适用于尚未安装这两个组件的项目，例如基础版。标准版已包含 settings。不要重复添加已安装组件。`remove` 和 `update <id>` 每次处理一个组件；`update --all` 先在临时项目快照中演练所有更新，再一次提交。同版本更新不做修改，降级会被拒绝。
+批量添加会跳过已安装组件，继续处理其余组件。例如标准版已包含 settings，执行 `add settings,sqlite` 会跳过 settings，并在缺少 SQLite 时安装它。若请求的组件均已安装，则成功返回且不修改项目。`remove` 和 `update <id>` 每次处理一个组件；`update --all` 先在临时项目快照中演练所有更新，再一次提交。同版本更新不做修改，降级会被拒绝。
 
 内置组件包括 `settings`、`editorconfig`、`sqlite`、`tray`、`updater`。前三个支持两种架构；后两个用于纯 WinUI，混合宿主已有对应能力。`updater` 依赖 `settings`。批量添加会处理依赖顺序；组件边界见[产品模型](../introduction/product-model.zh-CN.md)。
 

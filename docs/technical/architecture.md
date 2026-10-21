@@ -9,7 +9,8 @@ XamlNexus has two parts: a development-time scaffolding tool and the generated c
 ```mermaid
 flowchart TD
     Developer[Developer: commands or wizard] --> CLI[XamlNexus CLI]
-    CLI --> Common[Common: locate, plan, validate, execute]
+    CLI --> Tooling[Tooling: commands, presentation, diagnostics, running]
+    Tooling --> Common[Common: locate, plan, validate, execute]
     Common --> Composer[ProjectComposer: creation and composition]
     Composer --> Generators[WinUI / Hybrid generators]
     Generators --> Templates[Templates: architecture and Shared assets]
@@ -17,7 +18,7 @@ flowchart TD
     Common --> Pages[PageGenerator: Page, ViewModel, navigation]
     Common --> Transactions[RecipeTransaction: files and project structure]
     Common --> Upgrade[ProjectUpgrade: baseline comparison and merging]
-    Common --> Runner[DevelopmentRunner: build and launch]
+    Tooling --> Runner[DevelopmentRunner: build and launch]
     Templates --> App[User project: source, projects, release configuration]
     Recipes --> Transactions
     Transactions --> App
@@ -27,12 +28,16 @@ flowchart TD
     Runner --> App
 ```
 
+Common does not reference Tooling or Spectre.Console. Tooling depends on Common and owns terminal interaction, diagnostics, development processes, and Gallery downloads. The CLI also references the concrete generators and built-in Recipe catalog to compose commands.
+
 | Entry point | Responsibility |
 |---|---|
 | [Program.cs](../../src/XamlNexus/Program.cs) | Commands, help, previews, and errors |
+| [CliParser.cs](../../src/XamlNexus.Tooling/CommandLine/CliParser.cs) | Parse commands and options without generating files |
+| [XamlNexusDoctor.cs](../../src/XamlNexus.Tooling/Diagnostics/XamlNexusDoctor.cs) | Environment and generated-project diagnostics |
 | [ProjectComposer.cs](../../src/XamlNexus.Common/Projects/ProjectComposer.cs) | Resolve dependencies, generate and compose in a temporary project, validate, then copy into a reserved output directory |
 | [BaseGenerator.cs](../../src/XamlNexus.Common/Generators/BaseGenerator.cs) | Copy templates, replace parameters, generate projects, record baselines |
-| [PageGenerator.cs](../../src/XamlNexus.Common/Projects/PageGenerator.cs) | Ordinary pages and navigation integration |
+| [PageGenerator.cs](../../src/XamlNexus.Common/Projects/PageGenerator.cs) | Blank, list, details, and form pages with navigation integration |
 | [RecipeTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeTransaction.cs) | Transactional add, update, and remove |
 | [RecipeBatchTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeBatchTransaction.cs) | Compose and validate multiple installations in a snapshot, then commit together |
 | [XamlNexusProjectUpgrade.cs](../../src/XamlNexus.Common/Projects/XamlNexusProjectUpgrade.cs) | Three-way comparison and scaffold upgrades |
@@ -163,7 +168,7 @@ See [project upgrades](../user-guide/project-upgrade.md) for commands, historica
 
 ## 6. Resources and development running
 
-- **CLI resources:** `src/XamlNexus.Common/Resources/Strings.resx` and `Strings.zh-CN.resx`, read by the tool's LanguageUtil, are distinct from generated application `.resw` resources.
+- **CLI resources:** `src/XamlNexus.Common/Resources/Strings.resx` and `Strings.zh-CN.resx` are read by `LanguageRegistry.GetText`. `ConsoleText.GetI18n` in Tooling adds Spectre markup escaping. These resources are distinct from generated application `.resw` resources.
 - **Application localization:** `.resw` and WinUI3Localizer update existing controls through attached properties; code-generated text refreshes on language events. Packaged startup replaces local resource copies to avoid old translations after upgrades. See [localization](../user-guide/localization.md).
 - **Development running:** `run` builds the startup project, reads MSBuild TargetPath, and launches WinUI or the hybrid host. It manages that run, provides no watch/hot reload, and does not replace installer publishing.
 - **Solution formats:** SLN and SLNX are supported. Generated release configuration matches the selected format. Generated CI installs .NET 8 and 10 SDKs; application target frameworks remain defined by project configuration.

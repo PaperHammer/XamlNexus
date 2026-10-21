@@ -12,7 +12,7 @@ attempt to remove the temporary file.
 
 ## Corrupted settings recovery
 
-Both presets and the Showcase create defaults when the settings file is missing.
+Both presets and the Gallery create defaults when the settings file is missing.
 Malformed JSON (including a JSON `null` document) is copied, byte for byte, to a sibling
 `<settings-file>.corrupt.<UTC timestamp>.<unique id>.bak` before defaults are saved.
 The log records the backup path. Backups are retained; they are not automatically pruned.

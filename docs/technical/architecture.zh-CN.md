@@ -9,7 +9,8 @@ XamlNexus 分为开发阶段的脚手架工具和生成后的客户端两部分�
 ```mermaid
 flowchart TD
     Developer[开发者：命令行或交互向导] --> CLI[XamlNexus CLI]
-    CLI --> Common[Common：项目定位、规划、校验与执行]
+    CLI --> Tooling[Tooling：命令、展示、诊断与运行]
+    Tooling --> Common[Common：项目定位、规划、校验与执行]
     Common --> Composer[ProjectComposer：创建与能力组合]
     Composer --> Generators[WinUI / Hybrid 生成器]
     Generators --> Templates[Templates：架构模板与 Shared 资产]
@@ -17,7 +18,7 @@ flowchart TD
     Common --> Pages[PageGenerator：页面、ViewModel、导航注册]
     Common --> Transactions[RecipeTransaction：文件与工程变更]
     Common --> Upgrade[ProjectUpgrade：基线比较与合并]
-    Common --> Runner[DevelopmentRunner：构建与启动]
+    Tooling --> Runner[DevelopmentRunner：构建与启动]
     Templates --> App[用户项目：源码、工程与发布配置]
     Recipes --> Transactions
     Transactions --> App
@@ -27,12 +28,16 @@ flowchart TD
     Runner --> App
 ```
 
+Common 不引用 Tooling 或 Spectre.Console。Tooling 依赖 Common，负责终端交互、诊断、开发进程与 Gallery 下载；CLI 还直接引用具体生成器和内置 Recipe 目录，组装各命令。
+
 | 实现入口 | 职责 |
 |---|---|
 | [Program.cs](../../src/XamlNexus/Program.cs) | 分发命令、输出帮助、预览和错误 |
+| [CliParser.cs](../../src/XamlNexus.Tooling/CommandLine/CliParser.cs) | 解析命令与参数，不执行文件生成 |
+| [XamlNexusDoctor.cs](../../src/XamlNexus.Tooling/Diagnostics/XamlNexusDoctor.cs) | 环境与生成项目诊断 |
 | [ProjectComposer.cs](../../src/XamlNexus.Common/Projects/ProjectComposer.cs) | 解析组件依赖，在临时项目中完成生成和组合，校验后复制到预留输出目录 |
 | [BaseGenerator.cs](../../src/XamlNexus.Common/Generators/BaseGenerator.cs) | 模板复制、名称等参数替换、工程生成与基线记录 |
-| [PageGenerator.cs](../../src/XamlNexus.Common/Projects/PageGenerator.cs) | 普通页面生成和导航接入 |
+| [PageGenerator.cs](../../src/XamlNexus.Common/Projects/PageGenerator.cs) | 普通、列表、详情与表单页面生成，以及导航接入 |
 | [RecipeTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeTransaction.cs) | add／update／remove 的事务执行 |
 | [RecipeBatchTransaction.cs](../../src/XamlNexus.Common/Recipes/RecipeBatchTransaction.cs) | 在快照中组合多项安装，再统一提交 |
 | [XamlNexusProjectUpgrade.cs](../../src/XamlNexus.Common/Projects/XamlNexusProjectUpgrade.cs) | 生成文件的三方比较与升级执行 |
@@ -165,7 +170,7 @@ XML 的文本合并成功也不能绕过结构检查。重复无名节点无法�
 
 ## 6. 资源与开发运行
 
-- **工具语言资源**：CLI 的资源位于 `src/XamlNexus.Common/Resources/Strings.resx` 与 `Strings.zh-CN.resx`，由工具侧 `LanguageUtil` 读取；它们与生成应用的 `.resw` 属于不同层次。
+- **工具语言资源**：CLI 的资源位于 `src/XamlNexus.Common/Resources/Strings.resx` 与 `Strings.zh-CN.resx`，由 `LanguageRegistry.GetText` 读取；Tooling 的 `ConsoleText.GetI18n` 额外转义 Spectre 标记。它们与生成应用的 `.resw` 属于不同层次。
 - **多语言**：生成应用使用 `.resw` 与 WinUI3Localizer；附加属性更新已有控件，代码生成文本通过语言变化事件刷新。MSIX 启动时替换本地资源副本，避免沿用旧包翻译。见[本地化](../user-guide/localization.zh-CN.md)。
 - **开发运行**：`run` 构建启动项目、读取 MSBuild `TargetPath`，启动纯 WinUI 应用或混合宿主。它管理本次进程运行，不提供 watch／热重载，也不代替发布安装器流程。
 - **解决方案格式**：支持 SLN 与 SLNX；生成的发布配置与所选格式一致。生成项目 CI 安装 .NET 8 和 10 SDK，应用目标框架仍按工程配置执行。

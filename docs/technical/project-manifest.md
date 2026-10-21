@@ -11,7 +11,7 @@ solution root. It is the machine-readable contract used by `add`,
 ```json
 {
   "schemaVersion": 1,
-  "generatorVersion": "1.0.3",
+  "generatorVersion": "1.0.5",
   "project": {
     "name": "MyApp",
     "preset": "winui",
@@ -65,10 +65,10 @@ solution root. It is the machine-readable contract used by `add`,
 - A module `version` records the XamlNexus or Recipe version that owns its
   generated files and migration rules.
 - Recipe modules include their owned files and SHA-256 values. This allows
-  validation and future remove/upgrade operations to detect user changes.
+  validation, removal, and component updates to detect user changes.
 - `scaffoldFiles` records files originating from the template. SHA-256 protects
   the recorded baseline, while optional `baselineContentGzipBase64` supplies
-  the exact compressed base input for future three-way merges.
+  the exact compressed base input for three-way scaffold upgrade merges.
 - `userEditable: true` identifies source and project files that users and
   Recipes normally customize. `validate` does not treat those customizations
   as damage; `upgrade` still plans them against their stored baseline.

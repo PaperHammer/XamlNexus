@@ -2,7 +2,7 @@
 
 [English](commands.md) | [简体中文](commands.zh-CN.md)
 
-This reference describes current source. See the [quickstart](quickstart.md) for installation and your first run. Use `xamlnexus --help` for your installed version's help and `xamlnexus --version` for its version.
+This reference describes the 1.0.5 source. See the [quickstart](quickstart.md) for installation and your first run. Use `xamlnexus --help` for your installed version's help and `xamlnexus --version` for its version.
 
 ## Command name and syntax
 
@@ -111,7 +111,7 @@ xamlnexus update --all --dry-run
 xamlnexus remove sqlite --dry-run
 ```
 
-The batch-add example requires a project without either component, such as a basic project. Standard already includes settings. Do not add installed components again. `remove` and `update <id>` handle one component at a time. `update --all` rehearses every update in a temporary project snapshot and commits the combined result once. Updating to the same version does nothing; downgrades are rejected.
+Batch addition skips installed components and continues with the rest. For example, standard already includes settings, so `add settings,sqlite` skips settings and installs SQLite if missing. If all requested components are installed, it succeeds without changes. `remove` and `update <id>` handle one component at a time. `update --all` rehearses every update in a temporary project snapshot and commits the combined result once. Updating to the same version does nothing; downgrades are rejected.
 
 Built-in components are `settings`, `editorconfig`, `sqlite`, `tray`, and `updater`. The first three support both architectures; the last two serve pure WinUI, since hybrid already includes those capabilities. `updater` depends on `settings`. Batch addition handles dependency ordering. See the [product model](../introduction/product-model.md) for boundaries.
 

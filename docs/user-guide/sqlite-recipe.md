@@ -103,7 +103,7 @@ Backups are full SQLite snapshots, including committed WAL data, created with th
 They are stored beside `app.db` in `Backups`. Completed files appear in the list only
 after the backup connection closes. Manual and pre-restore backups are not pruned;
 the three-file retention rule applies only to migration backups (`app-*.db`).
-Copy a completed backup elsewhere to export it. To import one in the Showcase, copy
+Copy a completed backup elsewhere to export it. To import one in the Gallery, copy
 it into `Backups` and click Refresh, then select it in the list.
 
 Restore validates an in-memory snapshot with `integrity_check`, requires the exact
@@ -115,13 +115,13 @@ A failed safety backup prevents restoration. The source backup is retained.
 
 The host must coordinate exclusive application-level use: stop background writes,
 finish transactions and dispose contexts before calling RestoreAsync, then create
-fresh contexts afterward. The Showcase pauses its page operations and confirms the
+fresh contexts afterward. The Gallery pauses its page operations and confirms the
 replacement first. Hybrid applications must do this in the WPF host and coordinate
 IPC requests; this change does not add a restore RPC or hybrid frontend UI.
 
 The source snapshot is held in memory, so this entry point targets small local
 application databases. SQLite backup calls are synchronous and cannot be interrupted
-mid-copy by a cancellation token; the Showcase runs them off the UI thread. This
+mid-copy by a cancellation token; the Gallery runs them off the UI thread. This
 is not repair of a database that prevents application startup, nor cross-version
 migration or recovery from arbitrary schema changes with unchanged migration IDs.
 

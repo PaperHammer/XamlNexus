@@ -6,16 +6,18 @@
 
 [English](README.md) | **简体中文**
 
-基于 .NET 的 Windows 桌面原型脚手架。通过命令行创建 WinUI 3 项目、添加页面和组件，快速开始应用开发。
+用于创建和持续维护 Windows 桌面应用的 .NET CLI 脚手架。生成可编辑的 WinUI 3 项目，按需添加业务页面与组件，并随应用发展维护基础代码。
 
 [XamlNexus Gallery](samples/XamlNexus.Gallery/README.md) 是独立的示例应用，提供功能体验、使用提示和真实源码模板的离线浏览；默认生成的用户项目不包含 Gallery。
 
-正式工具包通过 `xamlnexus gallery` 下载、校验并启动匹配版本。执行 `dotnet tool update -g XamlNexus` 后，下次启动自动获取对应新版；缓存完成后可离线使用。此命令随包含该功能的新包发布后可用。
+正式工具包通过 `xamlnexus gallery` 下载、校验并启动匹配版本。执行 `dotnet tool update -g XamlNexus` 后，下次启动自动获取对应新版；缓存完成后可离线使用。源码构建未包含下载清单时，请按 Gallery README 的说明构建示例。
 
 ## 功能
 
 - **两种架构**：纯 WinUI 3 应用，或 WinUI 3 前端搭配 WPF 后台宿主。
 - **应用基础设施**：集成 ArcXaml、导航、MVVM、依赖注入、配置和日志。
+- **业务页面模板**：普通、列表、详情和表单页面，包含导航接入、加载状态、字段校验及可替换的数据源接口。
+- **激活与生命周期**：启动参数可打开业务页面；未保存保护覆盖侧栏切换与窗口关闭，页面同步进入失败时回滚导航状态。
 - **可选组件**：设置、SQLite、系统托盘、应用更新和 EditorConfig。
 - **AI 开发指导**：内置 CLI skills 与应用架构规范，支持 Codex、Claude Code 和 Qwen Code。
 - **项目维护**：预览变更、校验项目、诊断配置和升级脚手架基础代码。
@@ -37,7 +39,7 @@ dotnet tool update --global XamlNexus
 dotnet tool uninstall --global XamlNexus
 ```
 
-本文对应当前源码，已发布的 NuGet 包可能尚未包含所有改动。
+本文对应 1.0.5 源码。请用 `xamlnexus --version` 核对已安装工具；若发行包尚未包含本页功能，可按文末说明从源码构建。
 
 ## 快速开始
 
@@ -135,6 +137,10 @@ xn --help
 - [整体架构与关键流程](docs/technical/architecture.zh-CN.md)
 - [配置与能力边界](docs/introduction/product-model.zh-CN.md)
 - [页面与 ViewModel](docs/user-guide/business-page.zh-CN.md)
+- [应用激活与单实例](docs/technical/app-activation.zh-CN.md)
+- [导航离开保护与进入失败回滚](docs/technical/navigation.zh-CN.md)
+- [混合宿主关闭保护](docs/technical/hybrid-close.zh-CN.md)
+- [独立业务工作流样例](samples/XamlNexus.BusinessWorkflow/README.md)
 - [SQLite](docs/user-guide/sqlite-recipe.zh-CN.md)
 - [设置与多语言](docs/user-guide/localization.zh-CN.md)
 - [脚手架升级](docs/user-guide/project-upgrade.zh-CN.md)

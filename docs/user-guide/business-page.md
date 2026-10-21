@@ -185,7 +185,7 @@ public async Task<int> CountAsync() {
 }
 ```
 
-In hybrid, inject IAppStateClient and use RPC to access the host-owned database; the frontend does not reference Data. The existing Showcase retains its original style; new projects use the factory. For older projects without AppObjectFactory, page add keeps `new()` rather than emitting uncompilable calls.
+In hybrid, inject IAppStateClient and use RPC to access the host-owned database; the frontend does not reference Data. The existing Gallery retains its original style; new projects use the factory. For older projects without AppObjectFactory, page add keeps `new()` rather than emitting uncompilable calls.
 
 ActivatorUtilities creates a new business object and requires registered constructor dependencies. It neither recursively registers arbitrary dependencies nor hides missing-service errors. Dependency-free ViewModels need no container registration.
 

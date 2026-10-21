@@ -6,16 +6,18 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-A .NET command-line tool for creating Windows desktop prototypes with WinUI 3. Generate a project, add pages and components, and start building your application.
+A .NET command-line tool for creating and maintaining Windows desktop applications with WinUI 3. Generate an editable project, add business pages and components, and maintain its infrastructure as the application grows.
 
 Explore [XamlNexus Gallery](samples/XamlNexus.Gallery/README.md), a standalone app with interactive examples, tips, and offline browsing of the actual source templates. Gallery is maintained separately from the default generated application.
 
-Run `xamlnexus gallery` with an official tool package to download, verify and launch its matching Gallery. After `dotnet tool update -g XamlNexus`, the next launch obtains the matching version; cached versions work offline. This command becomes available when the corresponding package is released.
+Run `xamlnexus gallery` with an official tool package to download, verify and launch its matching Gallery. After `dotnet tool update -g XamlNexus`, the next launch obtains the matching version; cached versions work offline. For source builds without a download manifest, follow the Gallery README's build instructions.
 
 ## Features
 
 - **Two architectures:** a WinUI 3 application, or a WinUI 3 frontend with a WPF background host.
 - **Application foundations:** ArcXaml, navigation, MVVM, dependency injection, configuration, and logging.
+- **Business page templates:** blank, list, details, and form pages with navigation integration, loading states, validation, and editable data-source interfaces.
+- **Activation and lifecycle:** launch arguments open business pages; unsaved-change guards cover sidebar navigation and window closing, with rollback on synchronous page-entry failure.
 - **Optional components:** settings, SQLite, tray integration, application updates, and EditorConfig.
 - **AI development guidance:** bundled CLI skills and application architecture/rules for Codex, Claude Code and Qwen Code.
 - **Project maintenance:** preview changes, validate projects, diagnose configuration, and upgrade generated infrastructure.
@@ -37,7 +39,7 @@ dotnet tool update --global XamlNexus
 dotnet tool uninstall --global XamlNexus
 ```
 
-This README describes the current source; the published NuGet package may not yet include all changes.
+This README describes the 1.0.5 source. Check your installed tool with `xamlnexus --version`; if its published package lacks a feature described here, use the source-build instructions below.
 
 ## Quick start
 
@@ -135,6 +137,10 @@ xn --help
 - [Architecture](docs/technical/architecture.md)
 - [Profiles and capabilities](docs/introduction/product-model.md)
 - [Pages and ViewModels](docs/user-guide/business-page.md)
+- [Application activation and single instance](docs/technical/app-activation.md)
+- [Navigation guards and entry-failure rollback](docs/technical/navigation.md)
+- [Hybrid shutdown protection](docs/technical/hybrid-close.md)
+- [Standalone business workflow sample](samples/XamlNexus.BusinessWorkflow/README.md)
 - [SQLite](docs/user-guide/sqlite-recipe.md)
 - [Settings and localization](docs/user-guide/localization.md)
 - [Scaffold upgrades](docs/user-guide/project-upgrade.md)

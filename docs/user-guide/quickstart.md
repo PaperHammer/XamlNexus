@@ -17,7 +17,7 @@ xamlnexus --version
 xamlnexus --help
 ```
 
-This guide describes current source. If your installed version lacks a command shown here, update with `dotnet tool update --global XamlNexus`. Unreleased features require a source build.
+This guide describes the 1.0.5 source. Use `xamlnexus --version` to check your installed version and `dotnet tool update --global XamlNexus` to update it. If the published package lacks a command shown here, use the source-build entry point below.
 
 From the repository root, run `dotnet build src/XamlNexus/XamlNexus.csproj`, then define an absolute-path PowerShell entry point that continues to work after changing directories:
 
@@ -144,7 +144,7 @@ xamlnexus new XmlApp --solution-format slnx
 
 SLN remains the default; interactive creation can also select the format. SLNX requires the selected SDK to be at least 9.0.200; generated applications still target .NET 8. See [Microsoft's SLNX announcement](https://devblogs.microsoft.com/dotnet/introducing-slnx-support-dotnet-cli/). Component add/remove, manifest validation, and upgrades support SLNX. Upgrades preserve format, without automatic conversion; manually converting a solution does not update the manifest or baseline.
 
-Existing CLI localization and wizard strings live in `src/XamlNexus.Common/Resources/Strings.resx` (English default) and `Strings.zh-CN.resx`, loaded through ResourceManager. Keep keys aligned. `GetText` returns raw text; `GetI18n` also escapes Spectre markup. Generated application `.resw` resources remain separate. English constants in CLI help and diagnostics are not all localized yet.
+Existing CLI localization and wizard strings live in `src/XamlNexus.Common/Resources/Strings.resx` (English default) and `Strings.zh-CN.resx`, loaded through ResourceManager. Keep keys aligned. `LanguageRegistry.GetText` in Common returns raw text; `ConsoleText.GetI18n` in Tooling also escapes Spectre markup. Generated application `.resw` resources remain separate. English constants in CLI help and diagnostics are not all localized yet.
 
 ## 7. Maintenance and distribution
 
