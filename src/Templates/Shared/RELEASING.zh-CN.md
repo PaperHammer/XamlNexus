@@ -11,7 +11,7 @@
 在生成项目根目录执行：
 
 ```powershell
-./eng/publishing/Build-Installer.ps1 -Version 1.0.4
+./eng/publishing/Build-Installer.ps1 -Version 1.0.5
 ```
 
 脚本发布自包含的 win-x64 应用，并在 `artifacts/release` 中生成安装器；此步骤不会自动签名或上传。
